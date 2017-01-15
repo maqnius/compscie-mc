@@ -39,7 +39,7 @@ setup(
         'Topic :: Scientific/Engineering :: Physics'],
     keywords=[],
     url='https://github.com/maqnius/compscie-mc',
-    author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu',
-    author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de',
+    author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu, Hanna Wulkow',
+    author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
     packages=['particlesim'])
