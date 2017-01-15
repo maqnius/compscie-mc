@@ -1,2 +1,2 @@
 # compscie-mc
-CompScie MC Gruppe
+CompScience MC Gruppe
