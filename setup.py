@@ -16,9 +16,26 @@
 
 from setuptools import setup
 import versioneer
+import sys
+
+def get_cmdclass():
+    versioneer_cmds = versioneer.get_cmdclass()
+    from setuptools.command.test import test as TestCommand
+    class PyTest(TestCommand):
+        user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+        def initialize_options(self):
+            TestCommand.initialize_options(self)
+            self.pytest_args = ['particlesim']
+        def run_tests(self):
+            # import here, cause outside the eggs aren't loaded
+            import pytest
+            errno = pytest.main(self.pytest_args)
+            sys.exit(errno)
+    versioneer_cmds['test'] = PyTest
+    return versioneer
 
 setup(
-    cmdclass=versioneer.get_cmdclass(),
+    cmdclass=get_cmdclass(),
     name='particlesim',
     version=versioneer.get_version(),
     description="Simulates multi particle systems with MMC",
@@ -39,7 +56,8 @@ setup(
         'Topic :: Scientific/Engineering :: Physics'],
     keywords=[],
     url='https://github.com/maqnius/compscie-mc',
-    author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu',
-    author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de',
+    author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu, Hanna Wulkow',
+    author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
-    packages=['particlesim'])
+    packages=['particlesim'],
+    tests_require=['pytest'])
