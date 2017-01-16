@@ -18,14 +18,29 @@ class Neighbouring(object):
 
     def __init__(self, particle_positions):
         self.particle_positions = particle_positions
-        self.neighbourlist = self._create_neighbourlist(particle_positions)
+        self._neighbourlist = self._create_neighbourlist(particle_positions) # only internal
+    
+    @property
+    def particle_postions(self):
+        return self._particle_positions
+    
+    @particle_postions.setter
+    def particle_postions(self, value):
+        # make some asserts
+        self._particle_positions = value
+
+    # private methods
+    
+    def _create_neighbourlist(self,particle_positions): # only internal
+        return []
+
+    # public methods
 
     def get_particles_within_radius(self,particle_id,radius):
         pass
 
-    def _create_neigehbourlist(self,particle_positions):
-        pass
+
 
 class Neighbouring_Cell_Linked_Lists(Neighbouring):
     def __init__(self, particle_positions):
-        super(Neighbouring_Cell_Linked_Lists,self).__init__(self, particle_positions)
+        super(Neighbouring_Cell_Linked_Lists,self).__init__(particle_positions)
