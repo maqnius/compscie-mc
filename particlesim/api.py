@@ -18,7 +18,7 @@ class SystemConfiguration(object):
 
     """
 
-    def __init__(self, box_size,epsilon_r=1.0):
+    def __init__(self, box_size = 1,epsilon_r=1.0):
         self.box_size = box_size
         self.epsilon_r = epsilon_r
         pass
