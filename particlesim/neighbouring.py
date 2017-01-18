@@ -31,16 +31,16 @@ class Neighbouring(object):
 
     # private methods
     
-    def _create_neighbourlist(self,particle_positions): # only internal
+    def _create_neighbourlist(self, particle_positions): # only internal
         return []
 
     # public methods
 
-    def get_particles_within_radius(self,particle_id,radius):
+    def get_particles_within_radius(self, particle_id, radius):
         pass
 
 
 
-class Neighbouring_Cell_Linked_Lists(Neighbouring):
+class NeighbouringCellLinkedLists(Neighbouring):
     def __init__(self, particle_positions):
-        super(Neighbouring_Cell_Linked_Lists,self).__init__(particle_positions)
+        super(NeighbouringCellLinkedLists, self).__init__(particle_positions)
