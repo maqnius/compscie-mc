@@ -1,9 +1,14 @@
 import numpy as np
+
+
 class TotalPotential(object):
     # dummy Klasse fuer totales Potential, später ersetzen...
     def __init__(self, system_configuration):
-        pass
-    pass
+        self.system_configuration = system_configuration
+
+    def potential(self):
+        # TODO only stub
+        return 0
 
 
 class SystemConfiguration(object):
@@ -17,22 +22,23 @@ class SystemConfiguration(object):
                         shape of box, boundaries
 
     """
-
-    def __init__(self, box_size = 1,epsilon_r=1.0):
+    def __init__(self, box_size=1, epsilon_r=1.0):
         self.box_size = box_size
         self.epsilon_r = epsilon_r
 
     def add_particles_same_type(self, xyz, charge, sigma, epsilon, lj_cutoff):
         pass
 
-
     def potential(self):
-        total_potential=TotalPotential(self)
+        # TODO only stub
+        total_potential = TotalPotential(self)
+        return total_potential.potential()
+
+    def number_of_particle_types(self):
+        # TODO only stub
         return 0
-    pass
 
 
 class Sampler(object):
     def markov_mc(self, iteration_number, system_configuration):
         pass
-
