@@ -25,22 +25,15 @@ def get_cmdclass():
         user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
         def initialize_options(self):
             TestCommand.initialize_options(self)
-<<<<<<< HEAD
-            self.pytest_args = ['pysor']
-=======
             self.pytest_args = ['particlesim']
->>>>>>> 1923935ebf5f4fd74a1e9a61eeda284f4cee16b3
         def run_tests(self):
             # import here, cause outside the eggs aren't loaded
             import pytest
             errno = pytest.main(self.pytest_args)
             sys.exit(errno)
     versioneer_cmds['test'] = PyTest
-<<<<<<< HEAD
     return versioneer_cmds
-=======
-    return versioneer
->>>>>>> 1923935ebf5f4fd74a1e9a61eeda284f4cee16b3
+
 
 setup(
     cmdclass=get_cmdclass(),
