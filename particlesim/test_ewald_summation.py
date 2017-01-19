@@ -20,22 +20,22 @@ from .ewald_summation import Ewald_Summation
 
 
 def test_create_Ewald_Summation():
-    system_conf = test_conf()
+    system_conf = conf_example()
     ewald = Ewald_Summation(system_conf)
-    assert Ewald_Summation.system_conf == "some conf"
+    assert Ewald_Summation.system_conf == conf_example()
 
 
 def test_energy_is_float():
-    system_conf = test_conf()
+    system_conf = conf_example()
     ewald = Ewald_Summation(system_conf)
     assert isinstance(Ewald_Summation.long_rangepotential(), float)
 
 
 def test_energy_is_positive():
-    system_conf = test_conf()
+    system_conf = conf_example()
     ewald = Ewald_Summation(system_conf)
     assert Ewald_Summation.long_rangepotential() >= 0.
 
 
-def test_conf():
+def conf_example():
     return "some conf"
