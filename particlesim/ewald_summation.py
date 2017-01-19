@@ -1,5 +1,5 @@
 class Ewald_Summation(object):
-	"""Was geht ab"""
+	"""Was geeht ab"""
 
 	def __init__(self):
 		pass
