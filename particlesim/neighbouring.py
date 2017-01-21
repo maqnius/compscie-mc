@@ -100,7 +100,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
             idx_x, idx_y, idx_z = cell_idx
             cell_list = cell_ll[idx_x, idx_y, idx_z]
             for neigh in cell_list:
-                periodic_distance = np.linalg.norm(0.5*box_side_length - (a-b+0.5*box_side_length)%box_side_length)
+                periodic_distance = np.linalg.norm(0.5*box_side_length - (p-neigh+0.5*box_side_length)%box_side_length)
                 if periodic_distance>r or p==neigh: continue
                 ret.append(neigh)
 
