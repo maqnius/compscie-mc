@@ -20,7 +20,6 @@ class SystemConfiguration(object):
                         Permittivity in medium, default in vacuum
         box_size    :   optional, float
                         shape of box, boundaries
-
     arithmetic mean for sigma and geometric mean for epsilon
     arithmetic = (a+b)/2; geometric : sqrt(a*a)
     Lorentz Berthelot Rule
@@ -36,20 +35,24 @@ class SystemConfiguration(object):
 
     def add_particles(self, xyz, charges, sigmas, epsilons):
         r"""
-        :param xyz: array(n,3) positions of the particles
-        :param charges: array(n,1)
-        :param sigmas: array(n,1)
-        :param epsilons: array(n,1)
+        adds the particles to the SystemConfiguration
+
+        :param xyz: array(n,3), float, positions of n-particles
+        :param charges: array(n,1), float, charges of the particles
+        :param sigmas: array(n,1), float, Lennard-Jones params
+        :param epsilons: array(n,1), float, Lennard-Jones params
         :return: nil
 
-        adds the particles to the systemConfiguration
         """
+        # check if number of particles match in all params, raise error if not
         if not len(xyz) == len(charges):
             raise TypeError('charges must have the same length as particle numbers')
         if not len(xyz) == len(sigmas):
             raise TypeError('sigmas must have the same length as particle numbers')
         if not len(xyz) == len(epsilons):
             raise TypeError('epsilons must have the same length as particle numbers')
+
+        # append new particles configuration to existing configuration
         self.xyz = np.concatenate((self.xyz, xyz), axis=0)
         self.charges += charges
         self.sigmas += sigmas
@@ -65,6 +68,8 @@ class SystemConfiguration(object):
         :return:
 
         """
+
+        # append new particles configuration to existing configuration
         number_of_particles = len(xyz)
         self.xyz = np.concatenate((self.xyz, xyz), axis=0)
         self.charges += [charge]*number_of_particles
@@ -81,5 +86,10 @@ class SystemConfiguration(object):
 
 
 class Sampler(object):
-    def markov_mc(self, iteration_number, system_configuration):
+
+    def _update(self, system_configuration, stepsize):
+        xyz_trial = system_configuration.xyz + 2.0* stepsize * (np.random.rand(*system_configuration.xyz.shape) - 0.5)
+        potential_trial = system_configuration.potential(xyz_trial)
+
+    def markov_mc(self, iteration_number, stepsize, system_configuration):
         pass

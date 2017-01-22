@@ -36,10 +36,11 @@ def test_add_particles():
 def test_add_particles_of_same_type():
     system_configuration = SystemConfiguration()
     number_of_particles = 100
+    epsilon=5.0
     particle_positions = np.random.rand(number_of_particles,3)
-    system_configuration.add_particles_same_type(particle_positions)
+    system_configuration.add_particles_same_type(particle_positions, epsilon=epsilon)
     assert number_of_particles == system_configuration.number_of_particle_types()
-    assert system_configuration.epsilons == [1.0]*number_of_particles
+    assert system_configuration.epsilons == [epsilon]*number_of_particles
 
 def test_add_particles_not_matching_input():
     system_configuration = SystemConfiguration()
