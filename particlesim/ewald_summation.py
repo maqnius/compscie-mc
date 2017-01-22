@@ -19,26 +19,79 @@ import numpy as np
 import scipy.constants
 
 def create_test_system(N, size, max_charge):
+    """
+    Creates a random particle configuration for testing other functions.
+
+    Parameters
+    ----------
+
+    N : int
+        Number of particles
+
+    size : int
+        Boxsize for particle positions
+
+    max_charge : int
+        Maximum for absolute values of particle charges
+
+
+    Returns
+    -------
+
+    np.array
+        Array with particle positions (3D) and charges
+    """
+
+    # Charges:
     charges_half = np.random.randint(-max_charge, max_charge, N / 2)
     charges = np.append(charges_half, -1*charges_half) * scipy.constants.e
 
+    # Positions:
     positions = np.random.randint(-size, size, (N, 3))
-    return [positions, charges]
+
+    test_config = np.array([positions, charges])
+
+    return test_config
 
 
 
 def Ewald_Summation(system_conf, volume, sigma, K):
     """
     Calculates the longrange potential and the self interaction potential
-    of a given particle distribution using Ewald Summation
+    of a given particle distribution using Ewald Summation.
+
+    Parameters
+    ----------
+
+    system_conf : np.array
+        Array with particle positions and charges
+
+    volume : int or float
+        Volume of a supercell
+
+    sigma : float
+        Standard deviation of gaussian distribution
+
+    K : int
+        Cutoff parameter in reciprocal space
+
+
+    Returns
+    -------
+
+    float
+        longrange and selfinteraction potential
     """
+
+
     positions = system_conf[0]
     charges = system_conf[1]
     N = len(positions)
     sigma_sq = sigma**2
-
     epsilon_0 = scipy.constants.epsilon_0
     k_vectors = []
+
+    # Create all k-vectors with absolute value <= K
     for a in range(0, K+1):
         for b in range(0, K+1):
             for c in range(0, K+1):
@@ -48,10 +101,11 @@ def Ewald_Summation(system_conf, volume, sigma, K):
                     k_vectors.append(k)
     k_vectors.pop(0)
 
+    # Calculate longrange potential
     longrange_potential = 0.
-    structure_factor = 0.
 
     for k_i in k_vectors:
+        structure_factor = 0.
         k_sq = np.linalg.norm(k_i)**2
 
         for a in range(N):
@@ -61,35 +115,20 @@ def Ewald_Summation(system_conf, volume, sigma, K):
 
     longrange_potential *= 1/(volume*epsilon_0)
 
-
+    # Calculate self-interaction potential
     self_interaction_potential = 0.
+
     for a in range(N):
         self_interaction_potential += charges[a] / (4*np.pi*epsilon_0*sigma) * np.sqrt(2/np.pi)
 
+    # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 
 
     return longrange_and_self_potential
 
+
+# Test with random configuration:
 test_config = create_test_system(200, 100, 10)
 print Ewald_Summation(test_config, 100, 1, 4)
 
-# class Ewald_Summation(object):
-#    """
-#     Calculates system energy using Ewald Summation
-#     """
-#
-#     def __init__(self, system_conf):
-#         self.system_conf = system_conf
-#
-#     def longrange_potential(self, system_conf, volume, sigma):
-# 		"""
-# 		Calculates the longrange potential and the self interaction potential
-# 		of a given particle distribution using Ewald Summation
-#
-# 		"""
-#
-# 		epsilon_0 = sp.epsilon_0
-#
-#
-#         pass
