@@ -21,7 +21,7 @@ class SystemConfiguration(object):
     def __init__(self, box_size = 1,epsilon_r=1.0):
         self.box_size = box_size
         self.epsilon_r = epsilon_r
-        pass
+
     def add_particles_same_type(self, xyz, charge, sigma, epsilon, lj_cutoff):
         pass
 
@@ -33,7 +33,6 @@ class SystemConfiguration(object):
 
 
 class Sampler(object):
-    def marcov_mc(self, system_configuration):
+    def markov_mc(self, iteration_number, system_configuration):
         pass
-    pass
 

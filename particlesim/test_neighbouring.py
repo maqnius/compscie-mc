@@ -16,7 +16,7 @@
 
 import numpy as np
 from .neighbouring import Neighbouring
-from .neighbouring import Neighbouring_Cell_Linked_Lists
+from .neighbouring import NeighbouringCellLinkedLists
 
 def test_create_Neighbouring_instance():
     neighbouring = Neighbouring("some input")
@@ -28,5 +28,5 @@ def test_neighbour_structur_is_created():
     # usually we would not call private (with _name) attributes from outside
 
 def test_create_Neighbouring_Cell_Linked_Lists_instance():
-    n = Neighbouring_Cell_Linked_Lists("something")
+    n = NeighbouringCellLinkedLists("something")
     assert "something" == n.particle_positions
