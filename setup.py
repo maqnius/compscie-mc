@@ -1,5 +1,5 @@
-#   PySOR - solve Poisson's equation with successive over-relaxation.
-#   Copyright (C) 2017  Christoph Wehmeyer
+#   particlesim
+#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,8 @@ def get_cmdclass():
             errno = pytest.main(self.pytest_args)
             sys.exit(errno)
     versioneer_cmds['test'] = PyTest
-    return versioneer
+    return versioneer_cmds
+
 
 setup(
     cmdclass=get_cmdclass(),
