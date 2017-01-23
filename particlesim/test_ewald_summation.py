@@ -16,7 +16,8 @@
 
 
 import numpy as np
-from .ewald_summation import *
+import scipy.constants
+from .ewald_summation import ewald_summation
 
 
 def test_energy_is_float():
@@ -60,6 +61,6 @@ def create_test_system(N, size, max_charge):
     # Positions:
     positions = np.random.randint(-size, size, (N, 3))
 
-    test_config = np.array([positions, charges])
+    test_config = [positions, charges]
 
     return test_config
