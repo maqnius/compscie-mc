@@ -18,44 +18,7 @@
 import numpy as np
 import scipy.constants
 
-def create_test_system(N, size, max_charge):
-    """
-    Creates a random particle configuration for testing other functions.
-
-    Parameters
-    ----------
-
-    N : int
-        Number of particles
-
-    size : int
-        Boxsize for particle positions
-
-    max_charge : int
-        Maximum for absolute values of particle charges
-
-
-    Returns
-    -------
-
-    np.array
-        Array with particle positions (3D) and charges
-    """
-
-    # Charges:
-    charges_half = np.random.randint(-max_charge, max_charge, N / 2)
-    charges = np.append(charges_half, -1*charges_half) * scipy.constants.e
-
-    # Positions:
-    positions = np.random.randint(-size, size, (N, 3))
-
-    test_config = np.array([positions, charges])
-
-    return test_config
-
-
-
-def Ewald_Summation(system_conf, volume, sigma, K):
+def ewald_summation(system_conf, volume, sigma, K):
     """
     Calculates the longrange potential and the self interaction potential
     of a given particle distribution using Ewald Summation.
@@ -126,9 +89,3 @@ def Ewald_Summation(system_conf, volume, sigma, K):
 
 
     return longrange_and_self_potential
-
-
-# Test with random configuration:
-test_config = create_test_system(200, 100, 10)
-print Ewald_Summation(test_config, 100, 1, 4)
-

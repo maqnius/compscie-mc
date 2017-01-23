@@ -16,26 +16,50 @@
 
 
 import numpy as np
-from .ewald_summation import Ewald_Summation
-
-
-def test_create_Ewald_Summation():
-    system_conf = conf_example()
-    ewald = Ewald_Summation(system_conf)
-    assert Ewald_Summation.system_conf == conf_example()
+from .ewald_summation import *
 
 
 def test_energy_is_float():
-    system_conf = conf_example()
-    ewald = Ewald_Summation(system_conf)
-    assert isinstance(Ewald_Summation.long_rangepotential(), float)
-
+    test_config = create_test_system(200, 100, 10)
+    energy = ewald_summation(test_config, 100, 1, 4)
+    assert isinstance(energy, float)
 
 def test_energy_is_positive():
-    system_conf = conf_example()
-    ewald = Ewald_Summation(system_conf)
-    assert Ewald_Summation.long_rangepotential() >= 0.
+    test_config = create_test_system(200, 100, 10)
+    energy = ewald_summation(test_config, 100, 1, 4)
+    assert energy >= 0.
+
+def create_test_system(N, size, max_charge):
+    """
+    Creates a random particle configuration for testing other functions.
+
+    Parameters
+    ----------
+
+    N : int
+        Number of particles
+
+    size : int
+        Boxsize for particle positions
+
+    max_charge : int
+        Maximum for absolute values of particle charges
 
 
-def conf_example():
-    return "some conf"
+    Returns
+    -------
+
+    np.array
+        Array with particle positions (3D) and charges
+    """
+
+    # Charges:
+    charges_half = np.random.randint(-max_charge, max_charge, N / 2)
+    charges = np.append(charges_half, -1*charges_half) * scipy.constants.e
+
+    # Positions:
+    positions = np.random.randint(-size, size, (N, 3))
+
+    test_config = np.array([positions, charges])
+
+    return test_config
