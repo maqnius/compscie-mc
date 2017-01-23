@@ -19,13 +19,16 @@ import numpy as np
 import scipy.constants
 from .ewald_summation import ewald_summation
 
-
 def test_energy_is_float():
     test_config = create_test_system(200, 100, 10)
     energy = ewald_summation(test_config, 100, 1, 4)
     assert isinstance(energy, float)
 
+
 def test_energy_is_positive():
+    """
+    Not sure if necessary
+    """
     test_config = create_test_system(200, 100, 10)
     energy = ewald_summation(test_config, 100, 1, 4)
     assert energy >= 0.

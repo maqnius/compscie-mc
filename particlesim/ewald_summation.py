@@ -56,12 +56,10 @@ def ewald_summation(system_conf, volume, sigma, K):
 
     # Create all k-vectors with absolute value <= K
     for a in range(0, K+1):
-        for b in range(0, K+1):
-            for c in range(0, K+1):
-                k = [a, b, c]
+        for b in range(0, int(np.sqrt(K**2 - a**2)) + 1):
+            for c in range(0, int(np.sqrt(K**2 - a**2 - b**2)) + 1):
+                k_vectors.append([a,b,c])
 
-                if np.linalg.norm(k) <= K and k not in k_vectors:
-                    k_vectors.append(k)
     k_vectors.pop(0)
 
     # Calculate longrange potential
@@ -76,16 +74,16 @@ def ewald_summation(system_conf, volume, sigma, K):
         structure_factor_squared = np.absolute(structure_factor)**2
         longrange_potential += structure_factor_squared * np.e**(-sigma_sq * k_sq / 2) / k_sq
 
-    longrange_potential *= 1/(volume*epsilon_0)
+    longrange_potential *= 1/(2*volume*epsilon_0)
 
     # Calculate self-interaction potential
     self_interaction_potential = 0.
 
-    for a in range(N):
-        self_interaction_potential += charges[a] / (4*np.pi*epsilon_0*sigma) * np.sqrt(2/np.pi)
+    for charge_i in charges:
+        self_interaction_potential += charge_i
+    self_interaction_potential *= 1/(2*epsilon_0*sigma*(2*np.pi)**(3/2))
 
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
-
 
     return longrange_and_self_potential
