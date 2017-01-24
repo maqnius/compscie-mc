@@ -20,9 +20,10 @@ import scipy.constants
 from .ewald_summation import longrange_energy
 
 def test_energy_is_float():
+    sigma, k_cutoff = calc_sigma_and_k_cutoff()
     shape = np.array([100, 100, 10])
-    test_config = create_test_system(200, shape, 10)
-    energy = longrange_energy(test_config, shape, 1, 4)
+    test_config = create_test_system(100, shape, 10)
+    energy = longrange_energy(test_config, shape, sigma, k_cutoff)
     assert isinstance(energy, float)
 
 
@@ -30,10 +31,18 @@ def test_energy_is_positive():
     """
     Not sure if necessary
     """
+    sigma, k_cutoff = calc_sigma_and_k_cutoff()
     shape = np.array([100, 100, 10])
-    test_config = create_test_system(200, shape, 10)
-    energy = longrange_energy(test_config, shape, 1, 4)
+    test_config = create_test_system(100, shape, 10)
+    energy = longrange_energy(test_config, shape, sigma, k_cutoff)
     assert energy >= 0.
+
+def calc_sigma_and_k_cutoff():
+    p = -np.log(1e-3)
+    k_cutoff = 4
+    sigma = np.sqrt(2*p/k_cutoff**2)
+
+    return sigma, k_cutoff
 
 def create_test_system(N, shape, max_charge):
     """
@@ -61,7 +70,7 @@ def create_test_system(N, shape, max_charge):
 
     # Charges:
     charges_half = np.random.randint(-max_charge, max_charge, N / 2)
-    charges = np.append(charges_half, -1*charges_half) * scipy.constants.e
+    charges = np.append(charges_half, -1*charges_half)
 
     # Positions:
     positions = np.zeros((N,3))

@@ -3,3 +3,4 @@
 __pycache__/
 *.Rhistory
 *.pyc
+*.DS_Store

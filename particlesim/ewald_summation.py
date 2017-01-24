@@ -13,7 +13,7 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import division
 
 import numpy as np
 import scipy.constants
@@ -82,14 +82,14 @@ def longrange_energy(system_conf, shape, sigma, K):
         structure_factor_squared = np.absolute(structure_factor) ** 2
         longrange_potential += structure_factor_squared * np.e ** (-sigma_sq * k_sq / 2) / k_sq
 
-    longrange_potential *= 1 / (2 * volume * epsilon_0)
+    longrange_potential *= 1 / (2 * volume )
 
     # Calculate self-interaction potential
     self_interaction_potential = 0.
 
     for charge_i in charges:
         self_interaction_potential += charge_i**2
-    self_interaction_potential *= 1 / (4 * np.pi * epsilon_0 * np.sqrt(2*np.pi) * sigma)
+    self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * sigma)
 
     print longrange_potential
     print self_interaction_potential
