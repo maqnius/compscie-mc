@@ -17,11 +17,12 @@
 
 import numpy as np
 import scipy.constants
-from .ewald_summation import ewald_summation
+from .ewald_summation import longrange_energy
 
 def test_energy_is_float():
-    test_config = create_test_system(200, 100, 10)
-    energy = ewald_summation(test_config, 100, 1, 4)
+    shape = np.array([100, 100, 10])
+    test_config = create_test_system(200, shape, 10)
+    energy = longrange_energy(test_config, shape, 1, 4)
     assert isinstance(energy, float)
 
 
@@ -29,11 +30,12 @@ def test_energy_is_positive():
     """
     Not sure if necessary
     """
-    test_config = create_test_system(200, 100, 10)
-    energy = ewald_summation(test_config, 100, 1, 4)
+    shape = np.array([100, 100, 10])
+    test_config = create_test_system(200, shape, 10)
+    energy = longrange_energy(test_config, shape, 1, 4)
     assert energy >= 0.
 
-def create_test_system(N, size, max_charge):
+def create_test_system(N, shape, max_charge):
     """
     Creates a random particle configuration for testing other functions.
 
@@ -43,7 +45,7 @@ def create_test_system(N, size, max_charge):
     N : int
         Number of particles
 
-    size : int
+    size : float numpay array
         Boxsize for particle positions
 
     max_charge : int
@@ -62,7 +64,9 @@ def create_test_system(N, size, max_charge):
     charges = np.append(charges_half, -1*charges_half) * scipy.constants.e
 
     # Positions:
-    positions = np.random.randint(-size, size, (N, 3))
+    positions = np.zeros((N,3))
+    for i in range(shape.shape[0]):
+        positions[:, i] = np.random.randint(-shape[i], shape[i], N)
 
     test_config = [positions, charges]
 
