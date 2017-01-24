@@ -66,6 +66,7 @@ def longrange_energy(system_conf, shape, sigma, K):
     k_vectors = np.array(k_vectors)
     k_vectors = np.concatenate((k_vectors, -k_vectors))
 
+    # Multiply with 2*pi/L factor in each direction
     k_vectors = np.multiply(k_vectors, 2*np.pi/shape)
 
 
@@ -88,8 +89,10 @@ def longrange_energy(system_conf, shape, sigma, K):
 
     for charge_i in charges:
         self_interaction_potential += charge_i**2
-    self_interaction_potential *= 1 / (2 * epsilon_0 * sigma * (2 * np.pi) ** (3 / 2))
+    self_interaction_potential *= 1 / (4 * np.pi * epsilon_0 * np.sqrt(2*np.pi) * sigma)
 
+    print longrange_potential
+    print self_interaction_potential
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 
