@@ -85,7 +85,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
         if nr_cells == 0:
             nr_cells = 1
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
-        print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[1])) #TODO no print in the end
+        print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[0][0])) #TODO no print in the end
         for i in range(n):
             x, y, z = (pos[i]/r).astype(int) # // ist ganzzahlige division (ohne rest)
             print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
