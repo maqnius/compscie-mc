@@ -58,7 +58,7 @@ class NeighbouringPrimitiveLists(Neighbouring):
     # public methods
     def create_neighbourlist(self):
         n, r, pos   = self.n, self.r, self.particle_positions
-        nlist       = [[]*n]
+        nlist       = [[] for i in range(n)]
         for i in range(n):
             for j in range(n):
                 if np.linalg.norm(pos[i]-pos[j])>=r or i==j: continue # Need to take care of periodic boundary conditions
