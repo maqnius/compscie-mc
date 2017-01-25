@@ -144,6 +144,8 @@ def phi(xyz, sigma=1.0, epsilon=1.0, box_length=None):
     """
     return interaction_potential(xyz, sigma=sigma, epsilon=epsilon) + external_potential(xyz, box_length=box_length)
 
+#testing the functions
+
 xyz = np.random.rand(10, 3) * 2.0
 sigma = [1,1,1,1,1,1,1,1,1,1]
 epsilon = [5,1,2,3,4,6,7,8,9,5,5]
