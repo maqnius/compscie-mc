@@ -77,12 +77,9 @@ class SystemConfiguration(object):
         self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
         self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
 
-    def potential(self,xyz_trial = None):
+    def potential(self):
         # TODO only stub
-        if xyz_trial != None:
-            total_potential = TotalPotential(self, xyz_trial)
-        else:
-            total_potential = TotalPotential(self, self.xyz)
+        total_potential = TotalPotential(self)
         return total_potential.potential()
 
     def number_of_particle_types(self):
@@ -124,13 +121,27 @@ class Sampler(object):
 
         """
 
-        system_configuration_tmp = copy.deepcopy(system_configuration) #we don't want to chang the input instance
+    #   check input data
+        if not isinstance(iteration_number,int) or iteration_number <= 0:
+            raise ValueError("To sample you need at least one iteration step...\n"
+                             "iteration_numer has to be a positive integer")
+        if len(system_configuration.xyz) == 0:
+            raise ValueError("no particle in system configuration")
+        if not isinstance(step,(float,int)) or step <= 0:
+            raise ValueError("stepsize has to be a postive number")
+        if not isinstance(beta,(float,int)) or beta <= 0:
+            raise ValueError("beta has to be a postive number")
+
+    #   create copy of instance and work with copy, so initial configuration is unchanged
+        system_configuration_tmp = copy.deepcopy(system_configuration)
         xyz_traj = [system_configuration_tmp.xyz]
         pot_traj = [system_configuration_tmp.potential()]
+
+    #   perform metropolis
         for i in range(iteration_number):
             xyz, pot = self._update(
-                system_configuration_tmp,
-                xyz_traj[-1], pot_traj[-1],
+                system_configuration_tmp
+                , pot_traj[-1],
                 step=step, beta=beta)
             xyz_traj.append(xyz)
             pot_traj.append(pot)
