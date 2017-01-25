@@ -56,15 +56,18 @@ def longrange_energy(system_conf, shape, sigma, K):
     k_vectors = []
 
     # Create all k-vectors with absolute value <= K
-    for a in range(0, K + 1):
-        for b in range(0, int(np.sqrt(K ** 2 - a ** 2)) + 1):
-            for c in range(0, int(np.sqrt(K ** 2 - a ** 2 - b ** 2)) + 1):
+    for a in range(-K, K + 1):
+        b_limit = int(np.sqrt(K ** 2 - a ** 2))
+        for b in range(-b_limit, b_limit + 1):
+            c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
+            for c in range(-c_limit, c_limit + 1):
                 k_vectors.append([a, b, c])
 
-    k_vectors.pop(0)
+    # Remove k = [0, 0, 0]
+    k_vectors.remove([0,0,0])
+
     # Consider negativ k-Vektors as well
     k_vectors = np.array(k_vectors)
-    k_vectors = np.concatenate((k_vectors, -k_vectors))
 
     # Multiply with 2*pi/L factor in each direction
     k_vectors = np.multiply(k_vectors, 2*np.pi/shape)
@@ -91,8 +94,8 @@ def longrange_energy(system_conf, shape, sigma, K):
         self_interaction_potential += charge_i**2
     self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * sigma)
 
-    print longrange_potential
-    print self_interaction_potential
+    print "longrange_potential", longrange_potential
+    print "self_interaction_potential", self_interaction_potential
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 
