@@ -1,2 +1,2 @@
 # compscie-mc
-CompScence MC Gruppe
+CompScie MC Gruppe

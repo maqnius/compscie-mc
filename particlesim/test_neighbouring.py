@@ -15,18 +15,23 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import pytest
 from .neighbouring import Neighbouring
 from .neighbouring import NeighbouringCellLinkedLists
 
 def test_create_Neighbouring_instance():
-    neighbouring = Neighbouring("some input")
-    assert neighbouring.particle_positions == "some input"
+    with pytest.raises(TypeError):
+        neighbouring = Neighbouring([1.,2.3,5.2])
+
 
 def test_neighbour_structur_is_created():
-    neighbouring = Neighbouring("some input")
-    assert neighbouring._neighbourlist == []
+    array = np.random.rand(5,3)
+    neighbouring = NeighbouringCellLinkedLists(array)
+    print(neighbouring._neighbourlist)
+    assert neighbouring._neighbourlist != None
     # usually we would not call private (with _name) attributes from outside
 
 def test_create_Neighbouring_Cell_Linked_Lists_instance():
-    n = NeighbouringCellLinkedLists("something")
-    assert "something" == n.particle_positions
+
+    with pytest.raises(TypeError):
+        n = NeighbouringCellLinkedLists("something")
