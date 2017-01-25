@@ -29,9 +29,9 @@ class SystemConfiguration(object):
         self.box_size = box_size
         self.epsilon_r = epsilon_r
         self.xyz = np.ndarray(shape=(0,3),dtype=float)
-        self.charges = []
-        self.sigmas = []
-        self.epsilons = []
+        self.charges = np.asarray([],dtype=float)
+        self.sigmas = np.asarray([],dtype=float)
+        self.epsilons = np.asarray([],dtype=float)
 
     def add_particles(self, xyz, charges, sigmas, epsilons):
         r"""
@@ -54,9 +54,9 @@ class SystemConfiguration(object):
 
         # append new particles configuration to existing configuration
         self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-        self.charges += charges
-        self.sigmas += sigmas
-        self.epsilons += epsilons
+        self.charges = np.append(self.charges,charges)
+        self.sigmas = np.append(self.sigmas, sigmas)
+        self.epsilons = np.append(self.epsilons, epsilons)
 
     def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
         r"""
@@ -72,9 +72,9 @@ class SystemConfiguration(object):
         # append new particles configuration to existing configuration
         number_of_particles = len(xyz)
         self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-        self.charges += [charge]*number_of_particles
-        self.sigmas += [sigma]*number_of_particles
-        self.epsilons += [epsilon]*number_of_particles
+        self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
+        self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
+        self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
 
     def potential(self):
         # TODO only stub
