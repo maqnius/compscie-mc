@@ -16,8 +16,10 @@
 
 
 import numpy as np
-import scipy.constants
 from .ewald_summation import longrange_energy
+from .ewald_summation import calc_k_vectors_old
+import particlesim.k_cython as k_cython
+import time
 
 def test_energy_is_float():
     sigma, k_cutoff = calc_sigma_and_k_cutoff()
@@ -80,3 +82,21 @@ def create_test_system(N, shape, max_charge):
     test_config = [positions, charges]
 
     return test_config
+
+def speed_comparison():
+    """
+    Speed test of calculation
+    """
+    K = 200
+
+    timestamp_start = time.time()
+    calc_k_vectors_old(K)
+    timestamp_stop = time.time()
+    print(-timestamp_start+timestamp_stop)
+
+    timestamp_start = time.time()
+    k_cython.calc_k_vectors(K)
+    timestamp_stop = time.time()
+    print(-timestamp_start+timestamp_stop)
+
+speed_comparison()
