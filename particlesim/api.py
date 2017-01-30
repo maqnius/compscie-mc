@@ -58,6 +58,7 @@ class SystemConfiguration(object):
         self.charges = np.append(self.charges,charges)
         self.sigmas = np.append(self.sigmas, sigmas)
         self.epsilons = np.append(self.epsilons, epsilons)
+        self.create_lj_mean_parameters()
 
     def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
         r"""
@@ -76,6 +77,7 @@ class SystemConfiguration(object):
         self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
         self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
         self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
+        self.create_lj_mean_parameters()
 
     def potential(self):
         # TODO only stub
@@ -85,6 +87,15 @@ class SystemConfiguration(object):
     def number_of_particle_types(self):
         return len(self.xyz)
 
+    def create_lj_mean_parameters(self):
+        self.create_lennard_jones_epsilons()
+        self.create_lennard_jones_sigmas()
+
+    def create_lennard_jones_epsilons(self):
+        self.lj_epsilon_matrix = np.sqrt(np.array([self.epsilons]).transpose()*np.array([self.epsilons]))
+
+    def create_lennard_jones_sigmas(self):
+        self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
 
 class Sampler(object):
     r"""A sampler class for hamiltonian objects."""

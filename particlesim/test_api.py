@@ -77,3 +77,30 @@ def test_sampler_no_particles_in_system():
     sampler, system_configuration = create_sampler(number_of_particles)
     with pytest.raises(ValueError):
         sampler.metropolis(system_configuration,iteration_number=2)
+
+def test_create_lennard_jones_epsilons():
+    system_configuration = SystemConfiguration()
+    number_of_particles = 3
+    particle_positions = np.random.rand(number_of_particles, 3)
+    sigmas = [1]*3
+    epsilons = [2,3,4]
+    charges =  [1]*3
+    system_configuration.add_particles(xyz=particle_positions,charges=charges,sigmas=sigmas,epsilons=epsilons)
+    np.testing.assert_array_equal(epsilons, system_configuration.lj_epsilon_matrix.diagonal())
+
+    system_configuration.add_particles(particle_positions,charges,sigmas,epsilons)
+    np.testing.assert_array_equal(np.append(epsilons, epsilons), system_configuration.lj_epsilon_matrix.diagonal())
+
+def test_create_lennard_jones_sigmas():
+    system_configuration = SystemConfiguration()
+    number_of_particles = 3
+    particle_positions = np.random.rand(number_of_particles, 3)
+    epsilons = [1] * 3
+    sigmas = [2, 3, 4]
+    charges = [1] * 3
+    system_configuration.add_particles(xyz=particle_positions, charges=charges, epsilons=epsilons, sigmas=sigmas)
+    np.testing.assert_array_equal(sigmas, system_configuration.lj_sigma_matrix.diagonal())
+
+    system_configuration.add_particles(particle_positions, charges,  sigmas, epsilons)
+    np.testing.assert_array_equal(np.append(sigmas, sigmas), system_configuration.lj_sigma_matrix.diagonal())
+
