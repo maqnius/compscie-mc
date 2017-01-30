@@ -1,23 +1,13 @@
 import numpy as np
 import pytest
 from .api import *
+from .helpers_for_tests import *
 
 def test_system_configuration_potential_value():
     # assert systemconfiguration.potential returns value type float
     system_configuration = SystemConfiguration()
     potential = system_configuration.potential()
     assert isinstance(potential, (float, int))
-
-
-def add_basic_random_particle_group_to_system_config(system_configuration, number_of_particles):
-    particle_positions = np.random.rand(number_of_particles,3)
-    charge = [1.] * number_of_particles
-    sigma = [1.] * number_of_particles
-    system_configuration.add_particles(xyz=particle_positions,
-                                       charges=charge,
-                                       sigmas=sigma,
-                                       epsilons=sigma)
-
 
 def test_add_particles():
     system_configuration = SystemConfiguration()
@@ -46,13 +36,6 @@ def test_add_particles_not_matching_input():
                                            sigmas=sigmas,
                                            epsilons=sigmas)
 
-def create_sampler(number_of_particles):
-    system_configuration = SystemConfiguration()
-    sampler = Sampler()
-    add_basic_random_particle_group_to_system_config(system_configuration,
-                                                     number_of_particles)
-    return sampler, system_configuration
-
 def test_sampler_negative_iteration_number():
     # might fail after potential function is implemented
     number_of_particles = 3
@@ -64,12 +47,12 @@ def test_sampler_negative_iteration_number():
 
 def test_sampler_trajectory():
     # might fail after potential function is implemented
-    number_of_particles = 3
-    iteration_number = 2
+    number_of_particles = 5
+    iteration_number = 3
     sampler, system_configuration = create_sampler(number_of_particles)
-    traj = sampler.metropolis(system_configuration, iteration_number)
+    traj, pot = sampler.metropolis(system_configuration, iteration_number)
     assert np.any(np.not_equal(traj[0],traj[1]))
-    assert len(traj) == iteration_number
+    assert len(traj) == iteration_number + 1
 
 def test_sampler_no_particles_in_system():
     # might fail after potential function is implemented

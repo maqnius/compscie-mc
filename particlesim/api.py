@@ -7,8 +7,10 @@ class TotalPotential(object):
     def __init__(self, system_configuration):
         self.system_configuration = system_configuration
 
-    def potential(self):
+    def potential(self,xyz_trial):
         # TODO only stub
+        if np.all(xyz_trial>=1.0):
+            return np.inf
         return 0
 
 
@@ -79,10 +81,10 @@ class SystemConfiguration(object):
         self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
         self.create_lj_mean_parameters()
 
-    def potential(self):
+    def potential(self,xyz_trial):
         # TODO only stub
         total_potential = TotalPotential(self)
-        return total_potential.potential()
+        return total_potential.potential(xyz_trial)
 
     def number_of_particle_types(self):
         return len(self.xyz)
@@ -102,7 +104,7 @@ class Sampler(object):
 
     def _update(self, system_configuration, pot, step, beta):
         xyz_trial = system_configuration.xyz + 2.0 * step * (np.random.rand(*system_configuration.xyz.shape) - 0.5)
-        pot_trial = system_configuration.potential()
+        pot_trial = system_configuration.potential(xyz_trial)
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial
         return system_configuration.xyz, pot
@@ -146,7 +148,7 @@ class Sampler(object):
     #   create copy of instance and work with copy, so initial configuration is unchanged
         system_configuration_tmp = copy.deepcopy(system_configuration)
         xyz_traj = [system_configuration_tmp.xyz]
-        pot_traj = [system_configuration_tmp.potential()]
+        pot_traj = [system_configuration_tmp.potential(system_configuration_tmp.xyz)]
 
     #   perform metropolis
         for i in range(iteration_number):
