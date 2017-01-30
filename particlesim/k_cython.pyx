@@ -13,5 +13,6 @@ def calc_k_vectors(int K):
             c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
             for c in range(-c_limit, c_limit + 1):
                 k_vectors.append([a, b, c])
+    k_vectors.remove([0, 0, 0])
 
     return k_vectors
