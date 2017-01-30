@@ -57,8 +57,8 @@ def longrange_energy(system_conf, shape, sigma, K):
     volume = np.prod(shape)
 
     k_vectors = k_cython.calc_k_vectors(K)
-    k_vectors = np.array(k_vectors)
 
+    k_vectors = np.array(k_vectors)
     # Multiply with 2*pi/L factor in each direction
     k_vectors = np.multiply(k_vectors, 2*np.pi/shape)
 

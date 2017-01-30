@@ -90,13 +90,15 @@ def speed_comparison():
     K = 200
 
     timestamp_start = time.time()
+    k_cython.calc_k_vectors(K)
+    timestamp_stop = time.time()
+    print(-timestamp_start + timestamp_stop)
+
+    timestamp_start = time.time()
     calc_k_vectors_old(K)
     timestamp_stop = time.time()
     print(-timestamp_start+timestamp_stop)
 
-    timestamp_start = time.time()
-    k_cython.calc_k_vectors(K)
-    timestamp_stop = time.time()
-    print(-timestamp_start+timestamp_stop)
+
 
 speed_comparison()
