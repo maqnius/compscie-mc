@@ -1,6 +1,6 @@
 import pyximport; pyximport.install()
-import k_vectors
+import k_cython
 
-print k_vectors.calc_k_vectors(2)
+print(k_cython.calc_k_vectors(2))
 
 

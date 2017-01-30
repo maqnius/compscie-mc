@@ -18,7 +18,7 @@ from __future__ import division
 import numpy as np
 import scipy.constants
 import pyximport; pyximport.install()
-import k_cython
+import particlesim.k_cython as k_cython
 
 
 def longrange_energy(system_conf, shape, sigma, K):
@@ -84,8 +84,8 @@ def longrange_energy(system_conf, shape, sigma, K):
         self_interaction_potential += charge_i**2
     self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * sigma)
 
-    print "longrange_potential", longrange_potential
-    print "self_interaction_potential", self_interaction_potential
+    print("longrange_potential", longrange_potential)
+    print("self_interaction_potential", self_interaction_potential)
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 

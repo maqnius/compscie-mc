@@ -69,7 +69,7 @@ def create_test_system(N, shape, max_charge):
     """
 
     # Charges:
-    charges_half = np.random.randint(-max_charge, max_charge, N / 2)
+    charges_half = np.random.randint(-max_charge, max_charge, N // 2)
     charges = np.append(charges_half, -1*charges_half)
 
     # Positions:
