@@ -17,14 +17,25 @@ class SystemConfiguration(object):
     Lorentz Berthelot Rule
     lj_cutoff = 2.5 * sigma
     """
-    def __init__(self, xyz, charges, sigmas, epsilons, box_size=1.0, epsilon_r=1.0):
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=1.0, epsilon_r=1.0):
 
-        if not len(xyz) == len(charges):
-            raise TypeError('charges must have the same length as particle numbers')
-        if not len(xyz) == len(sigmas):
+        if not np.all((xyz>=0)*(xyz<box_size)):
+            raise ValueError("xyz must be in range of zero to %d" %box_size)
+
+        if isinstance(sigmas, (float,int)):
+            sigmas = np.asarray([float(sigmas)] * len(xyz))
+        elif not len(xyz) == len(sigmas):
             raise TypeError('sigmas must have the same length as particle numbers')
-        if not len(xyz) == len(epsilons):
+
+        if isinstance(epsilons, (float,int)):
+            epsilons = np.asarray([float(epsilons)] * len(xyz))
+        elif not len(xyz) == len(epsilons):
             raise TypeError('epsilons must have the same length as particle numbers')
+
+        if isinstance(charges, (float,int)):
+            charges = np.asarray([float(charges)] * len(xyz))
+        elif not len(xyz) == len(charges):
+                raise TypeError('charges must have the same length as particle numbers')
 
         self.box_size = box_size
         self.epsilon_r = epsilon_r
@@ -34,6 +45,63 @@ class SystemConfiguration(object):
         self.epsilons = epsilons
         self.create_lj_mean_parameters()
         self._total_potential = TotalPotential(self)
+
+        @property
+        def xyz(self):
+            return self._xyz
+
+        @xyz.setter
+        def xyz(self, value):
+            xyz = np.asarray(value)
+            if not issubclass(xyz.dtype.type, np.float):
+                raise TypeError("values in xyz must be of type float")
+            if xyz.ndim != 2 or xyz.shape[0] < 2 or xyz.shape[1] != 3:
+                raise ValueError("xyz must be of shape=(n_particles, dim) with n_particles > 1 and dim = 3")
+            self._xyz = xyz
+
+        @property
+        def box_size(self):
+            return self._box_size
+
+        @box_size.setter
+        def box_size(self, value):
+            if not isinstance(value, (float, int)) or value <= 0.0:
+                raise ValueError("box_size must be a positive number or None")
+            self._box_size = float(value)
+
+        @property
+        def charges(self):
+            return self._charges
+
+        @charges.setter
+        def charges(self, value):
+            charges = np.asarray(value)
+            if not issubclass(charges.dtype.type, np.float):
+                raise TypeError("values of charges must be of type float")
+            if charges.ndim != 2 or charges.shape[1] != 1:
+                raise ValueError("charge must be of shape=(n_charges, dim) dim = 1")
+            charges = np.asarray(value)
+
+        @property
+        def sigmas(self):
+            return self._sigmas
+
+        @sigmas.setter
+        def sigmas(self, value):
+            if not np.all(value >= 0):
+                raise ValueError("sigmas must be positive float")
+
+        @property
+        def epsilons(self):
+            return
+
+        @epsilons.setter
+        def epsilons(self, value):
+            if not np.all(value >= 0):
+                raise ValueError("epsilons must be positive float")
+
+
+
 
 
 
