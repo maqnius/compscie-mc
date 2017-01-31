@@ -5,71 +5,142 @@ from .total_potential import *
 
 class SystemConfiguration(object):
     r"""
-    A class to save the system configuration parameters
 
-    Parameter:
-        epsilon_r   :   optional, float, default=1.0
-                        Permittivity in medium, default in vacuum
-        box_size    :   optional, float
-                        shape of box, boundaries
-    arithmetic mean for sigma and geometric mean for epsilon
-    arithmetic = (a+b)/2; geometric : sqrt(a*a)
-    Lorentz Berthelot Rule
-    lj_cutoff = 2.5 * sigma
+    Parameters
+    ----------
+    xyz : ndarray(n,3), float
+          position of n particles in x,y,z coordinates
+    sigmas : ndarray(n) or float value
+            sigma coefficient of lennard jones potential for each particle
+            if not array but float value, assigned to all particles
+            Default = 1.0 --> assigned to all particles
+    epsilons : ndarray(n) or float value
+                epsilon coefficient of lennard jones potential for each particle
+                if not array but float value, assigned to all particles
+                Default = 1.0 --> assigned to all particles
+    charges : ndarray(n) or f<loat value
+              charges coefficient of lennard jones potential for each particle
+              if not array but float value, assigned to all particles
+                Default = 0.0 --> assigned to all particles
+    box_size : float,
+                box_size for cubic simulation box, positive number
+                Default = 1.0
+    epsilon_r : float,
+                relative permittivity constant of system
+                Default = 1.0 --> for vacuum by definition
+
+               arithmetic mean for sigma and geometric mean for epsilon
+             arithmetic = (a+b)/2; geometric : sqrt(a*a)
+             Lorentz Berthelot Rule
+             lj_cutoff = 2.5 * sigma
     """
-    def __init__(self, box_size=1.0, epsilon_r=1.0):
-        self.box_size = box_size
-        self.epsilon_r = epsilon_r
-        self.xyz = np.ndarray(shape=(0,3),dtype=float)
-        self.charges = np.asarray([],dtype=float)
-        self.sigmas = np.asarray([],dtype=float)
-        self.epsilons = np.asarray([],dtype=float)
-        self._total_potential = TotalPotential(self)
 
-    def add_particles(self, xyz, charges, sigmas, epsilons):
-        r"""
-        adds the particles to the SystemConfiguration
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=1.0, epsilon_r=1.0):
 
-        :param xyz: array(n,3), float, positions of n-particles
-        :param charges: array(n,1), float, charges of the particles
-        :param sigmas: array(n,1), float, Lennard-Jones params
-        :param epsilons: array(n,1), float, Lennard-Jones params
-        :return: nil
+        if not np.all((xyz>=0)*(xyz<box_size)):
+            raise ValueError("xyz must be in range of zero to %d" %box_size)
 
-        """
-        # check if number of particles match in all params, raise error if not
-        if not len(xyz) == len(charges):
-            raise TypeError('charges must have the same length as particle numbers')
-        if not len(xyz) == len(sigmas):
+        if isinstance(sigmas, (float,int)):
+            sigmas = np.asarray([float(sigmas)] * len(xyz))
+        elif not len(xyz) == len(sigmas):
             raise TypeError('sigmas must have the same length as particle numbers')
-        if not len(xyz) == len(epsilons):
+
+        if isinstance(epsilons, (float,int)):
+            epsilons = np.asarray([float(epsilons)] * len(xyz))
+        elif not len(xyz) == len(epsilons):
             raise TypeError('epsilons must have the same length as particle numbers')
 
-        # append new particles configuration to existing configuration
-        self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-        self.charges = np.append(self.charges,charges)
-        self.sigmas = np.append(self.sigmas, sigmas)
-        self.epsilons = np.append(self.epsilons, epsilons)
+        if isinstance(charges, (float,int)):
+            charges = np.asarray([float(charges)] * len(xyz))
+        elif not len(xyz) == len(charges):
+                raise TypeError('charges must have the same length as particle numbers')
+
+        self.box_size = box_size
+        self.epsilon_r = epsilon_r
+        self.xyz = xyz
+        self.charges = charges
+        self.sigmas = sigmas
+        self.epsilons = epsilons
         self.create_lj_mean_parameters()
+        self._total_potential = TotalPotential(self)
 
-    def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
-        r"""
-        Add particles with same values for charge, sigma and epsilon to the system configuration
-        :param xyz: np.ndarray(n,3)
-        :param charge: float, Default = 0
-        :param sigma: float, Default = 0
-        :param epsilon: float, Default = 0
-        :return:
+        @property
+        def xyz(self):
+            return self._xyz
 
-        """
+        @xyz.setter
+        def xyz(self, value):
+            xyz = np.asarray(value)
+            if not issubclass(xyz.dtype.type, np.float):
+                raise TypeError("values in xyz must be of type float")
+            if xyz.ndim != 2 or xyz.shape[0] < 2 or xyz.shape[1] != 3:
+                raise ValueError("xyz must be of shape=(n_particles, dim) with n_particles > 1 and dim = 3")
+            self._xyz = xyz
 
-        # append new particles configuration to existing configuration
-        number_of_particles = len(xyz)
-        self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-        self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
-        self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
-        self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
-        self.create_lj_mean_parameters()
+        @property
+        def box_size(self):
+            return self._box_size
+
+        @box_size.setter
+        def box_size(self, value):
+            if not isinstance(value, (float, int)) or value <= 0.0:
+                raise ValueError("box_size must be a positive number or None")
+            self._box_size = float(value)
+
+        @property
+        def charges(self):
+            return self._charges
+
+        @charges.setter
+        def charges(self, value):
+            charges = np.asarray(value)
+            if not issubclass(charges.dtype.type, np.float):
+                raise TypeError("values of charges must be of type float")
+            if charges.ndim != 2 or charges.shape[1] != 1:
+                raise ValueError("charge must be of shape=(n_charges, dim) dim = 1")
+            charges = np.asarray(value)
+
+        @property
+        def sigmas(self):
+            return self._sigmas
+
+        @sigmas.setter
+        def sigmas(self, value):
+            if not np.all(value >= 0):
+                raise ValueError("sigmas must be positive float")
+
+        @property
+        def epsilons(self):
+            return
+
+        @epsilons.setter
+        def epsilons(self, value):
+            if not np.all(value >= 0):
+                raise ValueError("epsilons must be positive float")
+
+
+
+
+
+
+    # def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
+    #     r"""
+    #     Add particles with same values for charge, sigma and epsilon to the system configuration
+    #     :param xyz: np.ndarray(n,3)
+    #     :param charge: float, Default = 0
+    #     :param sigma: float, Default = 0
+    #     :param epsilon: float, Default = 0
+    #     :return:
+    #
+    #     """
+    #
+    #     # append new particles configuration to existing configuration
+    #     number_of_particles = len(xyz)
+    #     self.xyz = np.concatenate((self.xyz, xyz), axis=0)
+    #     self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
+    #     self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
+    #     self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
+    #     self.create_lj_mean_parameters()
 
     def potential(self,xyz_trial):
         # TODO only stub
