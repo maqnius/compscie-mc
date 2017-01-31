@@ -24,6 +24,7 @@ class SystemConfiguration(object):
         self.charges = np.asarray([],dtype=float)
         self.sigmas = np.asarray([],dtype=float)
         self.epsilons = np.asarray([],dtype=float)
+        self._total_potential = TotalPotential(self)
 
     def add_particles(self, xyz, charges, sigmas, epsilons):
         r"""
@@ -72,8 +73,7 @@ class SystemConfiguration(object):
 
     def potential(self,xyz_trial):
         # TODO only stub
-        total_potential = TotalPotential(self)
-        return total_potential.potential(xyz_trial)
+        return self._total_potential.potential(xyz_trial)
 
     def number_of_particle_types(self):
         return len(self.xyz)
@@ -90,15 +90,20 @@ class SystemConfiguration(object):
 
 class Sampler(object):
     r"""A sampler class for hamiltonian objects."""
-    def _update(self, system_configuration, pot, step, beta):
-        xyz_trial = (system_configuration.xyz + 2.0 * system_configuration.box_size * step
-                     * (np.random.rand(*system_configuration.xyz.shape)- 0.5))%system_configuration.box_size
-        pot_trial = system_configuration.potential(xyz_trial)
+    def __init__(self, system_configuration):
+        if len(system_configuration.xyz) == 0:
+            raise ValueError("no particle in system configuration")
+        self.system_configuration = system_configuration
+
+    def _update(self, xyz, pot, step, beta):
+        xyz_trial = (xyz + 2.0 * self.system_configuration.box_size * step
+                     * (np.random.rand(*xyz.shape)- 0.5))%self.system_configuration.box_size
+        pot_trial = self.system_configuration.potential(xyz_trial)
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial
-        return system_configuration.xyz, pot
+        return xyz, pot
 
-    def metropolis(self, system_configuration, iteration_number, step=0.1, beta=1.0):
+    def metropolis(self, iteration_number, step=0.1, beta=1.0):
         r"""
         Perform a Metropolis MC sampling procedure.
 
@@ -127,27 +132,23 @@ class Sampler(object):
         if not isinstance(iteration_number,int) or iteration_number <= 0:
             raise ValueError("To sample you need at least one iteration step...\n"
                              "iteration_numer has to be a positive integer")
-        if len(system_configuration.xyz) == 0:
-            raise ValueError("no particle in system configuration")
         if not isinstance(step,(float,int)) or step <= 0:
             raise ValueError("stepsize has to be a postive number")
         if not isinstance(beta,(float,int)) or beta <= 0:
             raise ValueError("beta has to be a postive number")
 
     #   create copy of instance and work with copy, so initial configuration is unchanged
-        system_configuration_tmp = copy.deepcopy(system_configuration)
-        xyz_traj = [system_configuration_tmp.xyz]
-        pot_traj = [system_configuration_tmp.potential(system_configuration_tmp.xyz)]
+        xyz_traj = [self.system_configuration.xyz]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
 
     #   perform metropolis
         for i in range(iteration_number):
             xyz, pot = self._update(
-                system_configuration_tmp
+                xyz_traj[-1]
                 , pot_traj[-1],
                 step=step, beta=beta)
             xyz_traj.append(xyz)
             pot_traj.append(pot)
-            system_configuration_tmp.xyz[:] = xyz_traj[-1]
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
     # TODO

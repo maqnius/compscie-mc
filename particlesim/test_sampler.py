@@ -22,8 +22,33 @@ import pytest
 def test_all_sampled_particles_are_inside_box():
     n_particle = 100
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(system_configuration,iteration_number=10000)
+    traj, pot = sampler.metropolis(iteration_number=10000)
     assert np.all((traj<system_configuration.box_size)*(traj >= 0))
+
+def test_sampler_no_particles_in_system():
+    # might fail after potential function is implemented
+    number_of_particles = 0
+    with pytest.raises(ValueError):
+        sampler, system_configuration = create_sampler(number_of_particles)
+        sampler.metropolis(iteration_number=2)
+
+def test_sampler_trajectory():
+    # might fail after potential function is implemented
+    number_of_particles = 5
+    iteration_number = 3
+    sampler, system_configuration = create_sampler(number_of_particles)
+    traj, pot = sampler.metropolis(iteration_number)
+    assert np.any(np.not_equal(traj[0], traj[1]))
+    assert len(traj) == iteration_number + 1
+
+def test_sampler_negative_iteration_number():
+    # might fail after potential function is implemented
+    number_of_particles = 3
+    sampler, system_configuration = create_sampler(number_of_particles)
+    with pytest.raises(ValueError):
+        sampler.metropolis(iteration_number=-1)
+    with pytest.raises(ValueError):
+        sampler.metropolis(iteration_number=1.5)
 
 # def test_that_sampler_returns_maximum_around_lj_induced_value():
 #     sampler, system_configuration = create_sampler(4)
@@ -37,7 +62,7 @@ def test_all_sampled_particles_are_inside_box():
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(system_configuration=system_configuration, iteration_number=50000)
+    traj, pot = sampler.metropolis(iteration_number=50000)
     r_right = 0.8
     r_left = 0
     for i in range(1,n_particle):
