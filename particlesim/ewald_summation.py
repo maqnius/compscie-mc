@@ -92,6 +92,24 @@ def longrange_energy(system_conf, shape, sigma, K):
     return longrange_and_self_potential
 
 def calc_k_vectors_old(K):
+    """
+    Old naive implementation.
+
+    Calculates the k vectors of our lattice until a cutoff Value K.
+
+    Parameters
+    ----------
+
+    K : int
+        Cutoff value for the absolute value of the k-vectors
+
+
+    Returns
+    -------
+
+    k_vectors : ndarray
+        Array of k vectors that have an absolute value below cutoff K
+    """
     k_vectors = []
 
     # Create all k-vectors with absolute value <= K
@@ -109,3 +127,32 @@ def calc_k_vectors_old(K):
 
 def calc_k_vectors(K):
     return k_cython.calc_k_vectors(K)
+
+def short_range(system_conf, shape, sigma, K):
+    """
+        Calculates the longrange potential and the self interaction potential
+        of a given particle distribution using Ewald Summation.
+
+        Parameters
+        ----------
+
+        system_conf : np.array
+            Array with particle positions and charges
+
+        shape : int or float array
+            Dimensions of the supercell
+
+        sigma : float
+            Standard deviation of gaussian distribution
+
+        K : int
+            Cutoff parameter in reciprocal space
+
+
+        Returns
+        -------
+
+        float
+            longrange and selfinteraction potential
+        """
+    pass

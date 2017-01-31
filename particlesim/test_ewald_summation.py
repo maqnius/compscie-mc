@@ -20,15 +20,22 @@ import numpy.testing as testing
 import pyximport; pyximport.install()
 from .ewald_summation import longrange_energy
 from .ewald_summation import calc_k_vectors_old
-from .ewald_summation import calc_k_vectors
+from .ewald_summation import short_range
 import particlesim.k_cython as k_cython
 import time
 
-def test_energy_is_float():
+def test_longrange_energy_is_float():
     sigma, k_cutoff = calc_sigma_and_k_cutoff()
     shape = np.array([100, 100, 10])
     test_config = create_test_system(100, shape, 10)
     energy = longrange_energy(test_config, shape, sigma, k_cutoff)
+    assert isinstance(energy, float)
+
+def not_yet_test_shortrange_energy_is_float():
+    sigma, k_cutoff = calc_sigma_and_k_cutoff()
+    shape = np.array([100, 100, 10])
+    test_config = create_test_system(100, shape, 10)
+    energy = short_range(test_config, shape, sigma, k_cutoff)
     assert isinstance(energy, float)
 
 '''
