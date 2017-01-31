@@ -34,13 +34,13 @@ import pytest
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(system_configuration=system_configuration, iteration_number=10000)
-    r_right = 0
-    r_left = 2
+    traj, pot = sampler.metropolis(system_configuration=system_configuration, iteration_number=100000)
+    r_right = 0.8
+    r_left = 0
     for i in range(1,n_particle):
         for j in range(i):
             distance = np.linalg.norm(traj[1000:, j, :] - traj[1000:, i, :], axis = -1)
             hist, edges = np.histogram(distance, bins=50)
             indices = np.where(np.logical_and(edges[1:]>=r_left, edges[1:]<r_right))
             cumulated_value = np.sum(hist[indices])/np.sum(hist)
-            assert cumulated_value >= 0.8, "it is not certain that the global optimum is reached"
+            assert cumulated_value >= 0.5, "it is not certain that the global optimum is reached"

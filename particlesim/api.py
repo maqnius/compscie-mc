@@ -1,17 +1,6 @@
 import numpy as np
 import copy
-
-
-class TotalPotential(object):
-    # dummy Klasse fuer totales Potential, später ersetzen...
-    def __init__(self, system_configuration):
-        self.system_configuration = system_configuration
-
-    def potential(self,xyz_trial):
-        # TODO only stub
-        if np.all(xyz_trial>=1.0):
-            return np.inf
-        return 0
+from .total_potential import *
 
 
 class SystemConfiguration(object):
@@ -103,7 +92,7 @@ class Sampler(object):
     r"""A sampler class for hamiltonian objects."""
 
     def _update(self, system_configuration, pot, step, beta):
-        xyz_trial = system_configuration.xyz + 2.0 * step * (np.random.rand(*system_configuration.xyz.shape) - 0.5)
+        xyz_trial = (system_configuration.xyz + 2.0 * step * (np.random.rand(*system_configuration.xyz.shape) - 0.5))%system_configuration.box_size
         pot_trial = system_configuration.potential(xyz_trial)
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial

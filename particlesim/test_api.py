@@ -87,3 +87,5 @@ def test_create_lennard_jones_sigmas():
     system_configuration.add_particles(particle_positions, charges,  sigmas, epsilons)
     np.testing.assert_array_equal(np.append(sigmas, sigmas), system_configuration.lj_sigma_matrix.diagonal())
 
+def test_only_input_positions_within_box_are_excepted():
+    pass
