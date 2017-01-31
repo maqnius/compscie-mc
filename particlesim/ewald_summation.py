@@ -85,6 +85,7 @@ def longrange_energy(system_conf, shape, sigma, K):
 
     print("longrange_potential", longrange_potential)
     print("self_interaction_potential", self_interaction_potential)
+
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 
