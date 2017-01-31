@@ -1,3 +1,20 @@
+#   particlesim
+#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu, Thomas Hadler, Hanna Wulkow
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 import numpy as np
 cimport numpy as np
 from libc.math cimport sqrt
@@ -28,9 +45,9 @@ def calc_k_vectors(int K):
 
     # Create all k-vectors with absolute value <= K
     for a in range(-K, K + 1):
-        b_limit = int(np.sqrt(K ** 2 - a ** 2))
+        b_limit = int((K ** 2 - a ** 2)**.5)
         for b in range(-b_limit, b_limit + 1):
-            c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
+            c_limit = int((K ** 2 - a ** 2 - b ** 2)**.5)
             for c in range(-c_limit, c_limit + 1):
                 k_vectors.append([a, b, c])
 
