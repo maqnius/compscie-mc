@@ -5,18 +5,36 @@ from .total_potential import *
 
 class SystemConfiguration(object):
     r"""
-    A class to save the system configuration parameters
 
-    Parameter:
-        epsilon_r   :   optional, float, default=1.0
-                        Permittivity in medium, default in vacuum
-        box_size    :   optional, float
-                        shape of box, boundaries
-    arithmetic mean for sigma and geometric mean for epsilon
-    arithmetic = (a+b)/2; geometric : sqrt(a*a)
-    Lorentz Berthelot Rule
-    lj_cutoff = 2.5 * sigma
+    Parameters
+    ----------
+    xyz : ndarray(n,3), float
+          position of n particles in x,y,z coordinates
+    sigmas : ndarray(n) or float value
+            sigma coefficient of lennard jones potential for each particle
+            if not array but float value, assigned to all particles
+            Default = 1.0 --> assigned to all particles
+    epsilons : ndarray(n) or float value
+                epsilon coefficient of lennard jones potential for each particle
+                if not array but float value, assigned to all particles
+                Default = 1.0 --> assigned to all particles
+    charges : ndarray(n) or f<loat value
+              charges coefficient of lennard jones potential for each particle
+              if not array but float value, assigned to all particles
+                Default = 0.0 --> assigned to all particles
+    box_size : float,
+                box_size for cubic simulation box, positive number
+                Default = 1.0
+    epsilon_r : float,
+                relative permittivity constant of system
+                Default = 1.0 --> for vacuum by definition
+
+               arithmetic mean for sigma and geometric mean for epsilon
+             arithmetic = (a+b)/2; geometric : sqrt(a*a)
+             Lorentz Berthelot Rule
+             lj_cutoff = 2.5 * sigma
     """
+
     def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=1.0, epsilon_r=1.0):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
