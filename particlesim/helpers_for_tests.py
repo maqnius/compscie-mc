@@ -40,7 +40,8 @@ def create_sampler(number_of_particles):
     :return: sampler, system_configuration
     """
     system_configuration = SystemConfiguration()
-    sampler = Sampler()
     add_basic_random_particle_group_to_system_config(system_configuration,
                                                      number_of_particles)
+    sampler = Sampler(system_configuration)
+
     return sampler, system_configuration

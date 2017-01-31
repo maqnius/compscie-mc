@@ -6,7 +6,7 @@ from .helpers_for_tests import *
 def test_system_configuration_potential_value():
     # assert systemconfiguration.potential returns value type float
     system_configuration = SystemConfiguration()
-    potential = system_configuration.potential()
+    potential = system_configuration.potential(system_configuration.xyz)
     assert isinstance(potential, (float, int))
 
 def test_add_particles():
@@ -36,30 +36,6 @@ def test_add_particles_not_matching_input():
                                            sigmas=sigmas,
                                            epsilons=sigmas)
 
-def test_sampler_negative_iteration_number():
-    # might fail after potential function is implemented
-    number_of_particles = 3
-    sampler, system_configuration = create_sampler(number_of_particles)
-    with pytest.raises(ValueError):
-        sampler.metropolis(system_configuration, iteration_number=-1)
-    with pytest.raises(ValueError):
-        sampler.metropolis(system_configuration,iteration_number=1.5)
-
-def test_sampler_trajectory():
-    # might fail after potential function is implemented
-    number_of_particles = 5
-    iteration_number = 3
-    sampler, system_configuration = create_sampler(number_of_particles)
-    traj, pot = sampler.metropolis(system_configuration, iteration_number)
-    assert np.any(np.not_equal(traj[0],traj[1]))
-    assert len(traj) == iteration_number + 1
-
-def test_sampler_no_particles_in_system():
-    # might fail after potential function is implemented
-    number_of_particles = 0
-    sampler, system_configuration = create_sampler(number_of_particles)
-    with pytest.raises(ValueError):
-        sampler.metropolis(system_configuration,iteration_number=2)
 
 def test_create_lennard_jones_epsilons():
     system_configuration = SystemConfiguration()
@@ -87,3 +63,5 @@ def test_create_lennard_jones_sigmas():
     system_configuration.add_particles(particle_positions, charges,  sigmas, epsilons)
     np.testing.assert_array_equal(np.append(sigmas, sigmas), system_configuration.lj_sigma_matrix.diagonal())
 
+def test_only_input_positions_within_box_are_excepted():
+    pass
