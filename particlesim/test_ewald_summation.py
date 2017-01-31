@@ -16,8 +16,10 @@
 
 
 import numpy as np
+import numpy.testing as testing
 from .ewald_summation import longrange_energy
 from .ewald_summation import calc_k_vectors_old
+from .ewald_summation import calc_k_vectors
 import particlesim.k_cython as k_cython
 import time
 
@@ -83,22 +85,20 @@ def create_test_system(N, shape, max_charge):
 
     return test_config
 
-def speed_comparison():
+def test_k_vectors():
     """
     Speed test of calculation
     """
-    K = 200
+    K = 10
 
     timestamp_start = time.time()
-    k_cython.calc_k_vectors(K)
+    new = calc_k_vectors(K)
     timestamp_stop = time.time()
     print(-timestamp_start + timestamp_stop)
 
     timestamp_start = time.time()
-    calc_k_vectors_old(K)
+    old = calc_k_vectors_old(K)
     timestamp_stop = time.time()
     print(-timestamp_start+timestamp_stop)
 
-
-
-speed_comparison()
+    testing.assert_array_equal(old, new)
