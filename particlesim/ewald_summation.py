@@ -57,7 +57,6 @@ def longrange_energy(system_conf, shape, sigma, K):
 
     k_vectors = calc_k_vectors(K)
 
-    k_vectors = np.array(k_vectors)
     # Multiply with 2*pi/L factor in each direction
     k_vectors = np.multiply(k_vectors, 2*np.pi/shape)
 
@@ -104,7 +103,7 @@ def calc_k_vectors_old(K):
     # Remove k = [0, 0, 0]
     k_vectors.remove([0, 0, 0])
 
-    return k_vectors
+    return np.array(k_vectors)
 
 def calc_k_vectors(K):
     return k_cython.calc_k_vectors(K)

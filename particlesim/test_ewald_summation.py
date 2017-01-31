@@ -89,16 +89,23 @@ def test_k_vectors():
     """
     Speed test of calculation
     """
-    K = 10
+    K = 100
 
     timestamp_start = time.time()
-    new = calc_k_vectors(K)
+    new = k_cython.calc_k_vectors_old_c(K)
     timestamp_stop = time.time()
-    print(-timestamp_start + timestamp_stop)
+    print("New Method took %s seconds." %(-timestamp_start + timestamp_stop,))
+
+    timestamp_start = time.time()
+    test = k_cython.calc_k_vectors_test(K)
+    timestamp_stop = time.time()
+    print("Test Method took %s seconds." %(-timestamp_start + timestamp_stop,))
 
     timestamp_start = time.time()
     old = calc_k_vectors_old(K)
     timestamp_stop = time.time()
-    print(-timestamp_start+timestamp_stop)
+    print("Old Method took %s seconds." %(-timestamp_start + timestamp_stop,))
 
-    testing.assert_array_equal(old, new)
+    print("Length old : %s" % old.shape[0])
+    print("Length test : %s" % test.shape[0])
+    testing.assert_array_equal(old, test)
