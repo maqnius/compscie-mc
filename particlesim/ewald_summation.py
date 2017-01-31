@@ -16,7 +16,8 @@
 
 import numpy as np
 import scipy.constants
-import pyximport; pyximport.install()
+import pyximport; pyximport.install(setup_args={"include_dirs":np.get_include()},
+                  reload_support=True)
 import particlesim.k_cython as k_cython
 
 

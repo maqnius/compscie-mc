@@ -17,6 +17,7 @@
 
 import numpy as np
 import numpy.testing as testing
+import pyximport; pyximport.install()
 from .ewald_summation import longrange_energy
 from .ewald_summation import calc_k_vectors_old
 from .ewald_summation import calc_k_vectors
@@ -92,7 +93,7 @@ def test_k_vectors():
     K = 100
 
     timestamp_start = time.time()
-    new = k_cython.calc_k_vectors_old_c(K)
+    new = k_cython.calc_k_vectors(K)
     timestamp_stop = time.time()
     print("New Method took %s seconds." %(-timestamp_start + timestamp_stop,))
 
@@ -106,6 +107,4 @@ def test_k_vectors():
     timestamp_stop = time.time()
     print("Old Method took %s seconds." %(-timestamp_start + timestamp_stop,))
 
-    print("Length old : %s" % old.shape[0])
-    print("Length test : %s" % test.shape[0])
-    testing.assert_array_equal(old, test)
+    testing.assert_array_equal(old, new)

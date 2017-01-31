@@ -1,31 +1,11 @@
 import numpy as np
+cimport numpy as np
+from libc.math cimport sqrt
+
+DTYPE = np.int
+ctypedef np.int_t DTYPE_t
 
 def calc_k_vectors(int K):
-
-
-    cdef int b_limit, c_limit
-
-
-    k_vectors_part = []
-    # Create all k-vectors with absolute value <= K
-    for a in range(0, K + 1):
-        b_limit = int(np.sqrt(K ** 2 - a ** 2))
-        for b in range(0, b_limit + 1):
-            c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
-            for c in range(0, c_limit + 1):
-                k_vectors_part.append([a, b, c])
-    k_vectors_part.pop(0)
-    k_vectors_part = np.array(k_vectors_part)
-
-    permutations = [[-1, -1, -1], [-1, -1, 1], [-1, 1, 1], [1, -1, -1], [1, 1, -1], [1, -1, 1], [-1, 1, -1]]
-
-    k_vectors = k_vectors_part
-    for permutation in permutations:
-        k_vectors = np.concatenate((k_vectors_part, np.multiply(k_vectors_part, permutation)))
-
-    return np.array(k_vectors)
-
-def calc_k_vectors_old_c(int K):
     cdef int b_limit, c_limit
 
     k_vectors = []
@@ -44,16 +24,16 @@ def calc_k_vectors_old_c(int K):
     return np.array(k_vectors)
 
 def calc_k_vectors_test(int K):
-    cdef int b_limit, c_limit
+    cdef int b_limit, c_limit, a, b, c
 
-    max_number = int(4.2 * K**3)
-    k_vectors = np.empty((max_number, 3))
+    cdef int max_number = int(4.2 * K**3)
+    cdef np.ndarray[DTYPE_t, ndim=2] k_vectors = np.empty((max_number, 3), dtype=DTYPE)
     # Create all k-vectors with absolute value <= K
-    i = 0
+    cdef int i = 0
     for a in range(-K, K + 1):
-        b_limit = int(np.sqrt(K ** 2 - a ** 2))
+        b_limit = int(sqrt(K ** 2 - a ** 2))
         for b in range(-b_limit, b_limit + 1):
-            c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
+            c_limit = int(sqrt(K ** 2 - a ** 2 - b ** 2))
             for c in range(-c_limit, c_limit + 1):
                 k_vectors[i] = [a, b, c]
                 i += 1
