@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 
 
 class TotalPotential(object):
@@ -6,8 +7,10 @@ class TotalPotential(object):
     def __init__(self, system_configuration):
         self.system_configuration = system_configuration
 
-    def potential(self):
+    def potential(self,xyz_trial):
         # TODO only stub
+        if np.all(xyz_trial>=1.0):
+            return np.inf
         return 0
 
 
@@ -78,10 +81,10 @@ class SystemConfiguration(object):
         self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
         self.create_lj_mean_parameters()
 
-    def potential(self):
+    def potential(self,xyz_trial):
         # TODO only stub
         total_potential = TotalPotential(self)
-        return total_potential.potential()
+        return total_potential.potential(xyz_trial)
 
     def number_of_particle_types(self):
         return len(self.xyz)
@@ -97,10 +100,101 @@ class SystemConfiguration(object):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
 
 class Sampler(object):
+    r"""A sampler class for hamiltonian objects."""
 
-    def _update(self, system_configuration, stepsize):
-        xyz_trial = system_configuration.xyz + 2.0* stepsize * (np.random.rand(*system_configuration.xyz.shape) - 0.5)
-        potential_trial = system_configuration.potential(xyz_trial)
+    def _update(self, system_configuration, pot, step, beta):
+        xyz_trial = system_configuration.xyz + 2.0 * step * (np.random.rand(*system_configuration.xyz.shape) - 0.5)
+        pot_trial = system_configuration.potential(xyz_trial)
+        if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
+            return xyz_trial, pot_trial
+        return system_configuration.xyz, pot
 
-    def markov_mc(self, iteration_number, stepsize, system_configuration):
-        pass
+    def metropolis(self, system_configuration, iteration_number, step=0.1, beta=1.0):
+        r"""
+        Perform a Metropolis MC sampling procedure.
+
+        Parameters
+        ----------
+        system_configuration : object
+            Encapsulates the system's positions and params, box_size and
+            a function to compute potential energies.
+        iteration_number : int
+            Number of Metropolis update steps.
+        step : float, optional, default=0.1
+            Maximal size of an update move in each coordinate.
+        beta : float, optional, default=1.0
+            Inverse temperature factor (1/kT).
+
+        Returns
+        -------
+        numpy.ndarray of float
+            Configuration trajectory.
+        numpy.ndarray of float
+            Total interaction and external potential trajectory.
+
+        """
+
+    #   check input data
+        if not isinstance(iteration_number,int) or iteration_number <= 0:
+            raise ValueError("To sample you need at least one iteration step...\n"
+                             "iteration_numer has to be a positive integer")
+        if len(system_configuration.xyz) == 0:
+            raise ValueError("no particle in system configuration")
+        if not isinstance(step,(float,int)) or step <= 0:
+            raise ValueError("stepsize has to be a postive number")
+        if not isinstance(beta,(float,int)) or beta <= 0:
+            raise ValueError("beta has to be a postive number")
+
+    #   create copy of instance and work with copy, so initial configuration is unchanged
+        system_configuration_tmp = copy.deepcopy(system_configuration)
+        xyz_traj = [system_configuration_tmp.xyz]
+        pot_traj = [system_configuration_tmp.potential(system_configuration_tmp.xyz)]
+
+    #   perform metropolis
+        for i in range(iteration_number):
+            xyz, pot = self._update(
+                system_configuration_tmp
+                , pot_traj[-1],
+                step=step, beta=beta)
+            xyz_traj.append(xyz)
+            pot_traj.append(pot)
+            system_configuration_tmp.xyz[:] = xyz_traj[-1]
+        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+
+    # TODO
+    def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
+        r"""
+        Perform a Metropolis-based simulated annealing procedure.
+
+        Parameters
+        ----------
+        hamiltonian : object
+            Encapsulates the system's degrees of freedom
+            and interactions.
+        size : int
+            Number of Metropolis update steps.
+        step : float, optional, default=0.1
+            Maximal size of an update move in each coordinate.
+        beta : float, optional, default=1.0
+            Initial inverse temperature factor (1/kT).
+
+        Returns
+        -------
+        numpy.ndarray of float
+            Configuration trajectory.
+        numpy.ndarray of float
+            Total interaction and external potential trajectory.
+
+        """
+        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
+        xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
+        pot_traj = [hamiltonian.potential()]
+        for i in range(size):
+            xyz, pot = self._update(
+                hamiltonian,
+                xyz_traj[-1], pot_traj[-1],
+                step=step, beta=beta_values[i])
+            xyz_traj.append(xyz)
+            pot_traj.append(pot)
+        hamiltonian.xyz[:] = xyz_traj[-1]
+        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)

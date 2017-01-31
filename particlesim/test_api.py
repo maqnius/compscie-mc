@@ -1,16 +1,7 @@
 import numpy as np
 import pytest
 from .api import *
-
-#
-# def test_sampler_mmc_returns_trajectory():
-#     # assert sampler.mmc returns an instance of trajectory
-#     sampler = Sampler()
-#     iteration_number = 1000
-#     system_configuration = SystemConfiguration() # kann man mock für Klasse definieren
-#     mmc_result = sampler.marcov_mc(iteration_number, system_configuration)
-#     assert mmc_result.isinstance(Trajectory)
-
+from .helpers_for_tests import *
 
 def test_system_configuration_potential_value():
     # assert systemconfiguration.potential returns value type float
@@ -18,19 +9,10 @@ def test_system_configuration_potential_value():
     potential = system_configuration.potential()
     assert isinstance(potential, (float, int))
 
-
-def add_basic_random_particle_group_to_system_config(system_configuration):
-    number_of_particles = 100
-    particle_positions = np.random.rand(number_of_particles,3)
-    charge = [1.] * number_of_particles
-    sigma = [1.]*50 + [1.5] * 50
-    system_configuration.add_particles(xyz=particle_positions, charges=charge, sigmas=sigma, epsilons=sigma)
-
-
 def test_add_particles():
     system_configuration = SystemConfiguration()
-    add_basic_random_particle_group_to_system_config(system_configuration)
-    add_basic_random_particle_group_to_system_config(system_configuration)
+    add_basic_random_particle_group_to_system_config(system_configuration, 100)
+    add_basic_random_particle_group_to_system_config(system_configuration, 100)
     assert 200 == system_configuration.number_of_particle_types()
 
 def test_add_particles_of_same_type():
@@ -46,10 +28,38 @@ def test_add_particles_not_matching_input():
     system_configuration = SystemConfiguration()
     number_of_particles = 100
     particle_positions = np.random.rand(number_of_particles,3)
-    charge = [1] * 10
-    sigma = [1.]*50 + [1.5] * 50
+    charges = [1] * 10
+    sigmas = [1.]*50 + [1.5] * 50
     with pytest.raises(TypeError):
-        system_configuration.add_particles(xyz=particle_positions, charges=charge, sigmas=sigma, epsilons=sigma)
+        system_configuration.add_particles(xyz=particle_positions,
+                                           charges=charges,
+                                           sigmas=sigmas,
+                                           epsilons=sigmas)
+
+def test_sampler_negative_iteration_number():
+    # might fail after potential function is implemented
+    number_of_particles = 3
+    sampler, system_configuration = create_sampler(number_of_particles)
+    with pytest.raises(ValueError):
+        sampler.metropolis(system_configuration, iteration_number=-1)
+    with pytest.raises(ValueError):
+        sampler.metropolis(system_configuration,iteration_number=1.5)
+
+def test_sampler_trajectory():
+    # might fail after potential function is implemented
+    number_of_particles = 5
+    iteration_number = 3
+    sampler, system_configuration = create_sampler(number_of_particles)
+    traj, pot = sampler.metropolis(system_configuration, iteration_number)
+    assert np.any(np.not_equal(traj[0],traj[1]))
+    assert len(traj) == iteration_number + 1
+
+def test_sampler_no_particles_in_system():
+    # might fail after potential function is implemented
+    number_of_particles = 0
+    sampler, system_configuration = create_sampler(number_of_particles)
+    with pytest.raises(ValueError):
+        sampler.metropolis(system_configuration,iteration_number=2)
 
 def test_create_lennard_jones_epsilons():
     system_configuration = SystemConfiguration()
@@ -76,3 +86,4 @@ def test_create_lennard_jones_sigmas():
 
     system_configuration.add_particles(particle_positions, charges,  sigmas, epsilons)
     np.testing.assert_array_equal(np.append(sigmas, sigmas), system_configuration.lj_sigma_matrix.diagonal())
+
