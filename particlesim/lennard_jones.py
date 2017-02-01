@@ -63,7 +63,6 @@ def interaction_potential(xyz, sigma, epsilon):
     epslist = epsilon
 
     nlist = NeighbouringCellLinkedLists(xyz, radius=1.2, box_side_length=2)#box_side_length)
-    nlist.create_neighbourlist()
     [n,m] = xyz.shape
 
     lj_interaction = 0
