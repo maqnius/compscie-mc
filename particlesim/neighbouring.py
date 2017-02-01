@@ -100,7 +100,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
         p           = pos[particle_id]
         cell        = (p/r).astype("int")
-        cell_dir    = np.rint(p%r).astype("int"); cell_dir[cell_dir==0]=-1 # setting direction to nearest cell in xyz direction
+        cell_dir    = np.rint(p%r/r).astype("int"); cell_dir[cell_dir==0]=-1 # setting direction to nearest cell in xyz direction
         cells       = np.array([(cell+[x,y,z])%nr_cells for x in [cell_dir[0],0] for y in [cell_dir[1],0] for z in [cell_dir[2],0]])
         for cell_idx in cells:
             idx_x, idx_y, idx_z = cell_idx
