@@ -15,6 +15,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import scipy.constants as constants
 from neighbouring import NeighbouringCellLinkedLists
 
 
@@ -38,7 +39,7 @@ def lj_potential(r, sigma=1.0, epsilon=1.0):
 
     """
     q = (sigma / r)**6
-    return 4.0 * (epsilon * (q * (q - 1.0)))
+    return 4.0 * (epsilon * (q * (q - 1.0))) * 1/constants.eV
 
 def interaction_potential(xyz, sigma, epsilon):
     r"""
@@ -92,7 +93,7 @@ def interaction_potential(xyz, sigma, epsilon):
 
             lj_interaction_tmp += lj_potential(r, sigma=sigma, epsilon=epsilon)
 
-    lj_interaction += lj_interaction_tmp
+        lj_interaction += lj_interaction_tmp
     return lj_interaction
 
 def external_potential(xyz, box_length=None):
