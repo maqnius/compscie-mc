@@ -14,6 +14,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
+from .lennard_jones import *
 class TotalPotential(object):
     r"""
     This class is initialized when a system_configuration is created. All calculations that are independent
@@ -26,5 +27,6 @@ class TotalPotential(object):
         # #initialize the neighbouring datastructur. When there is a position update,
         #  just update the existing instance.
     def potential(self,xyz_trial):
+        return interaction_potential(xyz_trial, self.system_configuration.sigmas, self.system_configuration.epsilons)
         return 0
 
