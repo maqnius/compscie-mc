@@ -54,19 +54,11 @@ class NeighbouringPrimitiveLists(Neighbouring):
 
     # public methods
     def create_neighbourlist(self):
-<<<<<<< HEAD
-        n, r, pos = self.n, self.r, self.particle_positions
-        nlist = [[] for i in xrange(n)]
-        for i in xrange(n):
-            for j in xrange(n):
-                if np.linalg.norm(pos[i] - pos[j]) >= r or i == j: continue
-=======
         n, r, pos   = self.n, self.r, self.particle_positions
         nlist       = [[] for i in range(n)]
         for i in range(n):
             for j in range(n):
                 if np.linalg.norm(pos[i]-pos[j])>=r or i==j: continue # Need to take care of periodic boundary conditions
->>>>>>> 730ff4600fdaf9a05c1df7d34720b9d255c865aa
                 nlist[i].append(j)
         self._neighbourlist = nlist
 
@@ -83,21 +75,9 @@ class NeighbouringCellLinkedLists(Neighbouring):
     # private methods
 
     # public methods
-<<<<<<< HEAD
-    def create_neighbourlist(self):  # in O(self.n)
-        n, r, pos = self.n, self.r, self.particle_positions
-        nr_cells = int(self.box_side_length / r + 0.5)
-        cell_linked_list = [[[[] for i in xrange(nr_cells)] for j in xrange(nr_cells)] for k in xrange(nr_cells)]
-        print "cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[1])
-        for i in xrange(n):
-            x, y, z = (pos[i] / r).astype("int")
-            print "i:", i, ", xyz: ", x, y, z, ", pos[i]:", pos[i]
-            cell_linked_list[x][y][z].append(i)
-            # cell_linked_list[x][y][z].append(pos[i]) # if you want the positions instead of indices
-=======
     def create_neighbourlist(self): # in O(self.n)
         n, r, pos = self.n, self.r, self.particle_positions
-        nr_cells = int(self.box_side_length/r + 0.5)
+        nr_cells = int(self.box_side_length/r + 1)
         if nr_cells == 0:
             nr_cells = 1
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
@@ -106,7 +86,6 @@ class NeighbouringCellLinkedLists(Neighbouring):
             x, y, z = (pos[i]/r).astype(int) # // ist ganzzahlige division (ohne rest)
             print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
             cell_linked_list[x][y][z].append(i) # we need only indices
->>>>>>> 730ff4600fdaf9a05c1df7d34720b9d255c865aa
         self._neighbourlist = cell_linked_list
 
     def get_particles_within_radius(self, particle_id):
@@ -115,19 +94,12 @@ class NeighbouringCellLinkedLists(Neighbouring):
         nr_cells = len(cell_ll)
         ret = []
 
-<<<<<<< HEAD
         p = pos[particle_id]
         cell = (p / r).astype("int")
         cell_dir = np.rint((p % r)).astype("int");
         cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
         cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in
                           [cell_dir[2], 0]])
-=======
-        p           = pos[particle_id]
-        cell        = (p/r).astype("int")
-        cell_dir    = np.rint(p%r/r).astype("int"); cell_dir[cell_dir==0]=-1 # setting direction to nearest cell in xyz direction
-        cells       = np.array([(cell+[x,y,z])%nr_cells for x in [cell_dir[0],0] for y in [cell_dir[1],0] for z in [cell_dir[2],0]])
->>>>>>> 730ff4600fdaf9a05c1df7d34720b9d255c865aa
         for cell_idx in cells:
             idx_x, idx_y, idx_z = cell_idx
             cell_list = cell_ll[idx_x][idx_y][idx_z]
@@ -143,13 +115,8 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
 if __name__ == "__main__":
     box_side_length = float(2.4)
-<<<<<<< HEAD
-    particle_pos = (np.arange(25 * 3).reshape(25, 3) + np.arange(25 * 3).reshape(25, 3) / 10.0) % box_side_length
-    print particle_pos
-=======
     particle_pos = (np.arange(25*3).reshape(25,3) + np.arange(25*3).reshape(25,3)/10.0)%box_side_length
     print (particle_pos)
->>>>>>> 730ff4600fdaf9a05c1df7d34720b9d255c865aa
 
     # nlist = NeighbouringPrimitiveLists(particle_pos, radius=1.2)
     nlist = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_side_length=box_side_length)
@@ -159,23 +126,5 @@ if __name__ == "__main__":
     print ("indices: ", nlist.get_particles_within_radius(4))
     print ("particles close to 4", particle_pos[nlist.get_particles_within_radius(4)])
     for i in nlist.get_particles_within_radius(4):
-<<<<<<< HEAD
-        periodic_distance = np.linalg.norm(
-            0.5 * box_side_length - (particle_pos[4] - particle_pos[i] + 0.5 * box_side_length) % box_side_length)
-        print i, particle_pos[i], particle_pos[4], periodic_distance
-=======
         periodic_distance = np.linalg.norm(0.5*box_side_length - (particle_pos[4] - particle_pos[i] + 0.5*box_side_length)%box_side_length)
         print (i, particle_pos[i], particle_pos[4], periodic_distance)
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> 730ff4600fdaf9a05c1df7d34720b9d255c865aa
