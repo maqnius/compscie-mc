@@ -1,8 +1,4 @@
 import numpy as np
-<<<<<<< HEAD
-import scipy.constants as constants
-
-import copy
 from .total_potential import *
 
 
