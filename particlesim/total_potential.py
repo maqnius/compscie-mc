@@ -20,7 +20,11 @@ class TotalPotential(object):
     This class is initialized when a system_configuration is created. All calculations that are independent
     of the particle positions should be done at initialization
     """
-    def __init__(self, system_configuration):
+    # Needs to be estimated
+    t_k = 1  # Runtime of one fourierspace interaction of Ewald Simmulation
+    t_r = 1  # Runtime of one realspace interaction of Ewald Simmulation
+
+    def __init__(self, system_configuration, p = 1e-5, k_cutoff = None):
         self.system_configuration = system_configuration
         # Todo ewald_long_range = EwaldLongRange()
         # TODO shortrange = Shortrange
@@ -29,4 +33,21 @@ class TotalPotential(object):
     def potential(self,xyz_trial):
         return interaction_potential(xyz_trial, self.system_configuration.sigmas, self.system_configuration.epsilons)
         return 0
+        self.p = p
+        if (k_cutoff):
+            self.k_cutoff = k_cutoff
 
+    def __estimate_parameters(self):
+        """
+
+        Returns
+        -------
+
+        """
+        pass
+
+    def __r_cutoff_optimal(self):
+        pass
+
+    def potential(self,xyz_trial):
+        return 0

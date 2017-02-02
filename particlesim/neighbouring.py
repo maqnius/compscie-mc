@@ -19,12 +19,11 @@ import numpy as np
 
 
 class Neighbouring(object):
-
     def __init__(self, particle_positions, radius=float("inf")):
         self.particle_positions = particle_positions
-        self.n                  = len(particle_positions)
-        self.r                  = float(radius)
-        self._neighbourlist      = None
+        self.n = len(particle_positions)
+        self.r = float(radius)
+        self._neighbourlist = None
 
     @property
     def particle_positions(self):
@@ -40,13 +39,11 @@ class Neighbouring(object):
     # private methods
 
     # public methods
-    def create_neighbourlist(self, particle_positions, radius): # only internal
+    def create_neighbourlist(self, particle_positions, radius):  # only internal
         return []
 
     def get_particles_within_radius(self, particle_id):
         pass
-
-
 
 
 class NeighbouringPrimitiveLists(Neighbouring):
@@ -68,9 +65,8 @@ class NeighbouringPrimitiveLists(Neighbouring):
         self._neighbourlist = nlist
 
     def get_particles_within_radius(self, particle_id):
-        return self._neighbourlist[particle_id] #returns the indices of the points
-        #return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
-
+        return self._neighbourlist[particle_id]  # returns the indices of the points
+        # return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
 
 class NeighbouringCellLinkedLists(Neighbouring):
     def __init__(self, particle_positions, radius=float("inf"), box_side_length=1.0):
@@ -83,7 +79,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
     # public methods
     def create_neighbourlist(self): # in O(self.n)
         n, r, pos = self.n, self.r, self.particle_positions
-        nr_cells = int(self.box_side_length/r + 1) # always round up
+        nr_cells = int(self.box_side_length/r + 1)
         if nr_cells == 0:
             nr_cells = 1
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
@@ -95,23 +91,26 @@ class NeighbouringCellLinkedLists(Neighbouring):
         self._neighbourlist = cell_linked_list
 
     def get_particles_within_radius(self, particle_id):
-        n, r, pos, cell_ll  = self.n, self.r, self.particle_positions, self._neighbourlist
-        box_side_length     = self.box_side_length
-        nr_cells            = len(cell_ll)
+        n, r, pos, cell_ll = self.n, self.r, self.particle_positions, self._neighbourlist
+        box_side_length = self.box_side_length
+        nr_cells = len(cell_ll)
         ret = []
 
-        p           = pos[particle_id]
-        cell        = (p/r).astype("int")
-        cell_dir    = np.rint(p%r).astype("int"); cell_dir[cell_dir==0]=-1 # setting direction to nearest cell in xyz direction
-        cells       = np.array([(cell+[x,y,z])%nr_cells for x in [cell_dir[0],0] for y in [cell_dir[1],0] for z in [cell_dir[2],0]])
+        p = pos[particle_id]
+        cell = (p / r).astype("int")
+        cell_dir = np.rint((p % r)).astype("int");
+        cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
+        cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in
+                          [cell_dir[2], 0]])
         for cell_idx in cells:
             idx_x, idx_y, idx_z = cell_idx
             cell_list = cell_ll[idx_x][idx_y][idx_z]
             for neigh_idx in cell_list:
                 neigh = pos[neigh_idx]
-                periodic_distance = np.linalg.norm(0.5*box_side_length - (p-neigh+0.5*box_side_length)%box_side_length)
-                if periodic_distance>r: continue
-                if particle_id==neigh_idx: continue
+                periodic_distance = np.linalg.norm(
+                    0.5 * box_side_length - (p - neigh + 0.5 * box_side_length) % box_side_length)
+                if periodic_distance > r: continue
+                if particle_id == neigh_idx: continue
                 ret.append(neigh_idx)
         return ret
 
@@ -132,14 +131,3 @@ class NeighbouringCellLinkedLists(Neighbouring):
 #         periodic_distance = np.linalg.norm(0.5*box_side_length - (particle_pos[4] - particle_pos[i] + 0.5*box_side_length)%box_side_length)
 #         print (i, particle_pos[i], particle_pos[4], periodic_distance)
 #
-
-
-
-
-
-
-
-
-
-
-
