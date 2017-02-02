@@ -15,9 +15,9 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+from .neighbouring import NeighbouringCellLinkedLists
+from .neighbouring import NeighbouringPrimitiveLists
 import scipy.constants as constants
-from neighbouring import NeighbouringCellLinkedLists
-
 
 def lj_potential(r, sigma=1.0, epsilon=1.0):
     r"""
@@ -63,7 +63,9 @@ def interaction_potential(xyz, sigma, epsilon):
     sigmalist = sigma
     epslist = epsilon
 
-    nlist = NeighbouringCellLinkedLists(xyz, radius=1.2, box_side_length=2)#box_side_length)
+    # nlist = NeighbouringCellLinkedLists(xyz, radius=1.2, box_side_length=5)#box_side_length)
+    # nlist.create_neighbourlist()
+    nlist = NeighbouringPrimitiveLists(xyz,box_size=5)
     [n,m] = xyz.shape
 
     lj_interaction = 0
@@ -142,14 +144,15 @@ def phi(xyz, sigma=1.0, epsilon=1.0, box_length=None):
         Total interaction and external potential.
 
     """
-    return interaction_potential(xyz, sigma=sigma, epsilon=epsilon) + external_potential(xyz, box_length=box_length)
+    return interaction_potential(xyz, sigma=sigma, epsilon=epsilon)#
+    #  TODO don't need external potenial because of periodic boundaries + external_potential(xyz, box_length=box_length)
 
 #testing the functions
+#
+# xyz = np.random.rand(10, 3) * 2.0
+# sigma = [1,1,1,1,1,1,1,1,1,1]
+# epsilon = [5,1,2,3,4,6,7,8,9,5,5]
+# box_length = 2
 
-xyz = np.random.rand(10, 3) * 2.0
-sigma = [1,1,1,1,1,1,1,1,1,1]
-epsilon = [5,1,2,3,4,6,7,8,9,5,5]
-box_length = 2
-
-print(phi(xyz, sigma, epsilon, box_length))
+# print(phi(xyz, sigma, epsilon, box_length))
 

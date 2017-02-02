@@ -19,7 +19,6 @@ from particlesim.neighbouring import NeighbouringCellLinkedLists
 from scipy.special import erfc
 import scipy.constants as constants
 
-
 def lj_potential(r, sigma=1.0, epsilon=1.0):
     r"""
     Compute the Lennard-Jones potential.
@@ -32,6 +31,7 @@ def lj_potential(r, sigma=1.0, epsilon=1.0):
         Zero crossing distance.
     epsilon : float, optional, default=1.0
         Depth of the potential well.
+        Epsilon needs to be in eV
 
     Returns
     -------

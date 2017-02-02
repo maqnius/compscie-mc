@@ -18,25 +18,8 @@
 import numpy as np
 import numpy.testing as testing
 import pyximport; pyximport.install()
-from .ewald_summation import longrange_energy
-from .ewald_summation import calc_k_vectors_old
-from .ewald_summation import short_range
 import particlesim.k_cython as k_cython
 import time
-
-def test_longrange_energy_is_float():
-    sigma, k_cutoff = calc_sigma_and_k_cutoff()
-    shape = np.array([100, 100, 10])
-    test_config = create_test_system(100, shape, 10)
-    energy = longrange_energy(test_config, shape, sigma, k_cutoff)
-    assert isinstance(energy, float)
-
-def not_yet_test_shortrange_energy_is_float():
-    sigma, k_cutoff = calc_sigma_and_k_cutoff()
-    shape = np.array([100, 100, 10])
-    test_config = create_test_system(100, shape, 10)
-    energy = short_range(test_config, shape, sigma, k_cutoff)
-    assert isinstance(energy, float)
 
 '''
 def test_energy_is_positive():
@@ -56,7 +39,7 @@ def calc_sigma_and_k_cutoff():
 
     return sigma, k_cutoff
 
-def create_test_system(N, shape, max_charge):
+def create_test_system(N, box_size, max_charge):
     """
     Creates a random particle configuration for testing other functions.
 
@@ -66,7 +49,7 @@ def create_test_system(N, shape, max_charge):
     N : int
         Number of particles
 
-    size : float numpay array
+    box_size : float
         Boxsize for particle positions
 
     max_charge : int
@@ -87,31 +70,31 @@ def create_test_system(N, shape, max_charge):
     # Positions:
     positions = np.zeros((N,3))
     for i in range(shape.shape[0]):
-        positions[:, i] = np.random.randint(-shape[i], shape[i], N)
+        positions[:, i] = np.random.randint(-box_size, box_size, N)
 
     test_config = [positions, charges]
 
     return test_config
 
-def test_k_vectors():
-    """
-    Speed test of calculation
-    """
-    K = 100
-
-    timestamp_start = time.time()
-    new = k_cython.calc_k_vectors(K)
-    timestamp_stop = time.time()
-    print("New Method took %s seconds." %(-timestamp_start + timestamp_stop,))
-
-    timestamp_start = time.time()
-    test = k_cython.calc_k_vectors_test(K)
-    timestamp_stop = time.time()
-    print("Test Method took %s seconds." %(-timestamp_start + timestamp_stop,))
-
-    timestamp_start = time.time()
-    old = calc_k_vectors_old(K)
-    timestamp_stop = time.time()
-    print("Old Method took %s seconds." %(-timestamp_start + timestamp_stop,))
-
-    testing.assert_array_equal(old, new)
+# def test_k_vectors():
+#     """
+#     Speed test of calculation
+#     """
+#     K = 100
+#
+#     timestamp_start = time.time()
+#     new = k_cython.calc_k_vectors(K)
+#     timestamp_stop = time.time()
+#     print("New Method took %s seconds." %(-timestamp_start + timestamp_stop,))
+#
+#     timestamp_start = time.time()
+#     test = k_cython.calc_k_vectors_test(K)
+#     timestamp_stop = time.time()
+#     print("Test Method took %s seconds." %(-timestamp_start + timestamp_stop,))
+#
+#     timestamp_start = time.time()
+#     old = calc_k_vectors_old(K)
+#     timestamp_stop = time.time()
+#     print("Old Method took %s seconds." %(-timestamp_start + timestamp_stop,))
+#
+#     testing.assert_array_equal(old, new)
