@@ -23,11 +23,13 @@ from .total_potential import TotalPotential
 def test_longrange_potential_is_float():
     n = 100
     system_conf = create_system_configuration(n)
-    total = TotalPotential(system_conf, k_cutoff=20)
+    total = TotalPotential(system_conf, k_cutoff=3)
 
     new_positions = create_positions(n)
 
     longrange = total.longrange_energy(new_positions)
 
-    print("Calculated longrange energy: %s eV" % longrange)
+#    print("Calculated longrange energy: %s eV" % longrange)
     assert isinstance(longrange, float)
+
+    assert longrange != 0.

@@ -148,6 +148,7 @@ class SystemConfiguration(object):
 
     def potential(self,xyz_trial):
         # TODO only stub
+        foo = self._total_potential.potential(xyz_trial)
         return self._total_potential.potential(xyz_trial)
 
     def number_of_particle_types(self):
