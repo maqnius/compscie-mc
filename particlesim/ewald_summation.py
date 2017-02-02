@@ -13,10 +13,12 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from __future__ import division
 
 import numpy as np
 import scipy.constants
+import pyximport; pyximport.install(setup_args={"include_dirs":np.get_include()},
+                  reload_support=True)
+import particlesim.k_cython as k_cython
 
 
 def longrange_energy(system_conf, shape, sigma, K):
@@ -53,18 +55,8 @@ def longrange_energy(system_conf, shape, sigma, K):
     sigma_sq = sigma ** 2
     epsilon_0 = scipy.constants.epsilon_0
     volume = np.prod(shape)
-    k_vectors = []
 
-    # Create all k-vectors with absolute value <= K
-    for a in range(0, K + 1):
-        for b in range(0, int(np.sqrt(K ** 2 - a ** 2)) + 1):
-            for c in range(0, int(np.sqrt(K ** 2 - a ** 2 - b ** 2)) + 1):
-                k_vectors.append([a, b, c])
-
-    k_vectors.pop(0)
-    # Consider negativ k-Vektors as well
-    k_vectors = np.array(k_vectors)
-    k_vectors = np.concatenate((k_vectors, -k_vectors))
+    k_vectors = calc_k_vectors(K)
 
     # Multiply with 2*pi/L factor in each direction
     k_vectors = np.multiply(k_vectors, 2*np.pi/shape)
@@ -91,10 +83,76 @@ def longrange_energy(system_conf, shape, sigma, K):
         self_interaction_potential += charge_i**2
     self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * sigma)
 
-    print (longrange_potential)
-    print (self_interaction_potential)
+    print("longrange_potential", longrange_potential)
+    print("self_interaction_potential", self_interaction_potential)
+
     # Calculate total potential
     longrange_and_self_potential = longrange_potential - self_interaction_potential
 
     return longrange_and_self_potential
 
+def calc_k_vectors_old(K):
+    """
+    Old naive implementation.
+
+    Calculates the k vectors of our lattice until a cutoff Value K.
+
+    Parameters
+    ----------
+
+    K : int
+        Cutoff value for the absolute value of the k-vectors
+
+
+    Returns
+    -------
+
+    k_vectors : ndarray
+        Array of k vectors that have an absolute value below cutoff K
+    """
+    k_vectors = []
+
+    # Create all k-vectors with absolute value <= K
+    for a in range(-K, K + 1):
+        b_limit = int(np.sqrt(K ** 2 - a ** 2))
+        for b in range(-b_limit, b_limit + 1):
+            c_limit = int(np.sqrt(K ** 2 - a ** 2 - b ** 2))
+            for c in range(-c_limit, c_limit + 1):
+                k_vectors.append([a, b, c])
+
+    # Remove k = [0, 0, 0]
+    k_vectors.remove([0, 0, 0])
+
+    return np.array(k_vectors)
+
+def calc_k_vectors(K):
+    return k_cython.calc_k_vectors(K)
+
+def short_range(system_conf, shape, sigma, K):
+    """
+        Calculates the longrange potential and the self interaction potential
+        of a given particle distribution using Ewald Summation.
+
+        Parameters
+        ----------
+
+        system_conf : np.array
+            Array with particle positions and charges
+
+        shape : int or float array
+            Dimensions of the supercell
+
+        sigma : float
+            Standard deviation of gaussian distribution
+
+        K : int
+            Cutoff parameter in reciprocal space
+
+
+        Returns
+        -------
+
+        float
+            longrange and selfinteraction potential
+        """
+    pass

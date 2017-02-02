@@ -15,8 +15,9 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+from particlesim.neighbouring import NeighbouringCellLinkedLists
+from scipy.special import erfc
 import scipy.constants as constants
-from neighbouring import NeighbouringCellLinkedLists
 
 
 def lj_potential(r, sigma=1.0, epsilon=1.0):
@@ -39,34 +40,46 @@ def lj_potential(r, sigma=1.0, epsilon=1.0):
 
     """
     q = (sigma / r)**6
-    return 4.0 * (epsilon * (q * (q - 1.0))) * 1/constants.eV
+    return 4.0 * (epsilon * (q * (q - 1.0)))
 
-def interaction_potential(xyz, sigma, epsilon):
+def shortrange(xyz, lj_sigma, ewald_sigma, epsilon, charges):
     r"""
-    Compute the interaction potential for a pair of particles.
+    Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
+    and the short coulomb interaction part of the ewald summation
 
     Parameters
     ----------
     xyz : numpy.ndarray(shape=(n, d))
         d-dimensional coordinates of n particles.
-    sigma : numpy.ndarray(shape=(n, 1))
+
+    li_sigma : numpy.ndarray(shape=(n, 1))
         List of zero crossing distances for the Lennard-Jones contribution.
+
+    ewald_sigma: float
+        Spread of the gaussian function in the Ewald Summation that makes a cutoff possible
+
     epsilon : numpy.ndarray(shape=(n, 1))
         List of depths of the potential well for the Lennard-Jones contribution.
+
+    charges: numpy.ndarray(shape=(n,1))
+        List of charges
+
 
     Returns
     -------
     float
-        Total interaction potential.
+        Total interaction potential in eV
 
     """
-    sigmalist = sigma
+    sigmalist = lj_sigma
     epslist = epsilon
 
-    nlist = NeighbouringCellLinkedLists(xyz, radius=1.2, box_side_length=2)#box_side_length)
+    nlist = NeighbouringCellLinkedLists(xyz, radius=1.2, box_side_length=2)
+
     [n,m] = xyz.shape
 
     lj_interaction = 0
+    coulomb_interaction = 0
 
     for i in range(0, n):
         particle1 = i
@@ -76,6 +89,7 @@ def interaction_potential(xyz, sigma, epsilon):
         neighbors = nlist.get_particles_within_radius(particle1)
 
         lj_interaction_tmp = 0
+        coulomb_tmp = 0
         for j in range(0,len(neighbors)-1):
             particle2 = neighbors[j]
             sigma2 = sigmalist[particle2]
@@ -89,12 +103,22 @@ def interaction_potential(xyz, sigma, epsilon):
             if (epsilon2 != epsilon1):
                 epsilon = (epsilon1 + epsilon2) / 2
 
-            r = np.linalg.norm(xyz[particle1, :] - xyz[particle2, :])
+            # r = np.linalg.norm(xyz[particle1, :] - xyz[particle2, :]) Periodischer Abstand muss berechnet werden
+            # Consider periodic boundary conditions when calculating the distances
+            r = np.linalg.norm(0.5 * nlist.box_side_length - (xyz[particle1] - xyz[particle2] +
+                                                              0.5 * nlist.box_side_length) % nlist.box_side_length)
 
+            # Lennard Jones Potential
             lj_interaction_tmp += lj_potential(r, sigma=sigma, epsilon=epsilon)
 
+            # Shortrange Coulomb Energy
+            coulomb_tmp = charges[particle1] * charges[particle2] / r * erfc(r / (np.sqrt(2) * ewald_sigma))
+
         lj_interaction += lj_interaction_tmp
-    return lj_interaction
+        coulomb_interaction += coulomb_tmp
+
+    return lj_interaction + coulomb_interaction * constants.eV # Energy Unit is eV
+
 
 def external_potential(xyz, box_length=None):
     r"""
@@ -120,12 +144,13 @@ def external_potential(xyz, box_length=None):
         return 0.0
     return np.inf
 
-def phi(xyz, sigma=1.0, epsilon=1.0, box_length=None):
+def phi(xyz, lj_sigma, ewald_sigma, epsilon, charges, box_length=None):
     r"""
     Compute the interaction and external potential for a set of particles.
 
     Parameters
     ----------
+    ewald_sigma
     xyz : numpy.ndarray(shape=(n, d))
         d-dimensional coordinates of n particles.
     sigma : numpy.ndarray(shape=(n, 1))
@@ -142,14 +167,16 @@ def phi(xyz, sigma=1.0, epsilon=1.0, box_length=None):
         Total interaction and external potential.
 
     """
-    return interaction_potential(xyz, sigma=sigma, epsilon=epsilon) + external_potential(xyz, box_length=box_length)
+    return shortrange(xyz, lj_sigma, ewald_sigma, epsilon, charges) + external_potential(xyz, box_length=box_length)
 
 #testing the functions
 
 xyz = np.random.rand(10, 3) * 2.0
 sigma = [1,1,1,1,1,1,1,1,1,1]
+charges = 10*[1]
+ewald_sigma = 0.01
 epsilon = [5,1,2,3,4,6,7,8,9,5,5]
 box_length = 2
 
-print(phi(xyz, sigma, epsilon, box_length))
+print(phi(xyz, sigma, ewald_sigma, epsilon, charges, box_length))
 
