@@ -17,9 +17,53 @@
 from setuptools import setup
 import versioneer
 import sys
+from setuptools import Extension
+import os
+
+class lazy_cythonize(list):
+    """evaluates extension list lazyly.
+    pattern taken from http://tinyurl.com/qb8478q"""
+    def __init__(self, callback):
+        self._list, self.callback = None, callback
+    def c_list(self):
+        if self._list is None: self._list = self.callback()
+        return self._list
+    def __iter__(self):
+        for e in self.c_list(): yield e
+    def __getitem__(self, ii): return self.c_list()[ii]
+    def __len__(self): return len(self.c_list())
+
+def extensions():
+    from numpy import get_include
+    from Cython.Build import cythonize
+    ext_fast_sor = Extension(
+        "*",
+        sources=["particlesim/*.pyx"],
+        include_dirs=[get_include()],
+        extra_compile_args=["-O3", "-std=c99"])
+    exts = [ext_fast_sor]
+    return cythonize(exts)
 
 def get_cmdclass():
     versioneer_cmds = versioneer.get_cmdclass()
+
+    class sdist(versioneer_cmds['sdist']):
+        """ensure cython files are compiled to c, when distributing"""
+
+        def run(self):
+            # only run if .git is present
+            if not os.path.exists('.git'):
+                print("Not on git, can not create source distribution")
+                return
+            try:
+                from Cython.Build import cythonize
+                print("cythonizing sources")
+                cythonize(extensions())
+            except ImportError:
+                warnings.warn('sdist cythonize failed')
+            return versioneer_cmds['sdist'].run(self)
+
+    versioneer_cmds['sdist'] = sdist
     from setuptools.command.test import test as TestCommand
     class PyTest(TestCommand):
         user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
@@ -37,6 +81,7 @@ def get_cmdclass():
 
 setup(
     cmdclass=get_cmdclass(),
+    ext_modules=lazy_cythonize(extensions),
     name='particlesim',
     version=versioneer.get_version(),
     description="Simulates multi particle systems with MMC",
@@ -61,4 +106,5 @@ setup(
     author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
     packages=['particlesim'],
+    install_requires=['numpy>=1.7.0', 'cython>=0.22'],
     tests_require=['pytest'])
