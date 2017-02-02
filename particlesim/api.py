@@ -34,7 +34,7 @@ class SystemConfiguration(object):
              lj_cutoff = 2.5 * sigma
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=1.0, epsilon_r=1.0):
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
             raise ValueError("xyz must be in range of zero to %d" %box_size)

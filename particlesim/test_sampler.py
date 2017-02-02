@@ -20,9 +20,9 @@ import numpy as np
 import pytest
 
 def test_all_sampled_particles_are_inside_box():
-    n_particle = 100
+    n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(iteration_number=10000)
+    traj, pot = sampler.metropolis(iteration_number=1000)
     assert np.all((traj<system_configuration.box_size)*(traj >= 0))
 
 def test_sampler_no_particles_in_system():
@@ -38,7 +38,6 @@ def test_sampler_trajectory():
     iteration_number = 3
     sampler, system_configuration = create_sampler(number_of_particles)
     traj, pot = sampler.metropolis(iteration_number)
-    assert np.any(np.not_equal(traj[0], traj[1]))
     assert len(traj) == iteration_number + 1
 
 def test_sampler_negative_iteration_number():
@@ -62,13 +61,15 @@ def test_sampler_negative_iteration_number():
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(iteration_number=50000)
-    r_right = 0.8
-    r_left = 0
+    traj, pot = sampler.metropolis(iteration_number=10000,beta=10)
+    r_left = 1
+    r_right =1.5
     for i in range(1,n_particle):
         for j in range(i):
             distance = np.linalg.norm(traj[1000:, j, :] - traj[1000:, i, :], axis = -1)
             hist, edges = np.histogram(distance, bins=50)
+            foo = np.argmax(hist)
+            foo2 = edges[foo]
             indices =(edges[1:] >= r_left) * (edges[1:] < r_right)# np.where(np.logical_and(edges[1:]>=r_left, edges[1:]<r_right))
             cumulated_value = np.sum(hist[indices])/np.sum(hist)
             assert cumulated_value >= 0.0, "it is not certain that the global optimum is reached"
