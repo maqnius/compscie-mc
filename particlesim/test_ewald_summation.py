@@ -24,20 +24,6 @@ from .ewald_summation import short_range
 import particlesim.k_cython as k_cython
 import time
 
-def test_longrange_energy_is_float():
-    sigma, k_cutoff = calc_sigma_and_k_cutoff()
-    shape = np.array([100, 100, 10])
-    test_config = create_test_system(100, shape, 10)
-    energy = longrange_energy(test_config, shape, sigma, k_cutoff)
-    assert isinstance(energy, float)
-
-def not_yet_test_shortrange_energy_is_float():
-    sigma, k_cutoff = calc_sigma_and_k_cutoff()
-    shape = np.array([100, 100, 10])
-    test_config = create_test_system(100, shape, 10)
-    energy = short_range(test_config, shape, sigma, k_cutoff)
-    assert isinstance(energy, float)
-
 '''
 def test_energy_is_positive():
     """
@@ -56,7 +42,7 @@ def calc_sigma_and_k_cutoff():
 
     return sigma, k_cutoff
 
-def create_test_system(N, shape, max_charge):
+def create_test_system(N, box_size, max_charge):
     """
     Creates a random particle configuration for testing other functions.
 
@@ -66,7 +52,7 @@ def create_test_system(N, shape, max_charge):
     N : int
         Number of particles
 
-    size : float numpay array
+    box_size : float
         Boxsize for particle positions
 
     max_charge : int
@@ -87,7 +73,7 @@ def create_test_system(N, shape, max_charge):
     # Positions:
     positions = np.zeros((N,3))
     for i in range(shape.shape[0]):
-        positions[:, i] = np.random.randint(-shape[i], shape[i], N)
+        positions[:, i] = np.random.randint(-box_size, box_size, N)
 
     test_config = [positions, charges]
 
