@@ -15,6 +15,8 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import numpy as np
 from .lennard_jones import *
+from particlesim.ewald_summation import EwaldSummation
+
 class TotalPotential(object):
     r"""
     This class is initialized when a system_configuration is created. All calculations that are independent
@@ -24,18 +26,24 @@ class TotalPotential(object):
     t_k = 1  # Runtime of one fourierspace interaction of Ewald Simmulation
     t_r = 1  # Runtime of one realspace interaction of Ewald Simmulation
 
-    def __init__(self, system_configuration, p = 1e-5, k_cutoff = None):
+    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 20):
+        self.sigma_coulomb = sigma_c
+        self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
-        # Todo ewald_long_range = EwaldLongRange()
-        # TODO shortrange = Shortrange
+        self.longrange = EwaldSummation(system_configuration, self.sigma_coulomb, k_cutoff)
+
         # #initialize the neighbouring datastructur. When there is a position update,
         #  just update the existing instance.
-    def potential(self,xyz_trial):
-        return interaction_potential(xyz_trial, self.system_configuration.sigmas, self.system_configuration.epsilons)
-        return 0
-        self.p = p
-        if (k_cutoff):
-            self.k_cutoff = k_cutoff
+
+    def longrange_energy(self, positions):
+        return self.longrange.longrange_energy(positions)
+
+    def potential(self, xyz_trial):
+        longrange = self.longrange_energy
+        # shortrange =
+        # return self.shortrange
+        return longrange
+
 
     def __estimate_parameters(self):
         """
@@ -46,8 +54,5 @@ class TotalPotential(object):
         """
         pass
 
-    def __r_cutoff_optimal(self):
+    def _r_cutoff_optimal(self):
         pass
-
-    def potential(self,xyz_trial):
-        return 0
