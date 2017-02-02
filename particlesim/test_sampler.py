@@ -61,12 +61,12 @@ def test_sampler_negative_iteration_number():
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(iteration_number=10000,beta=10)
+    traj, pot = sampler.metropolis(iteration_number=1000,beta=10)
     r_left = 1
     r_right =1.5
     for i in range(1,n_particle):
         for j in range(i):
-            distance = np.linalg.norm(traj[1000:, j, :] - traj[1000:, i, :], axis = -1)
+            distance = np.linalg.norm(traj[100:, j, :] - traj[100:, i, :], axis = -1)
             hist, edges = np.histogram(distance, bins=50)
             foo = np.argmax(hist)
             foo2 = edges[foo]

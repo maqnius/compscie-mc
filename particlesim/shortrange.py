@@ -178,5 +178,5 @@ ewald_sigma = 0.01
 epsilon = [5,1,2,3,4,6,7,8,9,5,5]
 box_length = 2
 
-print(phi(xyz, sigma, ewald_sigma, epsilon, charges, box_length))
+#print(phi(xyz, sigma, ewald_sigma, epsilon, charges, box_length))
 

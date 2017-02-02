@@ -26,7 +26,7 @@ class TotalPotential(object):
     t_k = 1  # Runtime of one fourierspace interaction of Ewald Simmulation
     t_r = 1  # Runtime of one realspace interaction of Ewald Simmulation
 
-    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 20):
+    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3):
         self.sigma_coulomb = sigma_c
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
@@ -39,7 +39,7 @@ class TotalPotential(object):
         return self.longrange.longrange_energy(positions)
 
     def potential(self, xyz_trial):
-        longrange = self.longrange_energy
+        longrange = self.longrange_energy(xyz_trial)
         # shortrange =
         # return self.shortrange
         return longrange

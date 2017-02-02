@@ -31,12 +31,11 @@ def create_system_configuration(number_of_particles, box_size=1.0, max_charge=1.
     """
 
     # Charges:
-    charges_half = np.random.randint(-max_charge, max_charge, number_of_particles // 2)
+    charges_half = np.random.randint(-max_charge, max_charge, (number_of_particles + 1) // 2 )
     charges = np.append(charges_half, -1 * charges_half)
-    print(charges)
+    charges = charges[:number_of_particles] #check that nr of charges is correct
     # Positions:
     positions = create_positions(number_of_particles, box_size)
-    print(positions)
     # Sigmas for Lennard-Jones potential
     sigma = [1.] * number_of_particles
 

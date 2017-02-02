@@ -86,8 +86,8 @@ class EwaldSummation(object):
             self_interaction_potential += charge_i**2
         self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * self.sigma)
 
-        print("longrange_potential", longrange_potential)
-        print("self_interaction_potential", self_interaction_potential)
+        #print("longrange_potential", longrange_potential)
+        #print("self_interaction_potential", self_interaction_potential)
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
