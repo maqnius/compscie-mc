@@ -4,3 +4,6 @@ __pycache__/
 *.Rhistory
 *.pyc
 *.DS_Store
+/build/
+/dist/
+/particlesim.egg-info/
