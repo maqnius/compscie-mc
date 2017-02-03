@@ -15,7 +15,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-import scipy.constants as constants
+from scipy.constants import physical_constants
 import pyximport; pyximport.install(setup_args={"include_dirs":np.get_include()},
                   reload_support=True)
 import particlesim.k_cython as k_cython
@@ -38,6 +38,8 @@ class EwaldSummation(object):
         """
         Calculates the longrange potential and the self interaction potential
         of a given particle distribution using Ewald Summation.
+
+        Atomic Units are used.
 
         Parameters
         ----------
@@ -77,22 +79,22 @@ class EwaldSummation(object):
             structure_factor_squared = np.absolute(structure_factor) ** 2
             longrange_potential += structure_factor_squared * np.e ** (-self.sigma_sq * k_sq / 2) / k_sq
 
-        longrange_potential *= 1 / (2 * self.volume )
+        longrange_potential *= 4 * np.pi / (2 * self.volume )
 
         # Calculate self-interaction potential
         self_interaction_potential = 0.
 
         for charge_i in self.charges:
             self_interaction_potential += charge_i**2
-        self_interaction_potential *= 1 / (4 * np.pi * np.sqrt(2*np.pi) * self.sigma)
+        self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma)
 
-        #print("longrange_potential", longrange_potential)
-        #print("self_interaction_potential", self_interaction_potential)
+        print("longrange_potential", longrange_potential)
+        print("self_interaction_potential", self_interaction_potential)
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
 
-        return longrange_and_self_potential
+        return longrange_and_self_potential * physical_constants['Hartree energy in eV'][0]
 
     def calc_k_vectors_old(self, k_cutoff):
         """
