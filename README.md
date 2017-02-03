@@ -1,3 +1,7 @@
+[![CircleCI](https://circleci.com/gh/simontreu/compsie-mc/tree/master.svg?style=svg)](https://circleci.com/gh/cwehmeyer/pysor/tree/master)
+[![codecov](https://codecov.io/gh/simontreu/compsie-mc/branch/master/graph/badge.svg)](https://codecov.io/gh/cwehmeyer/pysor)
+
+
 # compscie-mc
 CompScie MC Gruppe
 

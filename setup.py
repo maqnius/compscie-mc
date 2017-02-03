@@ -106,5 +106,9 @@ setup(
     author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
     packages=['particlesim'],
-    install_requires=['numpy>=1.7.0', 'cython>=0.22'],
+        setup_requires=[
+        'numpy>=1.7.0',
+        'cython>=0.22',
+        'setuptools>=0.6'],
+    install_requires=['numpy>=1.7.0'],
     tests_require=['pytest'])

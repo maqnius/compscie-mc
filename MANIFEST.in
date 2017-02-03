@@ -1,0 +1,7 @@
+include LICENSE
+
+include versioneer.py
+include particlesim/_version.py
+
+# include extension code
+recursive-include particlesim *.pyx *.c *.h
