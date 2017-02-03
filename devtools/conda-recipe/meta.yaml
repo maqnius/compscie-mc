@@ -26,6 +26,6 @@ test:
     - particlesim
 
 about:
-  home: http://github.com/simontreu/compscie-mc
+  home: https://github.com/SimonTreu/compscie-mc
   license: GNU Public License v3+
   summary: "Solve Poisson's equation with successive over-relaxation"
