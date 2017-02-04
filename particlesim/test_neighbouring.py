@@ -41,8 +41,6 @@ def test_equivalence_CLL_PL():
     nr_particles = 25
     pid = 5 % nr_particles
     particle_pos = np.random.rand(nr_particles, 3)*box_size
-
     NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
     NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
-
     assert set(NL_CLL.get_particles_within_radius(pid)) == set(NL_PL.get_particles_within_radius(pid))

@@ -98,7 +98,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
         n, r, pos, cell_ll, cell_len = self.n, self.r, self.particle_positions, self._neighbourlist, self._cell_len
         box_size = self.box_size
         nr_cells = len(cell_ll)
-        ret = []
+        ret_idx, ret_dist = [], []
 
         p = pos[particle_id]
         cell = (p / cell_len).astype("int")
@@ -115,8 +115,9 @@ class NeighbouringCellLinkedLists(Neighbouring):
                 neigh = pos[neigh_idx]
                 periodic_distance = np.linalg.norm(0.5 * box_size- (p - neigh + 0.5 * box_size) % box_size)
                 if periodic_distance>=r or particle_id==neigh_idx: continue
-                ret.append(neigh_idx)
-        return ret
+                ret_idx.append(neigh_idx)
+                ret_dist.append(periodic_distance)
+        return ret_idx, ret_dist
 
     def update_cells(self, new_positions):
 
@@ -129,18 +130,18 @@ class NeighbouringCellLinkedLists(Neighbouring):
         self._neighbourlist = cell_linked_list
 
 
-if __name__=="__main__":
-    box_size = float(7.6)
-    nr_particles = 250
-    for i in range(100):
-        particle_pos = np.random.rand(nr_particles, 3)*box_size
-        #print (particle_pos)
-
-        NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
-        NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
-
-        #for pid in range(nr_particles):
-            #print(sorted(NL_PL.get_particles_within_radius(pid)))
-            #print(sorted(NL_CLL.get_particles_within_radius(pid)))
-
-        print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
+#if __name__=="__main__":
+#    box_size = float(7.6)
+#    nr_particles = 250
+#    for i in range(100):
+#        particle_pos = np.random.rand(nr_particles, 3)*box_size
+#        #print (particle_pos)
+#
+#        NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
+#        NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
+#
+#        #for pid in range(nr_particles):
+#            #print(sorted(NL_PL.get_particles_within_radius(pid)))
+#            #print(sorted(NL_CLL.get_particles_within_radius(pid)))
+#
+#        print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
