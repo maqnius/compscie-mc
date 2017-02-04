@@ -75,6 +75,9 @@ class NeighbouringCellLinkedLists(Neighbouring):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
         self._cell_len = -1
+        self.nr_cells = int(max(1, self.box_size/self.r))
+        self._cell_len =  self.r + (self.box_size % self.r )/self.nr_cells
+
         self.create_neighbourlist()
 
 
@@ -82,15 +85,11 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
     # public methods
     def create_neighbourlist(self): # in O(self.n)
-        n, r, pos, box_size = self.n, self.r, self.particle_positions, self.box_size
-        nr_cells = int(box_size / r)
-        cell_len = r + (box_size % r )/nr_cells # evenly distributing the overlap
-        self._cell_len = cell_len
-        nr_cells = max(1, nr_cells) # catches case that nr_cells is 0
-        cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
+        pos = self.particle_positions
+        cell_linked_list = [[[[] for i in range(self.nr_cells)]for j in range(self.nr_cells)]for k in range(self.nr_cells)]
         # print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[0][0])) #TODO no print in the end
-        for i in range(n):
-            x, y, z = (pos[i]/cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
+        for i in range(self.n):
+            x, y, z = (pos[i]/self._cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
             #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
             cell_linked_list[x][y][z].append(i) # we need only indices
         self._neighbourlist = cell_linked_list
@@ -120,10 +119,14 @@ class NeighbouringCellLinkedLists(Neighbouring):
         return ret
 
     def update_cells(self, new_positions):
+
+        cell_linked_list = [[[[] for i in range(self.nr_cells)]for j in range(self.nr_cells)]for k in range(self.nr_cells)]
         for i in range(self.n):
-            x, y, z = (new_positions[i]/self.r).astype(int) # // ist ganzzahlige division (ohne rest)
+            x, y, z = (new_positions[i]/self._cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
             #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
-            self._neighbourlist[x][y][z].append(i) # we need only indices
+            cell_linked_list[x][y][z].append(i) # we need only indices
+
+        self._neighbourlist = cell_linked_list
 
 
 if __name__=="__main__":
@@ -141,15 +144,3 @@ if __name__=="__main__":
             #print(sorted(NL_CLL.get_particles_within_radius(pid)))
 
         print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
-
-
-
-
-#
-#     print ("particle position at 4: ", particle_pos[4])
-#     print ("indices: ", nlist.get_particles_within_radius(4))
-#     print ("particles close to 4", particle_pos[nlist.get_particles_within_radius(4)])
-#     for i in nlist.get_particles_within_radius(4):
-#         periodic_distance = np.linalg.norm(0.5*box_size - (particle_pos[4] - particle_pos[i] + 0.5*box_size)%box_size)
-#         print (i, particle_pos[i], particle_pos[4], periodic_distance)
-#
