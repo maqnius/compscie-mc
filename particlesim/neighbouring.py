@@ -16,6 +16,7 @@
 
 # imports
 import numpy as np
+import itertools as it
 
 
 class Neighbouring(object):
@@ -73,35 +74,41 @@ class NeighbouringCellLinkedLists(Neighbouring):
     def __init__(self, particle_positions, radius=float("inf"), box_size=1.0):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
+        self._cell_len = -1
         self.create_neighbourlist()
+
 
     # private methods
 
     # public methods
     def create_neighbourlist(self): # in O(self.n)
-        n, r, pos = self.n, self.r, self.particle_positions
-        nr_cells = int(self.box_size/r + 1)
+        n, r, pos, box_size = self.n, self.r, self.particle_positions, self.box_size
+        nr_cells = int(box_size / r)
+        cell_len = r + (box_size % r )/nr_cells # evenly distributing the overlap
+        self._cell_len = cell_len
         nr_cells = max(1, nr_cells) # catches case that nr_cells is 0
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
         # print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[0][0])) #TODO no print in the end
         for i in range(n):
-            x, y, z = (pos[i]/r).astype(int) # // ist ganzzahlige division (ohne rest)
+            x, y, z = (pos[i]/cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
             #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
             cell_linked_list[x][y][z].append(i) # we need only indices
         self._neighbourlist = cell_linked_list
 
     def get_particles_within_radius(self, particle_id):
-        n, r, pos, cell_ll = self.n, self.r, self.particle_positions, self._neighbourlist
+        n, r, pos, cell_ll, cell_len = self.n, self.r, self.particle_positions, self._neighbourlist, self._cell_len
         box_size = self.box_size
         nr_cells = len(cell_ll)
         ret = []
 
         p = pos[particle_id]
-        cell = (p / r).astype("int")
-        cell_dir = np.rint((p % r)/r).astype("int")
-        cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
-        cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in
-                          [cell_dir[2], 0]])
+        cell = (p / cell_len).astype("int")
+        #cell_dir = np.rint((p % r)/r).astype("int")
+        #cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
+        cell_dir = np.array(list(it.product([-1,0,1],repeat=3)))
+        #cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in [cell_dir[2], 0]])
+        cells = np.array([(cell + cell_dir[i])%nr_cells for i in range(27)] )
+
         for cell_idx in cells:
             idx_x, idx_y, idx_z = cell_idx
             cell_list = cell_ll[idx_x][idx_y][idx_z]
@@ -114,13 +121,24 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
 
 if __name__=="__main__":
-    box_size = float(2.4)
-    particle_pos = (np.arange(25*3).reshape(25,3) + np.arange(25*3).reshape(25,3)/10.0)%box_size
-    print (particle_pos)
-#
-    nlist = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
-    nlist = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
-    nlist.create_neighbourlist()
+    box_size = float(7.6)
+    nr_particles = 250
+    for i in range(100):
+        particle_pos = np.random.rand(nr_particles, 3)*box_size
+        #print (particle_pos)
+
+        NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
+        NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
+
+        #for pid in range(nr_particles):
+            #print(sorted(NL_PL.get_particles_within_radius(pid)))
+            #print(sorted(NL_CLL.get_particles_within_radius(pid)))
+
+        print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
+
+
+
+
 #
 #     print ("particle position at 4: ", particle_pos[4])
 #     print ("indices: ", nlist.get_particles_within_radius(4))
