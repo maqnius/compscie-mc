@@ -81,8 +81,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
     def create_neighbourlist(self): # in O(self.n)
         n, r, pos = self.n, self.r, self.particle_positions
         nr_cells = int(self.box_size/r + 1)
-        if nr_cells == 0:
-            nr_cells = 1
+        nr_cells = max(1, nr_cells) # catches case that nr_cells is 0
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
         # print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[0][0])) #TODO no print in the end
         for i in range(n):
