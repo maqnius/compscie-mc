@@ -17,6 +17,7 @@
 import numpy as np
 import pytest
 from .neighbouring import Neighbouring
+from .neighbouring import NeighbouringPrimitiveLists
 from .neighbouring import NeighbouringCellLinkedLists
 
 def test_create_Neighbouring_instance():
@@ -34,3 +35,13 @@ def test_create_Neighbouring_Cell_Linked_Lists_instance():
 
     with pytest.raises(TypeError):
         n = NeighbouringCellLinkedLists("something")
+
+
+def test_equivalence_CLL_PL():
+    box_size = float(7.6)
+    nr_particles = 25
+    pid = 5 % nr_particles
+    particle_pos = np.random.rand(nr_particles, 3)*box_size
+    NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
+    NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
+    assert set(NL_CLL.get_particles_within_radius(pid)[0]) == set(NL_PL.get_particles_within_radius(pid))
