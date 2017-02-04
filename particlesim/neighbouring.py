@@ -98,7 +98,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
         n, r, pos, cell_ll, cell_len = self.n, self.r, self.particle_positions, self._neighbourlist, self._cell_len
         box_size = self.box_size
         nr_cells = len(cell_ll)
-        ret = []
+        ret_idx, ret_dist = [], []
 
         p = pos[particle_id]
         cell = (p / cell_len).astype("int")
@@ -115,8 +115,9 @@ class NeighbouringCellLinkedLists(Neighbouring):
                 neigh = pos[neigh_idx]
                 periodic_distance = np.linalg.norm(0.5 * box_size- (p - neigh + 0.5 * box_size) % box_size)
                 if periodic_distance>=r or particle_id==neigh_idx: continue
-                ret.append(neigh_idx)
-        return ret
+                ret_idx.append(neigh_idx)
+                ret_dist.append(periodic_distance)
+        return ret_idx, ret_dist
 
     def update_cells(self, new_positions):
 
