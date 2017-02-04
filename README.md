@@ -1,5 +1,5 @@
-[![CircleCI](https://circleci.com/gh/maqnius/compsie-mc/tree/master.svg?style=svg)](https://circleci.com/gh/maqnius/compscie-mc/tree/master)
-[![codecov](https://codecov.io/gh/maqnius/compsie-mc/branch/master/graph/badge.svg)](https://codecov.io/gh/maqnius/compscie-mc/)
+[![CircleCI](https://circleci.com/gh/maqnius/compscie-mc/tree/master.svg?style=svg)](https://circleci.com/gh/maqnius/compscie-mc/tree/master)
+[![codecov](https://codecov.io/gh/maqnius/compscie-mc/branch/master/graph/badge.svg)](https://codecov.io/gh/maqnius/compscie-mc/)
 
 
 # compscie-mc
