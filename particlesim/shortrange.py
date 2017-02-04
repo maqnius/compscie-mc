@@ -105,7 +105,7 @@ class LennardJones(object):
 
             lj_interaction_tmp = 0
             coulomb_tmp = 0
-            for j in range(0, len(neighbors) - 1):
+            for j in range(len(neighbors)):
                 particle2 = neighbors[j]
 
                 sigma = self.sigmas[i, j]
