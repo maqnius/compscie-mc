@@ -144,15 +144,3 @@ if __name__=="__main__":
             #print(sorted(NL_CLL.get_particles_within_radius(pid)))
 
         print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
-
-
-
-
-#
-#     print ("particle position at 4: ", particle_pos[4])
-#     print ("indices: ", nlist.get_particles_within_radius(4))
-#     print ("particles close to 4", particle_pos[nlist.get_particles_within_radius(4)])
-#     for i in nlist.get_particles_within_radius(4):
-#         periodic_distance = np.linalg.norm(0.5*box_size - (particle_pos[4] - particle_pos[i] + 0.5*box_size)%box_size)
-#         print (i, particle_pos[i], particle_pos[4], periodic_distance)
-#
