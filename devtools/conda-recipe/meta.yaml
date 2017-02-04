@@ -1,0 +1,34 @@
+package:
+  name: particlesim-dev
+  version: "1.0"
+source:
+  path: ../..
+
+build:
+  preserve_egg_dir: True
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - cython >=0.22
+    - scipy
+    - numpy x.x
+
+  run:
+    - python
+    - numpy x.x
+    - scipy
+    - cython >=0.22
+
+test:
+  requires:
+    - pytest
+    - pytest-cov
+  imports:
+    - particlesim
+
+about:
+  home: https://github.com/maqnius/compsie-mc
+  license: GNU Public License v3+
+  summary: "Solve Poisson's equation with successive over-relaxation"
