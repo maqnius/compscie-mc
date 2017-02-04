@@ -47,20 +47,21 @@ class Neighbouring(object):
 
 
 class NeighbouringPrimitiveLists(Neighbouring):
-    def __init__(self, particle_positions, radius=float("inf"), box_size = 5):
+    def __init__(self, particle_positions, radius=float("inf"), box_size=5):
         super(NeighbouringPrimitiveLists, self).__init__(particle_positions, radius)
-        self.box_size = 5
+        self.box_size = box_size
         self.create_neighbourlist()
 
     # private methods
 
     # public methods
     def create_neighbourlist(self):
-        n, r, pos   = self.n, self.r, self.particle_positions
+        n, r, pos, box_size   = self.n, self.r, self.particle_positions, self.box_size
         nlist       = [[] for i in range(n)]
         for i in range(n):
             for j in range(n):
-                if np.linalg.norm(pos[i]-pos[j])%self.box_size>=r or i==j: continue # Need to take care of periodic boundary conditions
+                periodic_distance = np.linalg.norm(0.5 * box_size- (pos[i] - pos[j] + 0.5 * box_size) % box_size)
+                if periodic_distance>=r or i==j: continue
                 nlist[i].append(j)
         self._neighbourlist = nlist
 
@@ -69,9 +70,9 @@ class NeighbouringPrimitiveLists(Neighbouring):
         # return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
 
 class NeighbouringCellLinkedLists(Neighbouring):
-    def __init__(self, particle_positions, radius=float("inf"), box_side_length=1.0):
+    def __init__(self, particle_positions, radius=float("inf"), box_size=1.0):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
-        self.box_side_length = float(box_side_length)
+        self.box_size = float(box_size)
         self.create_neighbourlist()
 
     # private methods
@@ -79,7 +80,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
     # public methods
     def create_neighbourlist(self): # in O(self.n)
         n, r, pos = self.n, self.r, self.particle_positions
-        nr_cells = int(self.box_side_length/r + 1)
+        nr_cells = int(self.box_size/r + 1)
         if nr_cells == 0:
             nr_cells = 1
         cell_linked_list = [[[[] for i in range(nr_cells)]for j in range(nr_cells)]for k in range(nr_cells)]
@@ -92,7 +93,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
     def get_particles_within_radius(self, particle_id):
         n, r, pos, cell_ll = self.n, self.r, self.particle_positions, self._neighbourlist
-        box_side_length = self.box_side_length
+        box_size = self.box_size
         nr_cells = len(cell_ll)
         ret = []
 
@@ -107,27 +108,26 @@ class NeighbouringCellLinkedLists(Neighbouring):
             cell_list = cell_ll[idx_x][idx_y][idx_z]
             for neigh_idx in cell_list:
                 neigh = pos[neigh_idx]
-                periodic_distance = np.linalg.norm(
-                    0.5 * box_side_length - (p - neigh + 0.5 * box_side_length) % box_side_length)
+                periodic_distance = np.linalg.norm(0.5 * box_size- (p - neigh + 0.5 * box_size) % box_size)
                 if periodic_distance > r: continue
                 if particle_id == neigh_idx: continue
                 ret.append(neigh_idx)
         return ret
 
 
-# if __name__=="__main__":
-#     box_side_length = float(2.4)
-#     particle_pos = (np.arange(25*3).reshape(25,3) + np.arange(25*3).reshape(25,3)/10.0)%box_side_length
-#     print (particle_pos)
+if __name__=="__main__":
+    box_size = float(2.4)
+    particle_pos = (np.arange(25*3).reshape(25,3) + np.arange(25*3).reshape(25,3)/10.0)%box_size
+    print (particle_pos)
 #
-#     #nlist = NeighbouringPrimitiveLists(particle_pos, radius=1.2)
-#     nlist = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_side_length=box_side_length)
-#     nlist.create_neighbourlist()
+    nlist = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
+#     nlist = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
+    nlist.create_neighbourlist()
 #
 #     print ("particle position at 4: ", particle_pos[4])
 #     print ("indices: ", nlist.get_particles_within_radius(4))
 #     print ("particles close to 4", particle_pos[nlist.get_particles_within_radius(4)])
 #     for i in nlist.get_particles_within_radius(4):
-#         periodic_distance = np.linalg.norm(0.5*box_side_length - (particle_pos[4] - particle_pos[i] + 0.5*box_side_length)%box_side_length)
+#         periodic_distance = np.linalg.norm(0.5*box_size - (particle_pos[4] - particle_pos[i] + 0.5*box_size)%box_size)
 #         print (i, particle_pos[i], particle_pos[4], periodic_distance)
 #
