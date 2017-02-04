@@ -38,12 +38,10 @@ class TotalPotential(object):
         return self.longrange.longrange_energy(positions)
 
     def shortrange_energy(self, positions):
-        return self.shortrange.shortrange(positions)
+        return self.shortrange.phi(positions)
 
     def potential(self, xyz_trial):
-        longrange = self.longrange_energy(xyz_trial)
-
-        return longrange
+        return self.longrange_energy(xyz_trial) + self.shortrange_energy(xyz_trial)
 
 
     def __estimate_parameters(self):
