@@ -22,7 +22,7 @@ import pytest
 def test_all_sampled_particles_are_inside_box():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(iteration_number=1000)
+    traj, pot = sampler.metropolis(iteration_number=100)
     assert np.all((traj<system_configuration.box_size)*(traj >= 0))
 
 def test_sampler_no_particles_in_system():
@@ -61,7 +61,7 @@ def test_sampler_negative_iteration_number():
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle)
-    traj, pot = sampler.metropolis(iteration_number=1000,beta=10)
+    traj, pot = sampler.metropolis(iteration_number=100,beta=10)
     r_left = 1
     r_right =1.5
     for i in range(1,n_particle):

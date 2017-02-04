@@ -28,8 +28,33 @@ def test_longrange_potential_is_float():
     new_positions = create_positions(n)
 
     longrange = total.longrange_energy(new_positions)
-
-#    print("Calculated longrange energy: %s eV" % longrange)
+    # print("Calculated longrange energy: %s " % longrange)
     assert isinstance(longrange, float)
 
     assert longrange != 0.
+
+def test_shortrange_potential_is_float():
+    n = 100
+    system_conf = create_system_configuration(n)
+    total = TotalPotential(system_conf, k_cutoff=3)
+
+    new_positions = create_positions(n)
+
+    shortrange = total.shortrange_energy(new_positions)
+    # print("Calculated shortrange energy: %s " % shortrange)
+    assert isinstance(shortrange, float)
+
+    assert shortrange != 0.
+
+def test_total_potential_is_float():
+    n = 100
+    system_conf = create_system_configuration(n)
+    total = TotalPotential(system_conf, k_cutoff=3)
+
+    new_positions = create_positions(n)
+
+    total_energy = total.shortrange.phi(new_positions)
+
+    assert isinstance(total_energy, float)
+
+    assert total_energy != 0.

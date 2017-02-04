@@ -13,9 +13,8 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import numpy as np
-from .lennard_jones import *
 from particlesim.ewald_summation import EwaldSummation
+from particlesim.shortrange import LennardJones
 
 class TotalPotential(object):
     r"""
@@ -26,23 +25,23 @@ class TotalPotential(object):
     t_k = 1  # Runtime of one fourierspace interaction of Ewald Simmulation
     t_r = 1  # Runtime of one realspace interaction of Ewald Simmulation
 
-    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3):
+    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3, r_cutoff = 3):
         self.sigma_coulomb = sigma_c
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
         self.longrange = EwaldSummation(system_configuration, self.sigma_coulomb, k_cutoff)
 
-        # #initialize the neighbouring datastructur. When there is a position update,
-        #  just update the existing instance.
+        # Create instance for calculation of shortrange energy
+        self.shortrange = LennardJones(system_configuration, self.sigma_coulomb, r_cutoff)
 
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)
 
+    def shortrange_energy(self, positions):
+        return self.shortrange.phi(positions)
+
     def potential(self, xyz_trial):
-        longrange = self.longrange_energy(xyz_trial)
-        # shortrange =
-        # return self.shortrange
-        return longrange
+        return self.longrange_energy(xyz_trial) + self.shortrange_energy(xyz_trial)
 
 
     def __estimate_parameters(self):
