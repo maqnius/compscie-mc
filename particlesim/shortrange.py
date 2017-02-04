@@ -96,12 +96,13 @@ class LennardJones(object):
         lj_interaction = 0
         coulomb_interaction = 0
 
-        self.nlist.update_cells(positions)
+        #self.nlist.update_cells(positions)
+        self.nlist.particle_positions = positions
+        self.nlist.create_neighbourlist()
 
-        for i in range(0, n):
-            particle1 = i
 
-            neighbors = self.nlist.get_particles_within_radius(particle1)
+        for particle1 in range(0, n):
+            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
 
             lj_interaction_tmp = 0
             coulomb_tmp = 0
