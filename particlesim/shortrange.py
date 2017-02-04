@@ -96,7 +96,7 @@ class LennardJones(object):
         lj_interaction = 0
         coulomb_interaction = 0
 
-        self.nlist.update_neighbourlist(positions)
+        self.nlist.update_cells(positions)
 
         for i in range(0, n):
             particle1 = i
@@ -108,12 +108,12 @@ class LennardJones(object):
             for j in range(len(neighbors)):
                 particle2 = neighbors[j]
 
-                sigma = self.sigmas[i, j]
-                epsilon = self.epsilons[i, j]
+                sigma = self.sigmas[particle1, particle2]
+                epsilon = self.epsilons[particle1, particle2]
 
                 r = np.linalg.norm(
-                    0.5 * self.nlist.box_side_length - (positions[particle1] - positions[particle2] +
-                                                        0.5 * self.nlist.box_side_length) % self.nlist.box_side_length)
+                    0.5 * self.nlist.box_size - (positions[particle1] - positions[particle2] +
+                                                        0.5 * self.nlist.box_size) % self.nlist.box_size)
 
                 # Lennard Jones Potential
                 lj_interaction_tmp += self.lj_potential(r, sigma=sigma, epsilon=epsilon)

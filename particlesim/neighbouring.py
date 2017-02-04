@@ -112,6 +112,12 @@ class NeighbouringCellLinkedLists(Neighbouring):
                 ret.append(neigh_idx)
         return ret
 
+    def update_cells(self, new_positions):
+        for i in range(self.n):
+            x, y, z = (new_positions[i]/self.r).astype(int) # // ist ganzzahlige division (ohne rest)
+            #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
+            self._neighbourlist[x][y][z].append(i) # we need only indices
+
 
 if __name__=="__main__":
     box_size = float(2.4)
