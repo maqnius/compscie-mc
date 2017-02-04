@@ -1,6 +1,6 @@
 package:
   name: particlesim-dev
-  version: {{ GIT_DESCRIBE_TAG+ '+' +GIT_BUILD_STR }}
+  version: "1.0"
 source:
   path: ../..
 
@@ -12,20 +12,23 @@ requirements:
     - python
     - setuptools
     - cython >=0.22
+    - scipy
     - numpy x.x
 
   run:
     - python
     - numpy x.x
+    - scipy
+    - cython >=0.22
 
 test:
   requires:
-    - pytest 
+    - pytest
     - pytest-cov
   imports:
     - particlesim
 
 about:
-  home: https://github.com/SimonTreu/compscie-mc
+  home: https://github.com/maqnius/compsie-mc
   license: GNU Public License v3+
   summary: "Solve Poisson's equation with successive over-relaxation"
