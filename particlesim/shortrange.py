@@ -187,14 +187,3 @@ class LennardJones(object):
             return self.shortrange(positions) + self.external_potential(positions)
         else:
             return self.shortrange(positions)
-
-    # testing the functions
-
-    xyz = np.random.rand(10, 3) * 2.0
-    sigma = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    charges = 10 * [1]
-    ewald_sigma = 0.01
-    epsilon = [5, 1, 2, 3, 4, 6, 7, 8, 9, 5, 5]
-    box_length = 2
-
-    # print(phi(xyz, sigma, ewald_sigma, epsilon, charges, box_length))
