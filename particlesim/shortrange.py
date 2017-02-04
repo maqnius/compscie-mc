@@ -33,6 +33,12 @@ class LennardJones(object):
         sigma_c : Float
             Spread of the Gaussian function used for the Ewald Summation part
 
+        r_cutoff : int or Float
+            Lenght of the realspace cutoff for calculating neighbours
+
+        infinite_wall: Boolean
+            Flag, if an external infinite wall potential should be used
+
         """
         self.infinite_wall = infinite_wall
         self.epsilon_r = system_conf.epsilon_r
@@ -58,7 +64,6 @@ class LennardJones(object):
             Zero crossing distance.
         epsilon : float, optional, default=1.0
             Depth of the potential well.
-            Epsilon needs to be in eV
 
         Returns
         -------
@@ -79,23 +84,10 @@ class LennardJones(object):
         xyz : numpy.ndarray(shape=(n, d))
             d-dimensional coordinates of n particles.
 
-        li_sigma : numpy.ndarray(shape=(n, 1))
-            List of zero crossing distances for the Lennard-Jones contribution.
-
-        ewald_sigma: float
-            Spread of the gaussian function in the Ewald Summation that makes a cutoff possible
-
-        epsilon : numpy.ndarray(shape=(n, 1))
-            List of depths of the potential well for the Lennard-Jones contribution.
-
-        charges: numpy.ndarray(shape=(n,1))
-            List of charges
-
-
         Returns
         -------
         float
-            Total interaction potential in eV
+            Total interaction potential in Hartree-Energy
 
         """
 
@@ -133,7 +125,7 @@ class LennardJones(object):
             lj_interaction += lj_interaction_tmp
             coulomb_interaction += coulomb_tmp
 
-        return lj_interaction + coulomb_interaction * constants.eV  # Energy Unit is eV
+        return lj_interaction + coulomb_interaction
 
     def external_potential(self, positions):
         r"""
