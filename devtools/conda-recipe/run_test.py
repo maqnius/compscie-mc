@@ -24,6 +24,6 @@ print("args:", pytest_args)
 res = pytest.main(pytest_args)
 
 # copy it to home, so we can process it with codecov etc.
-shutil.copy('coverage.xml', os.path.expanduser('~/particlesim/'))
+shutil.copy('coverage.xml', os.path.expanduser('~/compscie-mc/'))
 
 sys.exit(res)
