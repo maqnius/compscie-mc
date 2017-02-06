@@ -37,11 +37,15 @@ class TotalPotential(object):
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)
 
-    def shortrange_energy(self, positions):
-        return self.shortrange.shortrange(positions)
+    def shortrange_energy(self, positions, lennard_jones = True, coulomb = True):
+        return self.shortrange.shortrange(positions, lj=lennard_jones, coulomb=coulomb)
 
-    def potential(self, xyz_trial):
-        return self.longrange_energy(xyz_trial) + self.shortrange_energy(xyz_trial)
+    def potential(self, xyz_trial, lennard_jones = True, coulomb = True):
+        pot = 0.
+        if(coulomb):
+            pot += self.longrange_energy(xyz_trial)
+        pot += self.shortrange_energy(xyz_trial, lennard_jones, coulomb)
+        return pot
 
 
     def __estimate_parameters(self):
