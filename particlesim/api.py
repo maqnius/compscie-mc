@@ -55,7 +55,7 @@ class SystemConfiguration(object):
                 raise TypeError('charges must have the same length as particle numbers')
 
         self.box_size = box_size
-        self.volume = box_size * box_size
+        self._volume = box_size * box_size #There is no volume setter
         self.epsilon_r = epsilon_r
         self.xyz = xyz
         self.charges = charges
@@ -64,67 +64,67 @@ class SystemConfiguration(object):
         self.create_lj_mean_parameters()
         self._total_potential = TotalPotential(self)
 
-        @property
-        def xyz(self):
-            return self._xyz
+    @property
+    def xyz(self):
+        return self._xyz
 
-        @xyz.setter
-        def xyz(self, value):
-            xyz = np.asarray(value)
-            if not issubclass(xyz.dtype.type, np.float):
-                raise TypeError("values in xyz must be of type float")
-            if xyz.ndim != 2 or xyz.shape[0] < 2 or xyz.shape[1] != 3:
-                raise ValueError("xyz must be of shape=(n_particles, dim) with n_particles > 1 and dim = 3")
-            self._xyz = xyz
+    @xyz.setter
+    def xyz(self, value):
+        xyz = np.asarray(value,dtype=float)
+        if not (issubclass(xyz.dtype.type, np.float) or issubclass(xyz.dtype.type, np.integer)):
+            raise TypeError("values in xyz must be of type float or int")
+        if xyz.ndim != 2 or xyz.shape[0] < 2 or xyz.shape[1] != 3:
+            raise ValueError("xyz must be of shape=(n_particles, dim) with n_particles > 1 and dim = 3")
+        self._xyz = xyz
 
-        @property
-        def box_size(self):
-            return self._box_size
+    @property
+    def volume(self):
+        return self._volume
 
-        @property
-        def volume(self):
-            return self._volume
+    @property
+    def box_size(self):
+        return self._box_size
 
-        @box_size.setter
-        def box_size(self, value):
-            if not isinstance(value, (float, int)) or value <= 0.0:
-                raise ValueError("box_size must be a positive number or None")
-            self._box_size = float(value)
+    @box_size.setter
+    def box_size(self, value):
+        if not isinstance(value, (float, int)) or value <= 0.0:
+            raise ValueError("box_size must be a positive number or None")
+        self._box_size = float(value)
 
-        @property
-        def charges(self):
-            return self._charges
+    @property
+    def charges(self):
+        return self._charges
 
-        @charges.setter
-        def charges(self, value):
-            charges = np.asarray(value)
-            if not issubclass(charges.dtype.type, np.float):
-                raise TypeError("values of charges must be of type float")
-            if charges.ndim != 2 or charges.shape[1] != 1:
-                raise ValueError("charge must be of shape=(n_charges, dim) dim = 1")
-            charges = np.asarray(value)
+    @charges.setter
+    def charges(self, value):
+        charges = np.asarray(value)
+        if not (issubclass(charges.dtype.type, np.float) or issubclass(charges.dtype.type, np.integer)):
+            raise TypeError("values of charges must be of type float or int")
+        if charges.ndim != 1:
+            raise ValueError("charges must be a 1 dim array")
+        self._charges = np.asarray(value,dtype=np.float)
 
-        @property
-        def sigmas(self):
-            return self._sigmas
+    @property
+    def sigmas(self):
+        return self._sigmas
 
-        @sigmas.setter
-        def sigmas(self, value):
-            if not np.all(value >= 0):
-                raise ValueError("sigmas must be positive float")
+    @sigmas.setter
+    def sigmas(self, value):
+        sigmas = np.asarray(value, dtype=np.float)
+        if not np.all(sigmas >= 0):
+            raise ValueError("sigmas must be positive float")
+        self._sigmas = sigmas
 
-        @property
-        def epsilons(self):
-            return
+    @property
+    def epsilons(self):
+        return self._epsilons
 
-        @epsilons.setter
-        def epsilons(self, value):
-            if not np.all(value >= 0):
-                raise ValueError("epsilons must be positive float")
-
-
-
-
+    @epsilons.setter
+    def epsilons(self, value):
+        epsilons = np.asarray(value,dtype=np.float)
+        if not np.all(epsilons >= 0):
+            raise ValueError("epsilons must be positive float")
+        self._epsilons = epsilons
 
 
     # def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
@@ -228,39 +228,39 @@ class Sampler(object):
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
     # TODO
-    def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
-        r"""
-        Perform a Metropolis-based simulated annealing procedure.
-
-        Parameters
-        ----------
-        hamiltonian : object
-            Encapsulates the system's degrees of freedom
-            and interactions.
-        size : int
-            Number of Metropolis update steps.
-        step : float, optional, default=0.1
-            Maximal size of an update move in each coordinate.
-        beta : float, optional, default=1.0
-            Initial inverse temperature factor (1/kT).
-
-        Returns
-        -------
-        numpy.ndarray of float
-            Configuration trajectory.
-        numpy.ndarray of float
-            Total interaction and external potential trajectory.
-
-        """
-        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
-        xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
-        pot_traj = [hamiltonian.potential()]
-        for i in range(size):
-            xyz, pot = self._update(
-                hamiltonian,
-                xyz_traj[-1], pot_traj[-1],
-                step=step, beta=beta_values[i])
-            xyz_traj.append(xyz)
-            pot_traj.append(pot)
-        hamiltonian.xyz[:] = xyz_traj[-1]
-        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+    # def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
+    #     r"""
+    #     Perform a Metropolis-based simulated annealing procedure.
+    #
+    #     Parameters
+    #     ----------
+    #     hamiltonian : object
+    #         Encapsulates the system's degrees of freedom
+    #         and interactions.
+    #     size : int
+    #         Number of Metropolis update steps.
+    #     step : float, optional, default=0.1
+    #         Maximal size of an update move in each coordinate.
+    #     beta : float, optional, default=1.0
+    #         Initial inverse temperature factor (1/kT).
+    #
+    #     Returns
+    #     -------
+    #     numpy.ndarray of float
+    #         Configuration trajectory.
+    #     numpy.ndarray of float
+    #         Total interaction and external potential trajectory.
+    #
+    #     """
+    #     beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
+    #     xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
+    #     pot_traj = [hamiltonian.potential()]
+    #     for i in range(size):
+    #         xyz, pot = self._update(
+    #             hamiltonian,
+    #             xyz_traj[-1], pot_traj[-1],
+    #             step=step, beta=beta_values[i])
+    #         xyz_traj.append(xyz)
+    #         pot_traj.append(pot)
+    #     hamiltonian.xyz[:] = xyz_traj[-1]
+    #     return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
