@@ -14,7 +14,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from particlesim.ewald_summation import EwaldSummation
-from particlesim.shortrange import LennardJones
+from particlesim.shortrange import Shortrange
 
 class TotalPotential(object):
     r"""
@@ -32,16 +32,20 @@ class TotalPotential(object):
         self.longrange = EwaldSummation(system_configuration, self.sigma_coulomb, k_cutoff)
 
         # Create instance for calculation of shortrange energy
-        self.shortrange = LennardJones(system_configuration, self.sigma_coulomb, r_cutoff)
+        self.shortrange = Shortrange(system_configuration, self.sigma_coulomb, r_cutoff)
 
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)
 
-    def shortrange_energy(self, positions):
-        return self.shortrange.phi(positions)
+    def shortrange_energy(self, positions, lennard_jones = True, coulomb = True):
+        return self.shortrange.shortrange(positions, lj=lennard_jones, coulomb=coulomb)
 
-    def potential(self, xyz_trial):
-        return self.longrange_energy(xyz_trial) + self.shortrange_energy(xyz_trial)
+    def potential(self, xyz_trial, lennard_jones = True, coulomb = True):
+        pot = 0.
+        if(coulomb):
+            pot += self.longrange_energy(xyz_trial)
+        pot += self.shortrange_energy(xyz_trial, lennard_jones, coulomb)
+        return pot
 
 
     def __estimate_parameters(self):
