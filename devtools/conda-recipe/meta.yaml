@@ -19,7 +19,6 @@ requirements:
     - python
     - numpy x.x
     - scipy
-    - cython >=0.22
 
 test:
   requires:

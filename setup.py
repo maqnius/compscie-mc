@@ -94,7 +94,6 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Operating System :: Microsoft :: Windows',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
         'Topic :: Scientific/Engineering :: Chemistry',
@@ -108,7 +107,6 @@ setup(
     packages=['particlesim'],
         setup_requires=[
         'numpy>=1.7.0',
-        'cython>=0.22',
         'setuptools>=0.6',
         'scipy>=0.6'],
     install_requires=['numpy>=1.7.0','cython>=0.22'],

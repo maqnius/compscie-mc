@@ -16,9 +16,7 @@
 
 import numpy as np
 from scipy.constants import physical_constants
-import pyximport; pyximport.install(setup_args={"include_dirs":np.get_include()},
-                  reload_support=True)
-import particlesim.k_cython as k_cython
+from .k_cython import calc_k_vectors
 
 class EwaldSummation(object):
 
@@ -31,7 +29,7 @@ class EwaldSummation(object):
 
         # Assig cutoff k and calculate vectors in k-space for longrange interaction energy
         self.k_cutoff = k_cutoff
-        self.k_vectors = np.multiply(self.calc_k_vectors(k_cutoff), 2*np.pi/self.volume)
+        self.k_vectors = np.multiply(calc_k_vectors(k_cutoff), 2*np.pi/self.volume)
 
 
     def longrange_energy(self, positions):
@@ -127,6 +125,3 @@ class EwaldSummation(object):
         k_vectors.remove([0, 0, 0])
 
         return k_vectors
-
-    def calc_k_vectors(self, K):
-        return k_cython.calc_k_vectors(K)
