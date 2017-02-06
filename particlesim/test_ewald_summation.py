@@ -16,10 +16,6 @@
 
 
 import numpy as np
-import numpy.testing as testing
-import pyximport; pyximport.install()
-import particlesim.k_cython as k_cython
-import time
 
 '''
 def test_energy_is_positive():
