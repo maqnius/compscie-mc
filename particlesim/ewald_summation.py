@@ -28,7 +28,7 @@ class EwaldSummation(object):
         self.sigma_sq = sigma * sigma
 
         # Assig cutoff k and calculate vectors in k-space for longrange interaction energy
-        self.k_cutoff = k_cutoff
+        self.k_cutoff = k_cutoff # multiple of 2*pi/L
         self.k_vectors = np.multiply(calc_k_vectors(k_cutoff), 2*np.pi/self.volume)
 
 

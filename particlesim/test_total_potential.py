@@ -53,7 +53,7 @@ def test_total_potential_is_float():
 
     new_positions = create_positions(n)
 
-    total_energy = total.shortrange.shortrange(new_positions)
+    total_energy = total.shortrange.phi(new_positions)
 
     assert isinstance(total_energy, float)
 
