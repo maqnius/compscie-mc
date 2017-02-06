@@ -100,7 +100,8 @@ class Shortrange(object):
         for particle1 in range(0, n):
             neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
 
-
+            lj_interaction_tmp = 0
+            coulomb_interaction_tmp = 0
             for j in range(len(neighbors)):
                 particle2 = neighbors[j]
 
@@ -113,14 +114,15 @@ class Shortrange(object):
 
                 # Lennard Jones Potential
                 if lj:
-                    lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
+                    lj_interaction_tmp += 0.5 * self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
                 # Shortrange Coulomb Energy
                 if coulomb:
-                    coulomb_interaction += 0.5 * self.charges[particle1] * self.charges[particle2] / r * erfc(
+                    coulomb_interaction_tmp += 0.5 * self.charges[particle1] * self.charges[particle2] / r * erfc(
                         r / (np.sqrt(2) * self.sigma_c))
 
-
+            lj_interaction += lj_interaction_tmp
+            coulomb_interaction += coulomb_interaction_tmp
 
         return lj_interaction + coulomb_interaction
 
