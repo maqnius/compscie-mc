@@ -40,7 +40,11 @@ class TotalPotential(object):
     def shortrange_energy(self, positions):
         return self.shortrange.phi(positions)
 
-    def potential(self, xyz_trial):
+    def potential(self, xyz_trial, lennard_jones = True, coulomb = True):
+        pot = 0.
+        if(coulomb):
+            pot += self.longrange(xyz_trial)
+        pot += self.shortrange_energy(xyz_trial, lennard_jones, coulomb)
         return self.longrange_energy(xyz_trial) + self.shortrange_energy(xyz_trial)
 
 
