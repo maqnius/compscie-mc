@@ -20,8 +20,8 @@ from scipy.special import erfc
 import scipy.constants as constants
 
 
-class LennardJones(object):
-    def __init__(self, system_conf, sigma_c, r_cutoff, infinite_wall=False):
+class Shortrange(object):
+    def __init__(self, system_conf, sigma_c, r_cutoff):
         """
 
         Parameters
@@ -36,11 +36,7 @@ class LennardJones(object):
         r_cutoff : int or Float
             Lenght of the realspace cutoff for calculating neighbours
 
-        infinite_wall: Boolean
-            Flag, if an external infinite wall potential should be used
-
         """
-        self.infinite_wall = infinite_wall
         self.epsilon_r = system_conf.epsilon_r
         self.box_length = system_conf.box_size
         self.charges = system_conf.charges
@@ -74,7 +70,7 @@ class LennardJones(object):
         q = (sigma / r) ** 6
         return 4.0 * (epsilon * (q * (q - 1.0)))
 
-    def shortrange(self, positions):
+    def shortrange(self, positions, coulomb=True, lj=True):
         r"""
         Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
         and the short coulomb interaction part of the ewald summation
@@ -104,8 +100,7 @@ class LennardJones(object):
         for particle1 in range(0, n):
             neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
 
-            lj_interaction_tmp = 0
-            coulomb_tmp = 0
+
             for j in range(len(neighbors)):
                 particle2 = neighbors[j]
 
@@ -117,66 +112,15 @@ class LennardJones(object):
                                                         0.5 * self.nlist.box_size) % self.nlist.box_size)
 
                 # Lennard Jones Potential
-                lj_interaction_tmp += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
+                if lj:
+                    lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
                 # Shortrange Coulomb Energy
-                coulomb_tmp = self.charges[particle1] * self.charges[particle2] / r * erfc(
-                    r / (np.sqrt(2) * self.sigma_c))
+                if coulomb:
+                    coulomb_interaction += 0.5 * self.charges[particle1] * self.charges[particle2] / r * erfc(
+                        r / (np.sqrt(2) * self.sigma_c))
 
-            lj_interaction += lj_interaction_tmp
-            coulomb_interaction += coulomb_tmp
+
 
         return lj_interaction + coulomb_interaction
 
-    def external_potential(self, positions):
-        r"""
-        Compute the external potential for a set of particles.
-
-        Parameters
-        ----------
-        xyz : numpy.ndarray(shape=(n, d))
-            d-dimensional coordinates of n particles.
-        box_length : float, optional, default=None
-            If not None, the area outside [0, box_length]^d
-            is forbidden for each particle.
-
-        Returns
-        -------
-        float
-            Total external potential.
-
-        """
-        if self.box_length is None:
-            return 0.0
-        if np.all(positions >= 0.0) and np.all(positions <= self.box_length):
-            return 0.0
-        return np.inf
-
-    def phi(self, positions):
-        r"""
-        Compute the interaction and external potential for a set of particles.
-
-        Parameters
-        ----------
-        ewald_sigma
-        xyz : numpy.ndarray(shape=(n, d))
-            d-dimensional coordinates of n particles.
-        sigma : numpy.ndarray(shape=(n, 1))
-            List of zero crossing distances for the Lennard-Jones contribution.
-        epsilon : numpy.ndarray(shape=(n, 1))
-            List of depths of the potential well for the Lennard-Jones contribution.
-        box_length : float, optional, default=None
-            If not None, the area outside [0, box_length]^d
-            is forbidden for each particle.
-
-        Returns
-        -------
-        float
-            Total interaction and external potential.
-
-        """
-        if (self.infinite_wall):
-            # With infinite Wall
-            return self.shortrange(positions) + self.external_potential(positions)
-        else:
-            return self.shortrange(positions)
