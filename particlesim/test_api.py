@@ -10,9 +10,6 @@ def test_system_configuration_potential_value():
     potential = system_configuration.potential(system_configuration.xyz)
     assert isinstance(potential, (float, int))
 
-def test_add_particles():
-    system_configuration = create_system_configuration(100)
-    assert 100 == system_configuration.number_of_particle_types()
 
 def test_add_particles_not_matching_input():
     number_of_particles = 100
