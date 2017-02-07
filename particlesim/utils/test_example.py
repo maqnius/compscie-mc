@@ -2,22 +2,48 @@ from particlesim.utils.config_parser import ProblemCreator
 from particlesim.api import SystemConfiguration
 from os.path import dirname, join, abspath
 import configparser
+import pkg_resources
+
 
 def test_example_manual_configuration():
+    # Create a test config file
     test_config_path = create_test_config()
+
+    # Get a ProblemCreator file from the config file
     creator = ProblemCreator(test_config_path)
+
+    # Initialize a SystemConfiguration Object from the config file
     system_config = creator.generate_problem()
+
+    # Export the actual configuration that is used for the
+    # SystemConfiguration Object in case some parameters couldn't
+    # be set as the user whished
     creator.export_config()
 
     assert(isinstance(system_config, SystemConfiguration))
+
+def test_create_lib():
+    charmm_path = pkg_resources.resource_filename('particlesim', 'lib/particle_types.txt')
+    to_file = pkg_resources.resource_filename('particlesim', 'lib/particle_types.cfg')
+    lib = ProblemCreator.convert_charmm_parrams(charmm_path, to_file)
 
 def example_type_configuration():
+    # Create a test config file
     test_config_path = create_test_config_with_type_declaration()
+
+    # Get a ProblemCreator file from the config file
     creator = ProblemCreator(test_config_path)
+
+    # Initialize a SystemConfiguration Object from the config file
     system_config = creator.generate_problem()
+
+    # Export the actual configuration that is used for the
+    # SystemConfiguration Object in case some parameters couldn't
+    # be set as the user whished
     creator.export_config()
 
     assert(isinstance(system_config, SystemConfiguration))
+
 
 def create_test_config():
     # Find path to example_init_positions.csv

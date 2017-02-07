@@ -1,8 +1,9 @@
+import pkg_resources
+import glob
 import configparser
 from os.path import dirname, join, abspath, isdir
 from numpy import genfromtxt
 from particlesim.api import SystemConfiguration
-import pkg_resources
 
 class ProblemCreator(object):
     def __init__(self, config_file_path):
@@ -12,6 +13,7 @@ class ProblemCreator(object):
         config_file_path : String
             Path to the .cfg config file
         '''
+        self._lib = self._read_lib()
         self.config = configparser.ConfigParser()
         self.config.read(config_file_path)
         self.manual = True
@@ -48,6 +50,27 @@ class ProblemCreator(object):
 
         self.lennard_jones = self.config['lennard_jones'].getboolean('use_lennard_jones')
 
+    def _read_lib(self):
+        '''
+        Reads in every cfg file found in /lib to create a dictionary for the atoms
+        Keep in mind, that matching fields get overwritten by following reads.
+
+        Returns
+        -------
+        config : configparser.ConfigParser
+            Dictionary with atom information
+        '''
+
+        lib_dir = pkg_resources.resource_filename('particlesim', 'lib/')+'*.cfg'
+        log_files = glob.glob(lib_dir)
+
+        config = configparser.ConfigParser()
+        for log_file in log_files:
+            config.read(log_file)
+
+        return config
+
+
     def generate_problem(self):
         # Unfiddle the input csv file
         try:
@@ -71,7 +94,7 @@ class ProblemCreator(object):
         The config file will be created in the log folder
 
         '''
-        log_dir = pkg_resources.resource_filename('particlesim', 'lib/')
+        log_dir = pkg_resources.resource_filename('particlesim', 'logs/')
 
         # Check if logs exists
         if not isdir(log_dir):
@@ -106,4 +129,41 @@ class ProblemCreator(object):
         '''
         pass
 
-#    def import_charmm_parrams(self):
+    @staticmethod
+    def convert_charmm_parrams(from_file, to_file):
+        '''
+        Converts atom parameters of Charmm Param File to our INI Config Format
+
+        Parameters
+        ----------
+        from_file : path
+            Path to the Charm param file
+
+        Returns
+        -------
+        config : configparser.ConfigParser
+            Config File generated from the Charmm Param Fila
+        '''
+
+        param_names = genfromtxt(from_file,
+                                 comments='!',
+                                 usecols= 0,
+                                 dtype='|S5'
+                                 ).astype(str, copy=False)
+        epsilons_charmm, sigma_charmm = genfromtxt(from_file,
+                                                   comments='!',
+                                                   usecols= (2, 3),
+                                                   unpack=True
+                                                   )
+
+        config = configparser.ConfigParser()
+        config['DEFAULT'] = {'label' : ''}
+
+        for i in range(len(param_names)):
+            config.add_section(param_names[i])
+            config.set(param_names[i], 'epsilon', str(epsilons_charmm[i]))
+            config.set(param_names[i], 'sigma', str(sigma_charmm[i]))
+
+        # Write to .cfg file
+        with open(to_file, 'w') as configfile:
+            config.write(configfile)
