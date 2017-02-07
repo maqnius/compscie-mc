@@ -90,38 +90,3 @@ class EwaldSummation(object):
         longrange_and_self_potential = longrange_potential - self_interaction_potential
 
         return longrange_and_self_potential
-
-    def calc_k_vectors_old(self, k_cutoff):
-        """
-        Old naive implementation.
-
-        Calculates the k vectors of our lattice until a cutoff Value K.
-
-        Parameters
-        ----------
-
-        K : int
-            Cutoff value for the absolute value of the k-vectors
-
-
-        Returns
-        -------
-
-        k_vectors : ndarray
-            Array of k vectors that have an absolute value below cutoff K
-        """
-        k_vectors = []
-
-        # Create all k-vectors with absolute value <= K
-
-        for a in range(-k_cutoff, -k_cutoff + 1):
-            b_limit = int(np.sqrt(-k_cutoff ** 2 - a ** 2))
-            for b in range(-b_limit, b_limit + 1):
-                c_limit = int(np.sqrt(-k_cutoff ** 2 - a ** 2 - b ** 2))
-                for c in range(-c_limit, c_limit + 1):
-                    k_vectors.append([a, b, c])
-
-        # Remove k = [0, 0, 0]
-        k_vectors.remove([0, 0, 0])
-
-        return k_vectors
