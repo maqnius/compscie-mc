@@ -23,13 +23,13 @@ class EwaldSummation(object):
     def __init__(self, system_conf, sigma, k_cutoff):
         self.positions = system_conf.xyz # Original Positions
         self.charges = system_conf.charges
-        self.volume = system_conf.box_size * system_conf.box_size
+        self.volume = system_conf.volume
         self.sigma = sigma
         self.sigma_sq = sigma * sigma
 
         # Assig cutoff k and calculate vectors in k-space for longrange interaction energy
-        self.k_cutoff = k_cutoff
-        self.k_vectors = np.multiply(calc_k_vectors(k_cutoff), 2*np.pi/self.volume)
+        self.k_cutoff = k_cutoff # multiple of 2*pi/L
+        self.k_vectors = np.multiply(calc_k_vectors(k_cutoff), 2*np.pi/system_conf.box_size)
 
 
     def longrange_energy(self, positions):
@@ -88,8 +88,9 @@ class EwaldSummation(object):
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
-
-        return longrange_and_self_potential * physical_constants['Hartree energy in eV'][0]
+        print("longrange_potential", longrange_potential)
+        print("self_interaction_potential", self_interaction_potential)
+        return longrange_and_self_potential
 
     def calc_k_vectors_old(self, k_cutoff):
         """
