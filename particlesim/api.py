@@ -158,9 +158,6 @@ class SystemConfiguration(object):
 
         return self._total_potential.potential(xyz_trial, lennard_jones, coulomb)
 
-    def number_of_particle_types(self):
-        return len(self.xyz)
-
     def create_lj_mean_parameters(self):
         self.create_lennard_jones_epsilons()
         self.create_lennard_jones_sigmas()
