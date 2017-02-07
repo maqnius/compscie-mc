@@ -1,5 +1,6 @@
 from particlesim.utils.config_parser import ProblemCreator
-import os
+from particlesim.api import SystemConfiguration
+from os.path import dirname, join, abspath
 import configparser
 
 def test_example_configuration():
@@ -8,11 +9,13 @@ def test_example_configuration():
     system_config = creator.generate_problem()
     creator.export_config()
 
+    assert(isinstance(system_config, SystemConfiguration))
+
 def create_test_config():
     # Find path to example_init_positions.csv
     # in ../../example/
-    parent = os.path.dirname((os.path.dirname(os.path.dirname(__file__))))
-    csv_path = os.path.abspath(os.path.join(parent, 'example/example_init_positions.csv'))
+    parent = dirname( (dirname ( dirname(__file__) ) ) )
+    csv_path = abspath( join (parent, 'example/example_init_positions.csv'))
 
     # Create example configuration fields
     config = configparser.ConfigParser()
@@ -24,7 +27,7 @@ def create_test_config():
     config['lennard_jones'] = {'use_lennard_jones': 'yes'}
 
     # Write to .cfg file
-    config_path = os.path.abspath(os.path.join(parent, 'example/example_config.cfg'))
+    config_path = abspath( join (parent, 'example/example_config.cfg'))
     with open(config_path, 'w') as configfile:
         config.write(configfile)
 
