@@ -77,14 +77,14 @@ def test_lj_potential():
     np.testing.assert_almost_equal(actual=shortrange_energy, desired=thoeretical_lj_energy, decimal=5)
 
 
-'''
+
 def test_longrange_potential():
     """
     Test longrange Energy by comparing it to a simple test-system.
     """
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
-    boxsize = 10.
+    boxsize = 3.
     sigma = 1.
     k_cutoff = 1.
 
@@ -92,13 +92,15 @@ def test_longrange_potential():
     ewald_summation = EwaldSummation(system_conf, sigma=sigma, k_cutoff=k_cutoff)
 
     theoretical_longrange_energy = 1/(boxsize*2*np.pi) * np.exp(-sigma**2*(2*np.pi/boxsize)**2 / 2) *\
-                                   (np.abs(1-np.exp(1j*2*np.pi/boxsize))**2 + np.abs(1-np.exp(-1j*2*np.pi/boxsize))**2) \
-                                    - 2/(np.sqrt(2*np.pi*sigma))
+                                   (np.abs(1-np.exp(1j*2*np.pi/boxsize))**2 + np.abs(1-np.exp(-1j*2*np.pi/boxsize))**2)
+    theoretical_self_energy = 2/(np.sqrt(2*np.pi)*sigma)
 
-    longrange_energy = ewald_summation.longrange_energy(xyz)
+    theoretical_total_energy = theoretical_longrange_energy - theoretical_self_energy
 
-    np.testing.assert_almost_equal(actual=longrange_energy, desired=theoretical_longrange_energy, decimal=5)
-'''
+    simulated_longrange_energy = ewald_summation.longrange_energy(xyz)
+
+    np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy, decimal=5)
+
 
 
 def test_total_potential():
@@ -127,4 +129,4 @@ def test_total_potential():
 
     potential = total_pot.potential(xyz)
 
-    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.01)
+    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.00001)

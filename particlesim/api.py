@@ -55,7 +55,7 @@ class SystemConfiguration(object):
                 raise TypeError('charges must have the same length as particle numbers')
 
         self.box_size = box_size
-        self._volume = box_size * box_size #There is no volume setter
+        self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
         self.xyz = xyz
         self.charges = charges
