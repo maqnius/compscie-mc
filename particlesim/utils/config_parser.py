@@ -1,7 +1,8 @@
 import pkg_resources
 import glob
 import configparser
-from os.path import dirname, join, abspath, isdir
+from os.path import join, abspath, isdir
+from os import makedirs
 from numpy import genfromtxt
 from particlesim.api import SystemConfiguration
 
@@ -98,7 +99,7 @@ class ProblemCreator(object):
 
         # Check if logs exists
         if not isdir(log_dir):
-            os.makedirs(log_dir)
+            makedirs(log_dir)
 
         # Write to .cfg file
         config_path = abspath( join(log_dir, 'config.cfg'))
