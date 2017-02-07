@@ -96,33 +96,27 @@ class Shortrange(object):
         self.nlist.particle_positions = positions
         self.nlist.create_neighbourlist()
 
-
         for particle1 in range(0, n):
-            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
 
-            lj_interaction_tmp = 0
-            coulomb_interaction_tmp = 0
+            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+            neighbors = np.array(neighbors)
+            neigh_dists = np.array(neigh_dists)
+            sigma = np.array(self.sigmas)[[particle1], [neighbors]]
+            charges = np.array(self.charges)
+            if coulomb:
+                coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
+
             for j in range(len(neighbors)):
                 particle2 = neighbors[j]
-
+                r = neigh_dists[j]
                 sigma = self.sigmas[particle1, particle2]
                 epsilon = self.epsilons[particle1, particle2]
 
-                r = np.linalg.norm(
-                    0.5 * self.nlist.box_size - (positions[particle1] - positions[particle2] +
-                                                        0.5 * self.nlist.box_size) % self.nlist.box_size)
+
 
                 # Lennard Jones Potential
                 if lj:
-                    lj_interaction_tmp += 0.5 * self.lj_potential(r, sigma=sigma, epsilon=epsilon)
+                    lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
-                # Shortrange Coulomb Energy
-                if coulomb:
-                    coulomb_interaction_tmp += 0.5 * self.charges[particle1] * self.charges[particle2] / r * erfc(
-                        r / (np.sqrt(2) * self.sigma_c))
-
-            lj_interaction += lj_interaction_tmp
-            coulomb_interaction += coulomb_interaction_tmp
-
-        return lj_interaction + coulomb_interaction
+        return 0.5 *(lj_interaction + coulomb_interaction)
 
