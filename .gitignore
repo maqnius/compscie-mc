@@ -11,3 +11,6 @@ __pycache__/
 /build/
 /dist/
 /particlesim.egg-info/
+/particlesim/logs/*
+/example/example_config.cfg
+
