@@ -130,18 +130,56 @@ class NeighbouringCellLinkedLists(Neighbouring):
         self._neighbourlist = cell_linked_list
 
 
-#if __name__=="__main__":
-#    box_size = float(7.6)
-#    nr_particles = 250
-#    for i in range(100):
-#        particle_pos = np.random.rand(nr_particles, 3)*box_size
-#        #print (particle_pos)
-#
-#        NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
-#        NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
-#
-#        #for pid in range(nr_particles):
-#            #print(sorted(NL_PL.get_particles_within_radius(pid)))
-#            #print(sorted(NL_CLL.get_particles_within_radius(pid)))
-#
-#        print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
+class NeighbouringCellLinkedListsArray(Neighbouring):
+    def __init__(self, particle_positions, box_size, radius=float("inf")):
+        super(NeighbouringCellLinkedListsArray, self).__init__(particle_positions, radius)
+        self.box_size = float(box_size)
+        self.nr_cells_one_d = int(max(1, self.box_size / self.r))
+        self.nr_cells = self.nr_cells_one_d**3
+        self._cell_len =  self.r + (self.box_size % self.r )/self.nr_cells
+        self.head = np.ones(self.nr_cells) * -1
+        self.cell_ll = np.ones(self.n) * -1
+        self.update_neighbourlist(self.particle_positions)
+
+    def update_neighbourlist(self, xyz):
+        self.head[:] = -1
+        self.cell_ll[:] = -1
+
+        for i in range(self.n):
+            cell_index = self._calc_cell_index(i, xyz)
+            old_head = self.head[cell_index]
+            self.head[cell_index] = i
+            self.cell_ll[i] = old_head
+
+    def get_particles_within_radius(self, particle_id):
+        n, r, pos, cell_ll, cell_len = self.n, self.r, self.particle_positions, self._neighbourlist, self._cell_len
+        box_size = self.box_size
+        nr_cells = len(cell_ll)
+        ret_idx, ret_dist = [], []
+
+        p = pos[particle_id]
+        cell = (p / cell_len).astype("int")
+        #cell_dir = np.rint((p % r)/r).astype("int")
+        #cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
+        cell_dir = np.array(list(it.product([-1,0,1],repeat=3)))
+        #cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in [cell_dir[2], 0]])
+        cells = np.array([(cell + cell_dir[i])%nr_cells for i in range(27)] )
+
+        for cell_idx in cells:
+            idx_x, idx_y, idx_z = cell_idx
+            cell_list = cell_ll[idx_x][idx_y][idx_z]
+            for neigh_idx in cell_list:
+                neigh = pos[neigh_idx]
+                periodic_distance = np.linalg.norm(0.5 * box_size- (p - neigh + 0.5 * box_size) % box_size)
+                if periodic_distance>=r or particle_id==neigh_idx: continue
+                ret_idx.append(neigh_idx)
+                ret_dist.append(periodic_distance)
+        return ret_idx, ret_dist
+
+    def _calc_cell_index(self, i, xyz):
+        x, y, z = (xyz[i] / self._cell_len).astype(int)
+        return x*1 + y * self.nr_cells_one_d + z * self.nr_cells_one_d**2
+
+
+
+

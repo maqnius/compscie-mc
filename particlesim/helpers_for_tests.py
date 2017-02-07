@@ -17,7 +17,7 @@ from .api import *
 import numpy as np
 
 
-def create_system_configuration(number_of_particles, box_size=1.0, max_charge=1.0):
+def create_system_configuration(number_of_particles, box_size, max_charge=1.0):
     r"""
     adds particles with random position, charge = 1, sigma = 1 and epsilon = 1 to the system_configuration
     :param system_configuration: object, instance of SystemConfiguration
@@ -42,20 +42,20 @@ def create_system_configuration(number_of_particles, box_size=1.0, max_charge=1.
     return SystemConfiguration(xyz=positions,
                                        charges=charges,
                                        sigmas=sigma,
-                                       epsilons=sigma)
+                                       epsilons=sigma,box_size=box_size)
 
 
 def create_positions(number_of_particles, box_size = 1.0):
     return np.random.rand(number_of_particles,3) * box_size
 
-def create_sampler(number_of_particles):
+def create_sampler(number_of_particles, box_size):
     r"""
     creates a basic system_configuration with random positions, charge = 1, sigma = 1 and epsilon = 1
     and a sampler object
     :param number_of_particles: int, positive integer
     :return: sampler, system_configuration
     """
-    system_configuration = create_system_configuration(number_of_particles)
+    system_configuration = create_system_configuration(number_of_particles, box_size=box_size)
     sampler = Sampler(system_configuration)
 
     return sampler, system_configuration

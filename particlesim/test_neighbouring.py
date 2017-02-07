@@ -16,9 +16,8 @@
 
 import numpy as np
 import pytest
-from .neighbouring import Neighbouring
-from .neighbouring import NeighbouringPrimitiveLists
-from .neighbouring import NeighbouringCellLinkedLists
+from .neighbouring import *
+from .helpers_for_tests import *
 
 def test_create_Neighbouring_instance():
     with pytest.raises(TypeError):
@@ -36,6 +35,9 @@ def test_create_Neighbouring_Cell_Linked_Lists_instance():
     with pytest.raises(TypeError):
         n = NeighbouringCellLinkedLists("something")
 
+def test_create_neighbouring_cell_linked_lists_array():
+    system_config = create_system_configuration(10,box_size=10)
+    assert None != NeighbouringCellLinkedListsArray(system_config.xyz,system_config.box_size)
 
 def test_equivalence_CLL_PL():
     box_size = float(7.6)
