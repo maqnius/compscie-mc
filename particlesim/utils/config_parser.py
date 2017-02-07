@@ -2,6 +2,7 @@ import configparser
 from os.path import dirname, join, abspath, isdir
 from numpy import genfromtxt
 from particlesim.api import SystemConfiguration
+import pkg_resources
 
 class ProblemCreator(object):
     def __init__(self, config_file_path):
@@ -13,17 +14,21 @@ class ProblemCreator(object):
         '''
         self.config = configparser.ConfigParser()
         self.config.read(config_file_path)
+        self.manual = True
         self.ewald = True
         self.lennard_jones = True
 
         # Check necessary parameters
         # CSV file with particle configuration
-        if(self.config['general']['csv_path']):
-            path = self.config['general']['csv_path']
+        if(self.config['manual']['csv_path']):
+            path = self.config['manual']['csv_path']
             self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
             self.n = len(self.initial_configuration[0])
         else:
-            raise ValueError("No link to initial configuration given")
+            self.manual = False
+
+        # Check for particle information
+        # ...
 
         # Bos-Lenght
         if(self.config['general']['box-size']):
@@ -66,8 +71,7 @@ class ProblemCreator(object):
         The config file will be created in the log folder
 
         '''
-        parent = dirname( dirname(__file__) )
-        log_dir = abspath( join(parent, 'logs/'))
+        log_dir = pkg_resources.resource_filename('particlesim', 'lib/')
 
         # Check if logs exists
         if not isdir(log_dir):
@@ -101,3 +105,5 @@ class ProblemCreator(object):
 
         '''
         pass
+
+#    def import_charmm_parrams(self):
