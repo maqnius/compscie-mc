@@ -55,7 +55,7 @@ class SystemConfiguration(object):
                 raise TypeError('charges must have the same length as particle numbers')
 
         self.box_size = box_size
-        self._volume = box_size * box_size #There is no volume setter
+        self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
         self.xyz = xyz
         self.charges = charges
@@ -168,6 +168,7 @@ class SystemConfiguration(object):
     def create_lennard_jones_sigmas(self):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
 
+
 class Sampler(object):
     r"""A sampler class for hamiltonian objects."""
     def __init__(self, system_configuration):
@@ -268,3 +269,5 @@ class Sampler(object):
     #         pot_traj.append(pot)
     #     hamiltonian.xyz[:] = xyz_traj[-1]
     #     return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+
+

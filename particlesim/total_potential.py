@@ -21,9 +21,6 @@ class TotalPotential(object):
     This class is initialized when a system_configuration is created. All calculations that are independent
     of the particle positions should be done at initialization
     """
-    # Needs to be estimated
-    t_k = 1  # Runtime of one fourierspace interaction of Ewald Simmulation
-    t_r = 1  # Runtime of one realspace interaction of Ewald Simmulation
 
     def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3, r_cutoff = 3):
         self.sigma_coulomb = sigma_c
