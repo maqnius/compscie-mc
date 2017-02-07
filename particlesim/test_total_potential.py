@@ -46,15 +46,4 @@ def test_shortrange_potential_is_float():
 
     assert shortrange != 0.
 
-def test_total_potential_is_float():
-    n = 100
-    system_conf = create_system_configuration(n)
-    total = TotalPotential(system_conf, k_cutoff=3)
 
-    new_positions = create_positions(n)
-
-    total_energy = total.shortrange.phi(new_positions)
-
-    assert isinstance(total_energy, float)
-
-    assert total_energy != 0.
