@@ -104,7 +104,7 @@ class Shortrange(object):
             sigma = np.array(self.sigmas)[[particle1], [neighbors]]
             charges = np.array(self.charges)
             if coulomb:
-                coulomb_interaction += 0.5 * charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
+                coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
 
             for j in range(len(neighbors)):
                 particle2 = neighbors[j]
@@ -118,5 +118,5 @@ class Shortrange(object):
                 if lj:
                     lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
-        return lj_interaction + coulomb_interaction
+        return 0.5 *(lj_interaction + coulomb_interaction)
 

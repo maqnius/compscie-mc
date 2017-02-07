@@ -68,7 +68,7 @@ def test_lj_potential():
     charges = np.array([1., -1.])
     boxsize = 10.
 
-    thoeretical_lj_energy = 8 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+    thoeretical_lj_energy = 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
 
     system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
     shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
@@ -125,7 +125,7 @@ def test_total_potential():
     system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
     total_pot = TotalPotential(system_conf, sigma_c = 1., k_cutoff = 10, r_cutoff = 4)
 
-    theoretical_potential = - 2 + 8 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+    theoretical_potential = - 1 + 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
 
     potential = total_pot.potential(xyz)
 
