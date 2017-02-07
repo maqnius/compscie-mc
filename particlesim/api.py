@@ -55,7 +55,7 @@ class SystemConfiguration(object):
                 raise TypeError('charges must have the same length as particle numbers')
 
         self.box_size = box_size
-        self._volume = box_size * box_size #There is no volume setter
+        self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
         self.xyz = xyz
         self.charges = charges
@@ -146,10 +146,17 @@ class SystemConfiguration(object):
     #     self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
     #     self.create_lj_mean_parameters()
 
-    def potential(self,xyz_trial):
-        # TODO only stub
-        foo = self._total_potential.potential(xyz_trial)
-        return self._total_potential.potential(xyz_trial)
+    def potential(self,xyz_trial, lennard_jones = True, coulomb = True):
+        if not (type(lennard_jones) == bool and type(coulomb == bool)):
+            raise TypeError('lennard_jones and coulomb must be booleans')
+
+        xyz_trial = np.asarray(xyz_trial,dtype=float)
+        if not (issubclass(xyz_trial.dtype.type, np.float) or issubclass(xyz_trial.dtype.type, np.integer)):
+            raise TypeError("values in xyz must be of type float or int")
+        if xyz_trial.ndim != 2 or xyz_trial.shape[0] < 2 or xyz_trial.shape[1] != 3:
+            raise ValueError("xyz must be of shape=(n_particles, dim) with n_particles > 1 and dim = 3")
+
+        return self._total_potential.potential(xyz_trial, lennard_jones, coulomb)
 
     def number_of_particle_types(self):
         return len(self.xyz)

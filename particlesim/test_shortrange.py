@@ -16,6 +16,8 @@
 
 import numpy as np
 from .shortrange import Shortrange
+from .ewald_summation import EwaldSummation
+from .total_potential import TotalPotential
 from .api import SystemConfiguration
 from scipy.special import erfc
 
@@ -46,3 +48,85 @@ def test_shortrange_ewald():
     np.testing.assert_almost_equal(actual=shortrange_energy_periodic, desired=theoretical_shortrange_energy, decimal=5)
 
 
+
+def test_lj_potential():
+    """
+    Test Lennard-Jones energy by comparing it to a simple test-system.
+    """
+    ewald_sigma = 1.
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl*epsilon_Na)
+    epsilons = np.array([epsilon_Na, epsilon_Cl])
+
+    sigma_Na = 2*1.21496
+    sigma_Cl = 2*2.02234
+    sigma_NaCl = 0.5*(sigma_Na + sigma_Cl)
+    sigmas = np.array([sigma_Na, sigma_Cl])
+
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 10.
+
+    thoeretical_lj_energy = 8 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
+    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
+    shortrange_energy = shortrange.shortrange(xyz, coulomb=False)
+
+    np.testing.assert_almost_equal(actual=shortrange_energy, desired=thoeretical_lj_energy, decimal=5)
+
+
+
+def test_longrange_potential():
+    """
+    Test longrange Energy by comparing it to a simple test-system.
+    """
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 3.
+    sigma = 1.
+    k_cutoff = 1.
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize)
+    ewald_summation = EwaldSummation(system_conf, sigma=sigma, k_cutoff=k_cutoff)
+
+    theoretical_longrange_energy = 1/(boxsize*2*np.pi) * np.exp(-sigma**2*(2*np.pi/boxsize)**2 / 2) *\
+                                   (np.abs(1-np.exp(1j*2*np.pi/boxsize))**2 + np.abs(1-np.exp(-1j*2*np.pi/boxsize))**2)
+    theoretical_self_energy = 2/(np.sqrt(2*np.pi)*sigma)
+
+    theoretical_total_energy = theoretical_longrange_energy - theoretical_self_energy
+
+    simulated_longrange_energy = ewald_summation.longrange_energy(xyz)
+
+    np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy, decimal=5)
+
+
+
+def test_total_potential():
+    """
+    Testfunction for total potential
+    """
+    ewald_sigma = 1.
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
+    epsilons = np.array([epsilon_Na, epsilon_Cl])
+
+    sigma_Na = 2 * 1.21496
+    sigma_Cl = 2 * 2.02234
+    sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
+    sigmas = np.array([sigma_Na, sigma_Cl])
+
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 10.
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
+    total_pot = TotalPotential(system_conf, sigma_c = 1., k_cutoff = 10, r_cutoff = 4)
+
+    theoretical_potential = - 2 + 8 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+
+    potential = total_pot.potential(xyz)
+
+    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.00001)
