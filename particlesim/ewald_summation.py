@@ -88,6 +88,5 @@ class EwaldSummation(object):
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
-        print("longrange_potential", longrange_potential)
-        print("self_interaction_potential", self_interaction_potential)
+
         return longrange_and_self_potential
