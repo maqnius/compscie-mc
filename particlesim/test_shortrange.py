@@ -103,7 +103,7 @@ def test_longrange_potential():
 
 def test_total_potential():
     """
-
+    Testfunction for total potential
     """
     ewald_sigma = 1.
     epsilon_Na = 0.0469
