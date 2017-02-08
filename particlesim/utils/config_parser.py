@@ -1,10 +1,12 @@
 import pkg_resources
 import glob
 import configparser
+import re
 from os.path import join, abspath, isdir
 from os import makedirs
 from numpy import genfromtxt
 from particlesim.api import SystemConfiguration
+from scipy import constants
 
 class ProblemCreator(object):
     def __init__(self, config_file_path):
@@ -14,42 +16,50 @@ class ProblemCreator(object):
         config_file_path : String
             Path to the .cfg config file
         '''
+        # First read in the Librarys with atomic constants
+
         self._lib = self._read_lib()
         self.config = configparser.ConfigParser()
         self.config.read(config_file_path)
-        self.manual = True
-        self.ewald = True
-        self.lennard_jones = True
 
         # Check necessary parameters
         # CSV file with particle configuration
-        if(self.config['manual']['csv_path']):
-            path = self.config['manual']['csv_path']
-            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
-            self.n = len(self.initial_configuration[0])
-        else:
-            self.manual = False
 
-        # Check for particle information
-        # ...
-
-        # Bos-Lenght
+        # Box-Lenght
         if(self.config['general']['box-size']):
             self.box_size = self.config['general'].getfloat('box-size')
         else:
             raise ValueError("No box-size given")
 
         # Sigma for Ewald Summation if it is activated
-        self.ewald = self.config['ewald_summation'].getboolean('use_ewald')
-        if(self.ewald):
+        ewald = self.config['ewald_summation'].getboolean('use_ewald')
+        if(ewald):
             try:
                 self.sigma_ewald = self.config['ewald_summation']['sigma']
             except KeyError:
-                self.ewald= False
+                ewald = False
                 self.config['ewald_summation']['use_ewald'] = "no"
                 print("No sigma for Ewald Summation found therefore Ewald summation got deactivated.")
 
-        self.lennard_jones = self.config['lennard_jones'].getboolean('use_lennard_jones')
+        lennard_jones = self.config['lennard_jones'].getboolean('use_lennard_jones')
+
+        # Create particles as intended in the config file
+        if('manual' in self.config):
+            path = self.config['manual']['csv_path']
+            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
+            self.n = len(self.initial_configuration[0])
+        else:
+            # Look for defined particle classes
+            sections = self.config.sections()
+            r = re.compile("particle_class_*")  # Regular expresssion
+            particle_classes = filter(r.match, sections)
+            if particle_classes == []:
+                raise ValueError('No particles defined')
+
+            for particle_class in particle_classes:
+                self.add_particles(particle_class)
+
+
 
     def _read_lib(self):
         '''
@@ -86,6 +96,30 @@ class ProblemCreator(object):
         self.system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size)
 
         return self.system_conf
+
+    def add_particles(self, particle_class):
+        '''
+        Adding a group of particles read from the config list
+
+        Parameters
+        ----------
+        particle_class : Name of the section in the particle class
+        '''
+        type = self.config[particle_class]['type']
+        epsilon, sigma = self.get_atom_params(type)
+
+        n = self.config[particle_class]['number']
+        distr = self.config[particle_class]['distribution']
+        label = self.config[particle_class]['label']
+
+
+    def generate_positions(self, n, ):
+
+    def get_atom_params(self, type):
+        epsilon = self._lib[type].getfloat('epsilon')
+        sigma = self._lib[type].getfloat('sigma')
+
+        return epsilon, sigma
 
     def export_config(self):
         '''
@@ -156,6 +190,13 @@ class ProblemCreator(object):
                                                    usecols= (2, 3),
                                                    unpack=True
                                                    )
+
+        # Now lets convert the units from the units used in the charmm param file to atomic units
+        # Epsilon from kcal/mol to Hartree Energy
+        # ... TODO
+
+        # Sigma from sigma/2 in Angstrom to 1/a_0
+        # ... TODO
 
         config = configparser.ConfigParser()
         config['DEFAULT'] = {'label' : ''}

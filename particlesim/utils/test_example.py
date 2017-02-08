@@ -27,7 +27,7 @@ def test_create_lib():
     to_file = pkg_resources.resource_filename('particlesim', 'lib/particle_types.cfg')
     lib = ProblemCreator.convert_charmm_parrams(charmm_path, to_file)
 
-def example_type_configuration():
+def test_example_type_configuration():
     # Create a test config file
     test_config_path = create_test_config_with_type_declaration()
 
