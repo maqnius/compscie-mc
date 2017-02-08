@@ -86,7 +86,9 @@ def calc_k_vectors_test(int K):
 @cython.wraparound(False)
 def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
     """
-    Calculates the distance of all positions to all other positions in the xyz array.
+    Calculates the distance of all positions to all other positions in the xyz array. It says doubles here but
+    python floats are cython doubles
+
     Parameters
     ----------
     xyz :       double[:,:]
