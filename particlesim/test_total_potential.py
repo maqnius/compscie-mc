@@ -47,3 +47,19 @@ def test_shortrange_potential_is_float():
     assert shortrange != 0.
 
 
+def test_parameter_guess():
+    n = 100
+
+    system_conf = create_system_configuration(n, box_size=10)
+    r_cutoff_prev = 0
+    k_cutoff_prev = 0
+
+    for p_i in range(1, 10):
+        total = TotalPotential(system_conf, p_error=p_i)
+
+        # Cutoff needs to get bigger when raising the accuracy
+        assert(r_cutoff_prev < total.r_cutoff)
+        assert(k_cutoff_prev < total.k_cutoff)
+
+        r_cutoff_prev = total.r_cutoff
+        k_cutoff_prev = total.k_cutoff

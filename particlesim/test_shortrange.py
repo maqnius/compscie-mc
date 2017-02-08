@@ -20,7 +20,7 @@ from .ewald_summation import EwaldSummation
 from .total_potential import TotalPotential
 from .api import SystemConfiguration
 from scipy.special import erfc
-import pysor
+#import pysor
 
 
 def test_shortrange_ewald():
@@ -140,7 +140,7 @@ def test_coulomb_total():
     pass
 
 
-def test_pysor():
+def going_to_be_test_pysor():
     boxsize = 10
     box = (boxsize, boxsize, boxsize)
     n = 10

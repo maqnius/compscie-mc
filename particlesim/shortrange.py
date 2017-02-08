@@ -37,6 +37,7 @@ class Shortrange(object):
             Lenght of the realspace cutoff for calculating neighbours
 
         """
+        self.system_conf = system_conf
         self.epsilon_r = system_conf.epsilon_r
         self.box_length = system_conf.box_size
         self.charges = system_conf.charges
@@ -118,3 +119,22 @@ class Shortrange(object):
 
         return 0.5 *(lj_interaction + coulomb_interaction)
 
+    def get_iterations(self):
+        it = 0
+        for particle1 in range(0, len(self.charges)):
+            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+            it += len(neighbors)
+        return it
+
+    def recreate_neighbourlist(self, r_cutoff):
+        '''
+        Necessary for time measurement to estimate cutoff parameters.
+
+        Parameters
+        ----------
+        r_cutoff : float
+            Cutoff radius
+
+        '''
+        self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, r_cutoff,
+                                                 self.box_length)
