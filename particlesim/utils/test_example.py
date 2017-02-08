@@ -41,6 +41,7 @@ def test_example_type_configuration():
     # SystemConfiguration Object in case some parameters couldn't
     # be set as the user whished
     creator.export_config()
+    assert(len(system_config.labels) == len(system_config.charges))
     assert(isinstance(system_config, SystemConfiguration))
 
 

@@ -51,6 +51,12 @@ class ProblemCreator(object):
         else:
             raise ValueError("No box-size given")
 
+        # Epsilon_r
+        if self.config.has_option('general', 'epsilon_r'):
+            self.epsilon_r = self.config['general'].getfloat('epsilon_r')
+        else:
+            raise ValueError("No epsilon_r given")
+
         # Sigma for Ewald Summation if it is activated
         if self.use_ewald:
             self.sigma_ewald = self.config['ewald_summation']['sigma']
@@ -107,12 +113,12 @@ class ProblemCreator(object):
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
-            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size, self.labels)
+            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size, self.epsilon_r , self.labels)
         else:
             # Use local lists
             system_conf = SystemConfiguration(np.array(self.positions), np.array(self.sigmas),
                                                     np.array(self.epsilons), np.array(self.charges),
-                                                    self.box_size, self.labels)
+                                                    self.box_size, self.epsilon_r, self.labels)
         return system_conf
 
     def add_particles(self, particle_class):
@@ -132,7 +138,6 @@ class ProblemCreator(object):
         distr = self.config[particle_class]['distribution']
         charge = self.config[particle_class].getfloat('charge')
         label = self.config[particle_class]['label']
-
 
         # Create positions as whished
         if(distr == 'uniform'):
