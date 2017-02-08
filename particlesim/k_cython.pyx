@@ -85,6 +85,22 @@ def calc_k_vectors_test(int K):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
+    """
+    Calculates the distance of all positions to all other positions in the xyz array.
+    Parameters
+    ----------
+    xyz :       double[:,:]
+                position array
+
+    box_len :    double
+                 the length of the box for the periodic boundry
+
+    distances :  double[:,:]
+                 an array passed to the function to avoid the necessity of returning a new array
+
+    return: void
+    """
+
     cdef:
         Py_ssize_t nrow = xyz.shape[0]
         Py_ssize_t ncol = xyz.shape[1]
@@ -99,6 +115,8 @@ def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
                 vec = xyz[i,k]-xyz[j,k]
                 dist_tmp  = box_half - ((vec+box_half) % box_len)
                 distance += dist_tmp*dist_tmp
-            distances[i,j] = sqrt(distance)
+            distance = sqrt(distance)
+            distances[i,j] = distance
+            distances[j,i] = distance
 
     return

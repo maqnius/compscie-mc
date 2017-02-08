@@ -16,6 +16,7 @@
 
 import numpy as np
 from particlesim.neighbouring import NeighbouringCellLinkedLists
+from particlesim.k_cython import fast_distances
 from scipy.special import erfc
 import scipy.constants as constants
 
@@ -43,6 +44,7 @@ class Shortrange(object):
         self.epsilons = system_conf.lj_epsilon_matrix
         self.sigmas = system_conf.lj_sigma_matrix
         self.sigma_c = sigma_c
+        self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
 
         # Create instance of neighbouring list
         self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
@@ -93,8 +95,10 @@ class Shortrange(object):
         coulomb_interaction = 0
 
         #self.nlist.update_cells(positions)
-        self.nlist.particle_positions = positions
-        self.nlist.create_neighbourlist()
+        #self.nlist.particle_positions = positions
+        #self.nlist.create_neighbourlist()
+
+        fast_distances(positions, box_len=self.box_length, distances=self.distances)
 
         for particle1 in range(0, n):
 
@@ -102,6 +106,7 @@ class Shortrange(object):
             if len(neighbors) == 0:
                 continue
             neighbors = np.array(neighbors)
+
             neigh_dists = np.array(neigh_dists)
             sigma = np.array(self.sigmas)[[particle1], [neighbors]]
             charges = np.array(self.charges)
