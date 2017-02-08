@@ -19,6 +19,8 @@ import pytest
 from .neighbouring import *
 from .helpers_for_tests import *
 
+import time
+
 def test_create_Neighbouring_instance():
     with pytest.raises(TypeError):
         neighbouring = Neighbouring([1.,2.3,5.2])
@@ -35,9 +37,25 @@ def test_create_Neighbouring_Cell_Linked_Lists_instance():
     with pytest.raises(TypeError):
         n = NeighbouringCellLinkedLists("something")
 
-def test_create_neighbouring_cell_linked_lists_array():
-    system_config = create_system_configuration(10,box_size=10)
-    assert None != NeighbouringCellLinkedListsArray(system_config.xyz,system_config.box_size)
+def test_neighbouring_cell_linked_lists_array_works():
+    number_of_particles = 100
+    system_config = create_system_configuration(number_of_particles,box_size=10)
+    neighbour_list_array = NeighbouringCellLinkedListsArray(system_config.xyz, system_config.box_size)
+    neighbour_list = NeighbouringCellLinkedLists(system_config.xyz, system_config.box_size)
+
+    time_new = 0
+    time_old = 0
+    for i in range(number_of_particles):
+        start = time.time()
+        neighbour_new = neighbour_list_array.get_particles_within_radius(i)
+        time_new += time.time() - start
+
+        start = time.time()
+        neighbour_old = neighbour_list.get_particles_within_radius(i)
+        time_old += time.time() - start
+
+        assert len(neighbour_new) == len(neighbour_old)
+    pass
 
 def test_equivalence_CLL_PL():
     box_size = float(7.6)
