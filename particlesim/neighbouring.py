@@ -40,7 +40,7 @@ class Neighbouring(object):
     # private methods
 
     # public methods
-    def create_neighbourlist(self, particle_positions, radius):  # only internal
+    def create_neighbourlist(self):  # only internal
         return []
 
     def get_particles_within_radius(self, particle_id):
@@ -137,8 +137,8 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
         self.nr_cells_one_d = int(max(1, self.box_size / self.r))
         self.nr_cells = self.nr_cells_one_d**3
         self._cell_len =  self.r + (self.box_size % self.r )/self.nr_cells
-        self.head = np.ones(self.nr_cells) * -1
-        self.cell_ll = np.ones(self.n) * -1
+        self.head = np.ones(self.nr_cells, dtype=int) * -1
+        self.cell_ll = np.ones(self.n, dtype=int) * -1
         self.update_neighbourlist(self.particle_positions)
 
     def update_neighbourlist(self, xyz):
@@ -192,7 +192,3 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
 
     def _recalc_cell_index(self, cell_x, cell_y, cell_z):
         return cell_x*1 + cell_y * self.nr_cells_one_d + cell_z * self.nr_cells_one_d**2
-
-
-
-
