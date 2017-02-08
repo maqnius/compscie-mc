@@ -22,8 +22,9 @@ class TotalPotential(object):
     of the particle positions should be done at initialization
     """
 
-    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3, r_cutoff = 3):
+    def __init__(self, system_configuration, sigma_c = 1., k_cutoff = 3, r_cutoff = 3, p_error = 10):
         self.sigma_coulomb = sigma_c
+        self.p_error = p_error
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
         self.longrange = EwaldSummation(system_configuration, self.sigma_coulomb, k_cutoff)
@@ -45,14 +46,15 @@ class TotalPotential(object):
         return pot
 
 
-    def __estimate_parameters(self):
-        """
+    def _estimate_parameters(self, self.p_error):
+        k_cutoff = 4
+        sigma = np.sqrt(2 * p_error / k_cutoff)
+        r_cutoff =
 
-        Returns
-        -------
-
-        """
+        return sigma, k_cutoff
         pass
+
+
 
     def _r_cutoff_optimal(self):
         pass

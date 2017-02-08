@@ -28,12 +28,7 @@ def test_energy_is_positive():
     energy = longrange_energy(test_config, shape, sigma, k_cutoff)
     assert energy >= 0.
 '''
-def calc_sigma_and_k_cutoff():
-    p = -np.log(1e-3)
-    k_cutoff = 4
-    sigma = np.sqrt(2*p/k_cutoff**2)
 
-    return sigma, k_cutoff
 
 def create_test_system(N, box_size, max_charge):
     """

@@ -68,7 +68,7 @@ class Shortrange(object):
 
         """
         q = (sigma / r) ** 6
-        return 4.0 * (epsilon * (q * (q - 1.0)))
+        return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
     def shortrange(self, positions, coulomb=True, lj=True):
         r"""
@@ -101,22 +101,18 @@ class Shortrange(object):
             neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
             neighbors = np.array(neighbors)
             neigh_dists = np.array(neigh_dists)
-            sigma = np.array(self.sigmas)[[particle1], [neighbors]]
-            charges = np.array(self.charges)
+            sigma = self.sigmas[[particle1], [neighbors]]
+            epsilon = self.epsilons[[particle1], [neighbors]]
+            charges = self.charges
+
             if coulomb:
                 coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
 
-            for j in range(len(neighbors)):
-                particle2 = neighbors[j]
-                r = neigh_dists[j]
-                sigma = self.sigmas[particle1, particle2]
-                epsilon = self.epsilons[particle1, particle2]
+            if lj:
+                lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
 
 
-                # Lennard Jones Potential
-                if lj:
-                    lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
         return 0.5 *(lj_interaction + coulomb_interaction)
 
