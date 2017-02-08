@@ -107,12 +107,12 @@ class ProblemCreator(object):
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
-            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size)
+            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size, self.labels)
         else:
             # Use local lists
             system_conf = SystemConfiguration(np.array(self.positions), np.array(self.sigmas),
                                                     np.array(self.epsilons), np.array(self.charges),
-                                                    self.box_size)
+                                                    self.box_size, self.labels)
         return system_conf
 
     def add_particles(self, particle_class):

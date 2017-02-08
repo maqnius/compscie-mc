@@ -34,7 +34,7 @@ class SystemConfiguration(object):
              lj_cutoff = 2.5 * sigma
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0):
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0, labels = []):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
             raise ValueError("xyz must be in range of zero to %d" %box_size)
@@ -54,6 +54,7 @@ class SystemConfiguration(object):
         elif not len(xyz) == len(charges):
                 raise TypeError('charges must have the same length as particle numbers')
 
+
         self.box_size = box_size
         self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
@@ -61,6 +62,8 @@ class SystemConfiguration(object):
         self.charges = charges
         self.sigmas = sigmas
         self.epsilons = epsilons
+        self.labels = labels
+
         self.create_lj_mean_parameters()
         self._total_potential = TotalPotential(self)
 
