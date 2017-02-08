@@ -99,6 +99,8 @@ class Shortrange(object):
         for particle1 in range(0, n):
 
             neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+            if len(neighbors) == 0:
+                continue
             neighbors = np.array(neighbors)
             neigh_dists = np.array(neigh_dists)
             sigma = np.array(self.sigmas)[[particle1], [neighbors]]
