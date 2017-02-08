@@ -109,5 +109,7 @@ setup(
         'numpy>=1.7.0',
         'setuptools>=0.6',
         'scipy>=0.6'],
+    package_dir = {'particlesim': 'particlesim'},
     install_requires=['numpy>=1.7.0','cython>=0.22'],
-    tests_require=['pytest'])
+    tests_require=['pytest']
+    )
