@@ -4,9 +4,8 @@ from .api import *
 from .helpers_for_tests import *
 
 def test_system_configuration_potential_value():
-    # assert systemconfiguration.potential returns value type float
     n_particles = 4
-    system_configuration = create_system_configuration(n_particles)
+    system_configuration = create_system_configuration(n_particles, box_size=10)
     potential = system_configuration.potential(system_configuration.xyz)
     assert isinstance(potential, (float, int))
 

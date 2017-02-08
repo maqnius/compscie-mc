@@ -21,7 +21,7 @@ import pytest
 
 def test_all_sampled_particles_are_inside_box():
     n_particle = 4
-    sampler, system_configuration = create_sampler(n_particle)
+    sampler, system_configuration = create_sampler(n_particle, box_size=10)
     traj, pot = sampler.metropolis(iteration_number=100)
     assert np.all((traj<system_configuration.box_size)*(traj >= 0))
 
@@ -29,21 +29,21 @@ def test_sampler_no_particles_in_system():
     # might fail after potential function is implemented
     number_of_particles = 0
     with pytest.raises(ValueError):
-        sampler, system_configuration = create_sampler(number_of_particles)
+        sampler, system_configuration = create_sampler(number_of_particles, box_size=10)
         sampler.metropolis(iteration_number=2)
 
 def test_sampler_trajectory():
     # might fail after potential function is implemented
     number_of_particles = 5
     iteration_number = 3
-    sampler, system_configuration = create_sampler(number_of_particles)
+    sampler, system_configuration = create_sampler(number_of_particles, box_size=10)
     traj, pot = sampler.metropolis(iteration_number)
     assert len(traj) == iteration_number + 1
 
 def test_sampler_negative_iteration_number():
     # might fail after potential function is implemented
     number_of_particles = 3
-    sampler, system_configuration = create_sampler(number_of_particles)
+    sampler, system_configuration = create_sampler(number_of_particles, box_size=10)
     with pytest.raises(ValueError):
         sampler.metropolis(iteration_number=-1)
     with pytest.raises(ValueError):
@@ -60,7 +60,7 @@ def test_sampler_negative_iteration_number():
 #                                                    "and no global max around lj_r0")
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
-    sampler, system_configuration = create_sampler(n_particle)
+    sampler, system_configuration = create_sampler(n_particle, box_size=10)
     traj, pot = sampler.metropolis(iteration_number=100,beta=10)
     r_left = 1
     r_right =1.5
