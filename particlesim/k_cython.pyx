@@ -16,6 +16,7 @@
 
 
 import numpy as np
+import cython
 cimport numpy as np
 from libc.math cimport sqrt
 
@@ -80,3 +81,24 @@ def calc_k_vectors_test(int K):
     k_vectors = np.delete(k_vectors, i//2, 0) # Remove [0,0,0]
 
     return k_vectors
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
+    cdef:
+        Py_ssize_t nrow = xyz.shape[0]
+        Py_ssize_t ncol = xyz.shape[1]
+        int i, j
+        double vec, dist_tmp, distance
+        double box_half = box_len / 2.0
+
+    for i in range(nrow):
+        for j in range(i+1, nrow):
+            distance = 0
+            for k in range(ncol):
+                vec = xyz[i,k]-xyz[j,k]
+                dist_tmp  = box_half - ((vec+box_half) % box_len)
+                distance += dist_tmp*dist_tmp
+            distances[i,j] = sqrt(distance)
+
+    return

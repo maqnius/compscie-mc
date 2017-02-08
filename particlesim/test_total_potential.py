@@ -22,7 +22,7 @@ from .total_potential import TotalPotential
 
 def test_longrange_potential_is_float():
     n = 100
-    system_conf = create_system_configuration(n)
+    system_conf = create_system_configuration(n, box_size=10)
     total = TotalPotential(system_conf, k_cutoff=3)
 
     new_positions = create_positions(n)
@@ -35,7 +35,7 @@ def test_longrange_potential_is_float():
 
 def test_shortrange_potential_is_float():
     n = 100
-    system_conf = create_system_configuration(n)
+    system_conf = create_system_configuration(n,box_size=10)
     total = TotalPotential(system_conf, k_cutoff=3)
 
     new_positions = create_positions(n)

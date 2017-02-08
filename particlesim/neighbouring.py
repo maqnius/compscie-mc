@@ -17,7 +17,7 @@
 # imports
 import numpy as np
 import itertools as it
-
+from particlesim.k_cython import fast_distances
 
 class Neighbouring(object):
     def __init__(self, particle_positions, radius=float("inf")):
@@ -40,7 +40,7 @@ class Neighbouring(object):
     # private methods
 
     # public methods
-    def create_neighbourlist(self, particle_positions, radius):  # only internal
+    def create_neighbourlist(self):  # only internal
         return []
 
     def get_particles_within_radius(self, particle_id):
@@ -130,18 +130,76 @@ class NeighbouringCellLinkedLists(Neighbouring):
         self._neighbourlist = cell_linked_list
 
 
-#if __name__=="__main__":
-#    box_size = float(7.6)
-#    nr_particles = 250
-#    for i in range(100):
-#        particle_pos = np.random.rand(nr_particles, 3)*box_size
-#        #print (particle_pos)
-#
-#        NL_PL = NeighbouringPrimitiveLists(particle_pos, radius=1.2, box_size=box_size)
-#        NL_CLL = NeighbouringCellLinkedLists(particle_pos, radius=1.2, box_size=box_size)
-#
-#        #for pid in range(nr_particles):
-#            #print(sorted(NL_PL.get_particles_within_radius(pid)))
-#            #print(sorted(NL_CLL.get_particles_within_radius(pid)))
-#
-#        print(set(NL_CLL.get_particles_within_radius(0)) == (set(NL_PL.get_particles_within_radius(0))))
+class NeighbouringCellLinkedListsArray(Neighbouring):
+    def __init__(self, particle_positions, box_size, radius=float("inf")):
+        super(NeighbouringCellLinkedListsArray, self).__init__(particle_positions, radius)
+        self.box_size = float(box_size)
+        self.nr_cells_one_d = int(max(1, self.box_size / self.r))
+        self.nr_cells = self.nr_cells_one_d**3
+        self._cell_len =  self.r + (self.box_size % self.r )/self.nr_cells
+        self.head = np.ones(self.nr_cells, dtype=int) * -1
+        self.cell_ll = np.ones(self.n, dtype=int) * -1
+        self.update_neighbourlist(self.particle_positions)
+
+    def update_neighbourlist(self, xyz):
+        self.head[:] = -1
+        self.cell_ll[:] = -1
+
+        for i in range(self.n):
+            cell_index = self._calc_cell_index(i, xyz)
+            old_head = self.head[cell_index]
+            self.head[cell_index] = i
+            self.cell_ll[i] = old_head
+
+    def _get_particles_in_cell(self,cell_index):
+        head_tmp = self.head[cell_index]
+        particles_in_cell_idxs = []
+        while(head_tmp != -1):
+            particles_in_cell_idxs.append(head_tmp)
+            head_tmp = self.cell_ll[head_tmp]
+        return particles_in_cell_idxs
+
+
+
+    def get_particles_within_radius(self, particle_id):
+
+        result_idx, result_dist = [], []
+
+        p = self.particle_positions[particle_id]
+        cell = (p / self._cell_len).astype("int")
+        cell_dir = np.array(list(it.product([-1,0,1],repeat=3)))
+        cells = np.array([(cell + cell_dir[i])%self.nr_cells for i in range(27)] )
+
+        for cell_idx in cells:
+            idx_x, idx_y, idx_z = cell_idx
+            cell_idx_one_dim = self._recalc_cell_index(idx_x, idx_y, idx_z)
+            cell_list = self._get_particles_in_cell(cell_idx_one_dim)
+
+            for neigh_idx in cell_list:
+                neigh = self.particle_positions[neigh_idx]
+
+                periodic_distance = np.linalg.norm(0.5 * self.box_size- (p - neigh + 0.5 * self.box_size) % self.box_size)
+                if periodic_distance>=self.r or particle_id==neigh_idx: continue
+
+                result_idx.append(neigh_idx)
+                result_dist.append(periodic_distance)
+
+        return result_idx, result_dist
+
+    def _calc_cell_index(self, i, xyz):
+        x, y, z = (xyz[i] / self._cell_len).astype(int)
+        return self._recalc_cell_index(x,y,z)
+
+    def _recalc_cell_index(self, cell_x, cell_y, cell_z):
+        return cell_x*1 + cell_y * self.nr_cells_one_d + cell_z * self.nr_cells_one_d**2
+
+#n = 20000
+#distances = np.zeros((n,n), dtype="float")
+#box_len = 5.0
+#xyz = np.arange(3*n, dtype="float").reshape(n,3) % box_len
+
+#print("start")
+#fast_distances(xyz, box_len, distances)
+#print("done")
+#print(xyz)
+#print(distances)
