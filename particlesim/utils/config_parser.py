@@ -114,6 +114,7 @@ class ProblemCreator(object):
 
 
     def generate_positions(self, n, ):
+        pass
 
     def get_atom_params(self, type):
         epsilon = self._lib[type].getfloat('epsilon')
