@@ -35,15 +35,13 @@ def test_example_type_configuration():
     creator = ProblemCreator(test_config_path)
 
     # Initialize a SystemConfiguration Object from the config file
-    system_config = None
-    # system_config = creator.generate_problem()
+    system_config = creator.generate_problem()
 
     # Export the actual configuration that is used for the
     # SystemConfiguration Object in case some parameters couldn't
     # be set as the user whished
     creator.export_config()
-    assert (system_config == None)
-    # assert(isinstance(system_config, SystemConfiguration))
+    assert(isinstance(system_config, SystemConfiguration))
 
 
 def create_test_config():
@@ -54,8 +52,6 @@ def create_test_config():
 
     # Create example configuration fields
     config = configparser.ConfigParser()
-
-    config['DEFAULT'] = {'use_ewald': 'yes', 'use_lennard_jones': 'yes'}
 
     config['general'] = {'box-size': 5.0}
     config['manual'] = {'csv_path': csv_path}
@@ -81,19 +77,14 @@ def create_test_config_with_type_declaration():
     # Create example configuration fields
     config = configparser.ConfigParser()
 
-    config['DEFAULT'] = {'use_ewald': 'yes', 'use_lennard_jones': 'yes'}
-
     config['general'] = {'box-size': 5.0}
-    config['ewald_summation'] = {'use_ewald': 'yes', 'sigma': 1.0}
-    config['lennard_jones'] = {'use_lennard_jones': 'yes'}
-
 
     # Create two types of atoms and their distribution
     config['particle_class_1'] = {'type': 'N', 'label': 'Natrium',
-                                  'number': 10, 'distribution': 'normal'}
+                                  'number': 10, 'charge': 1, 'distribution': 'uniform'}
 
     config['particle_class_2'] = {'type': 'C', 'label': 'Chlor',
-                                  'number': 20, 'distribution': 'normal'}
+                                  'number': 20, 'charge': -1, 'distribution': 'uniform'}
 
     # Write to .cfg file
     config_path = abspath(join(parent, 'example/example_config_types.cfg'))

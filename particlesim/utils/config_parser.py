@@ -2,49 +2,61 @@ import pkg_resources
 import glob
 import configparser
 import re
+import numpy as np
+from particlesim.utils import distributions
 from os.path import join, abspath, isdir
 from os import makedirs
 from numpy import genfromtxt
 from particlesim.api import SystemConfiguration
-from scipy import constants
+
 
 class ProblemCreator(object):
-    def __init__(self, config_file_path):
+
+    default_config_path = pkg_resources.resource_filename('particlesim', 'lib/default_config.cfg')
+
+
+    def __init__(self, user_config):
         '''
         Parameters
         ----------
-        config_file_path : String
+        user_config : String
             Path to the .cfg config file
         '''
         # First read in the Librarys with atomic constants
-
         self._lib = self._read_lib()
+
+        # Read configurations
         self.config = configparser.ConfigParser()
-        self.config.read(config_file_path)
+        self.config.read(self.default_config_path)  # first default configuration
+        self.config.read(user_config)               # then user config
+
+        # Set modes for this simulation
+        self.use_ewald = self.config['ewald_summation'].getboolean('use_ewald')
+        self.use_lj = self.config['ewald_summation'].getboolean('use_lennard_jones')
+        self.manual = 'manual' in self.config
+
+        # Initialize empty lists that are later used to create the problem
+        self.positions = []
+        self.sigmas = []
+        self.epsilons = []
+        self.charges = []
+        self. labels = []
+        self.sigma_ewald = None
 
         # Check necessary parameters
-        # CSV file with particle configuration
 
         # Box-Lenght
-        if(self.config['general']['box-size']):
+        if self.config.has_option('general', 'box-size'):
             self.box_size = self.config['general'].getfloat('box-size')
         else:
             raise ValueError("No box-size given")
 
         # Sigma for Ewald Summation if it is activated
-        ewald = self.config['ewald_summation'].getboolean('use_ewald')
-        if(ewald):
-            try:
-                self.sigma_ewald = self.config['ewald_summation']['sigma']
-            except KeyError:
-                ewald = False
-                self.config['ewald_summation']['use_ewald'] = "no"
-                print("No sigma for Ewald Summation found therefore Ewald summation got deactivated.")
-
-        lennard_jones = self.config['lennard_jones'].getboolean('use_lennard_jones')
+        if self.use_ewald:
+            self.sigma_ewald = self.config['ewald_summation']['sigma']
 
         # Create particles as intended in the config file
-        if('manual' in self.config):
+        if self.manual:
             path = self.config['manual']['csv_path']
             self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
             self.n = len(self.initial_configuration[0])
@@ -83,19 +95,25 @@ class ProblemCreator(object):
 
 
     def generate_problem(self):
-        # Unfiddle the input csv file
-        try:
-            positions = self.initial_configuration[:3].transpose()
-            charges = self.initial_configuration[3].transpose()
-            epsilons = self.initial_configuration[4].transpose()
-            sigmas = self.initial_configuration[5].transpose()
-        except IndexError:
-            print("The csv-file could not be read: The format of your csv-file does not have the required form.")
-            exit(1)
-
-        self.system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size)
-
-        return self.system_conf
+        if self.manual:
+            # Using CSV FILE
+            # Unfiddle the input csv file
+            try:
+                positions = self.initial_configuration[:3].transpose()
+                charges = self.initial_configuration[3].transpose()
+                epsilons = self.initial_configuration[4].transpose()
+                sigmas = self.initial_configuration[5].transpose()
+            except IndexError:
+                print("The csv-file could not be read: The format of your csv-file does not have the required form. \
+                      Even when LJ is deactivated, you have express some values for epsilons or sigmas")
+                exit(1)
+            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size)
+        else:
+            # Use local lists
+            system_conf = SystemConfiguration(np.array(self.positions), np.array(self.sigmas),
+                                                    np.array(self.epsilons), np.array(self.charges),
+                                                    self.box_size)
+        return system_conf
 
     def add_particles(self, particle_class):
         '''
@@ -105,16 +123,26 @@ class ProblemCreator(object):
         ----------
         particle_class : Name of the section in the particle class
         '''
+        # Get parameters from dict
+        # epsilons, sigmas, number of particles, labels
         type = self.config[particle_class]['type']
         epsilon, sigma = self.get_atom_params(type)
 
-        n = self.config[particle_class]['number']
+        n = self.config[particle_class].getint('number')
         distr = self.config[particle_class]['distribution']
+        charge = self.config[particle_class].getfloat('charge')
         label = self.config[particle_class]['label']
 
 
-    def generate_positions(self, n, ):
-        pass
+        # Create positions as whished
+        if(distr == 'uniform'):
+            xyz = distributions.create_uniform_distribution(n, box_size = self.box_size)
+
+        self.charges.extend([charge] * n)
+        self.labels.extend([label] * n)
+        self.epsilons.extend([epsilon] * n)
+        self.sigmas.extend([sigma] * n)
+        self.positions.extend(xyz.tolist())
 
     def get_atom_params(self, type):
         epsilon = self._lib[type].getfloat('epsilon')
@@ -200,11 +228,11 @@ class ProblemCreator(object):
         # ... TODO
 
         config = configparser.ConfigParser()
-        config['DEFAULT'] = {'label' : ''}
+        config['DEFAULT'] = {'label' : 'None'}
 
         for i in range(len(param_names)):
             config.add_section(param_names[i])
-            config.set(param_names[i], 'epsilon', str(epsilons_charmm[i]))
+            config.set(param_names[i], 'epsilon', str(abs(epsilons_charmm[i])))
             config.set(param_names[i], 'sigma', str(sigma_charmm[i]))
 
         # Write to .cfg file
