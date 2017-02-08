@@ -42,6 +42,7 @@ def test_example_type_configuration():
     # be set as the user whished
     creator.export_config()
     assert(len(system_config.labels) == len(system_config.charges))
+    assert(system_config.epsilon_r == creator.epsilon_r)
     assert(isinstance(system_config, SystemConfiguration))
 
 
@@ -78,7 +79,7 @@ def create_test_config_with_type_declaration():
     # Create example configuration fields
     config = configparser.ConfigParser()
 
-    config['general'] = {'box-size': 5.0}
+    config['general'] = {'box-size': 5.0, 'sigma_ewald': 1.0, 'k_cutoff': 1.0, 'r_cutoff': 3.0}
 
     # Create two types of atoms and their distribution
     config['particle_class_1'] = {'type': 'N', 'label': 'Natrium',

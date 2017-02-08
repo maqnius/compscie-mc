@@ -34,7 +34,8 @@ class SystemConfiguration(object):
              lj_cutoff = 2.5 * sigma
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0, labels = []):
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0, labels = [],
+                    sigma_c = 1.0, r_cutoff = 3.0, k_cutoff = 3.0):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
             raise ValueError("xyz must be in range of zero to %d" %box_size)
@@ -65,7 +66,7 @@ class SystemConfiguration(object):
         self.labels = labels
 
         self.create_lj_mean_parameters()
-        self._total_potential = TotalPotential(self)
+        self._total_potential = TotalPotential(self, sigma_c, k_cutoff, r_cutoff)
 
     @property
     def xyz(self):

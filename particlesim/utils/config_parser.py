@@ -61,6 +61,20 @@ class ProblemCreator(object):
         if self.use_ewald:
             self.sigma_ewald = self.config['ewald_summation']['sigma']
 
+        # Optional Parameters
+        # r_cutoff
+        if self.config.has_option('general', 'r_cutoff'):
+            self.r_cutoff = self.config['general'].getfloat('r_cutoff')
+
+        # k_cutoff
+        if self.config.has_option('general', 'k_cutoff'):
+            self.k_cutoff = self.config['general'].getfloat('k_cutoff')
+
+        # sigma_c
+        if self.config.has_option('general', 'sigma_c'):
+            self.sigma_c = self.config['general'].getfloat('sigma_c')
+
+
         # Create particles as intended in the config file
         if self.manual:
             path = self.config['manual']['csv_path']
@@ -71,6 +85,7 @@ class ProblemCreator(object):
             sections = self.config.sections()
             r = re.compile("particle_class_*")  # Regular expresssion
             particle_classes = filter(r.match, sections)
+
             if particle_classes == []:
                 raise ValueError('No particles defined')
 
@@ -113,12 +128,25 @@ class ProblemCreator(object):
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
-            system_conf = SystemConfiguration(positions, sigmas, epsilons, charges, self.box_size, self.epsilon_r , self.labels)
+            arguments = dict(xyz=positions, sigmas=sigmas, epsilons=epsilons, charges=charges,
+                             box_size=self.box_size, epsilon_r=self.epsilon_r , labels=self.labels)
         else:
             # Use local lists
-            system_conf = SystemConfiguration(np.array(self.positions), np.array(self.sigmas),
-                                                    np.array(self.epsilons), np.array(self.charges),
-                                                    self.box_size, self.epsilon_r, self.labels)
+            arguments = dict(xyz=np.array(self.positions), sigmas=np.array(self.sigmas),
+                            epsilons=np.array(self.epsilons), charges=np.array(self.charges),
+                            box_size=self.box_size, epsilon_r=self.epsilon_r, labels=self.labels)
+
+        if hasattr(self, 'sigma_c'):
+            arguments['sigma_c'] = self.sigma_c
+
+        if hasattr(self, 'r_cutoff'):
+            arguments['r_cutoff'] = self.r_cutoff
+
+        if hasattr(self, 'k_cutoff'):
+            arguments['k_cutoff'] = self.k_cutoff
+
+        system_conf = SystemConfiguration(**arguments)
+
         return system_conf
 
     def add_particles(self, particle_class):
