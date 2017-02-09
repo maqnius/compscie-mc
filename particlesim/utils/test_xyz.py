@@ -7,7 +7,7 @@ from particlesim.utils.config_parser import ProblemCreator
 
 def export_trajectory():
     parent = dirname((dirname(dirname(__file__))))
-    config_path = abspath(join(parent, 'example/example_config_types.cfg'))
+    config_path = abspath(join(parent, 'example/example_config.cfg'))
     creator = ProblemCreator(config_path)
 
     system_conf = creator.generate_problem()

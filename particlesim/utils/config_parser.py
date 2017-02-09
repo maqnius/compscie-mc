@@ -78,7 +78,9 @@ class ProblemCreator(object):
         # Create particles as intended in the config file
         if self.manual:
             path = self.config['manual']['csv_path']
-            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
+            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True,
+                dtype=[('label', '|S11'), ('x', '<f8'), ('y', '<f8'), ('z', '<f8'), ('charge', '<f8'),
+                ('epsilon', '<f8'),('sigma', '<f8')])
             self.n = len(self.initial_configuration[0])
         else:
             # Look for defined particle classes
@@ -120,16 +122,19 @@ class ProblemCreator(object):
             # Using CSV FILE
             # Unfiddle the input csv file
             try:
-                positions = self.initial_configuration[:3].transpose()
-                charges = self.initial_configuration[3].transpose()
-                epsilons = self.initial_configuration[4].transpose()
-                sigmas = self.initial_configuration[5].transpose()
+                readout = self.initial_configuration
+                labels = self.initial_configuration['label'].astype(str, copy=False)
+                positions = readout[['x', 'y', 'z']].view((float, len(readout[['x', 'y', 'z']].dtype.names)))
+                charges = readout[['charge']].view((float, len(readout[['charge']].dtype.names)))
+                epsilons = readout[['epsilon']].view((float, len(readout[['epsilon']].dtype.names)))
+                sigmas = readout[['sigma']].view((float, len(readout[['sigma']].dtype.names)))
+
             except IndexError:
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
             arguments = dict(xyz=positions, sigmas=sigmas, epsilons=epsilons, charges=charges,
-                             box_size=self.box_size, epsilon_r=self.epsilon_r , labels=self.labels)
+                             box_size=self.box_size, epsilon_r=self.epsilon_r , labels=labels)
         else:
             # Use local lists
             arguments = dict(xyz=np.array(self.positions), sigmas=np.array(self.sigmas),
@@ -145,9 +150,9 @@ class ProblemCreator(object):
         if hasattr(self, 'k_cutoff'):
             arguments['k_cutoff'] = self.k_cutoff
 
-        system_conf = SystemConfiguration(**arguments)
+        self.system_conf = SystemConfiguration(**arguments)
 
-        return system_conf
+        return self.system_conf
 
     def add_particles(self, particle_class):
         '''
@@ -209,20 +214,6 @@ class ProblemCreator(object):
 
         Returns
         -------
-        '''
-        pass
-
-    def export_trajectory_to_vtk(self, trajectory):
-        '''
-        Exports the trajectory file to a vtk file for simulation
-
-        Parameters
-        ----------
-        trajectory
-
-        Returns
-        -------
-
         '''
         pass
 
