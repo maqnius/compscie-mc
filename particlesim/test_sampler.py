@@ -30,7 +30,6 @@ def test_sampler_no_particles_in_system():
     number_of_particles = 0
     with pytest.raises(ValueError):
         sampler, system_configuration = create_sampler(number_of_particles, box_size=10)
-        sampler.metropolis(iteration_number=2)
 
 def test_sampler_trajectory():
     # might fail after potential function is implemented
@@ -49,15 +48,7 @@ def test_sampler_negative_iteration_number():
     with pytest.raises(ValueError):
         sampler.metropolis(iteration_number=1.5)
 
-# def test_that_sampler_returns_maximum_around_lj_induced_value():
-#     sampler, system_configuration = create_sampler(4)
-#     traj, pot = sampler.metropolis(system_configuration=system_configuration,iteration_number= 10000)
-#     for i in range(1, 4):
-#         for j in range(i):
-#             hist, edges = np.histogram(np.linalg.norm(traj[1000:, j, :] - traj[1000:, i, :], axis=-1), bins=50)
-#             np.testing.assert_almost_equal(actual=edges[hist.argmax()],desired=lj_r0, decimal=1,
-#                                            err_msg="It might also be that there is only a local "
-#                                                    "and no global max around lj_r0")
+
 def test_cumulative_percentage_global_optimum():
     n_particle = 4
     sampler, system_configuration = create_sampler(n_particle, box_size=10)
@@ -74,3 +65,11 @@ def test_cumulative_percentage_global_optimum():
             cumulated_value = np.sum(hist[indices])/np.sum(hist)
             assert cumulated_value >= 0.0, "it is not certain that the global optimum is reached"
             #TODO >= 0.8 cannot be true when potential is 0 because distances are not equally distributed
+
+def test_simulated_annealing():
+    n_particle = 4
+    sampler = sampler, system_configuration = create_sampler(n_particle, box_size=10)
+    traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=10)
+    traj_mc, pot_mc = sampler.metropolis(iteration_number=100,beta=10)
+    assert (len(traj_mc)==len(traj_sa))
+    assert periodic_distance(traj_sa[-1],traj_sa[-10]) <= 0.01
