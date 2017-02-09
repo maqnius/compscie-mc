@@ -78,7 +78,9 @@ class ProblemCreator(object):
         # Create particles as intended in the config file
         if self.manual:
             path = self.config['manual']['csv_path']
-            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True)
+            self.initial_configuration = genfromtxt(path, delimiter = ",", skip_header = 1, unpack = True,
+                dtype=[('label', '|S11'), ('x', '<f8'), ('y', '<f8'), ('z', '<f8'), ('charge', '<f8'),
+                ('epsilon', '<f8'),('sigma', '<f8')])
             self.n = len(self.initial_configuration[0])
         else:
             # Look for defined particle classes
@@ -120,15 +122,18 @@ class ProblemCreator(object):
             # Using CSV FILE
             # Unfiddle the input csv file
             try:
-                positions = self.initial_configuration[:3].transpose()
-                charges = self.initial_configuration[3].transpose()
-                epsilons = self.initial_configuration[4].transpose()
-                sigmas = self.initial_configuration[5].transpose()
+                readout = self.initial_configuration
+                self.labels = self.initial_configuration['label'].astype(str, copy=False)
+                self.positions = readout[['x', 'y', 'z']].view((float, len(readout[['x', 'y', 'z']].dtype.names)))
+                self.charges = readout[['charge']].view((float, len(readout[['charge']].dtype.names)))
+                self.epsilons = readout[['epsilon']].view((float, len(readout[['epsilon']].dtype.names)))
+                self.sigmas = readout[['sigma']].view((float, len(readout[['sigma']].dtype.names)))
+
             except IndexError:
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
-            arguments = dict(xyz=positions, sigmas=sigmas, epsilons=epsilons, charges=charges,
+            arguments = dict(xyz=self.positions, sigmas=self.sigmas, epsilons=self.epsilons, charges=self.charges,
                              box_size=self.box_size, epsilon_r=self.epsilon_r , labels=self.labels)
         else:
             # Use local lists
@@ -145,9 +150,9 @@ class ProblemCreator(object):
         if hasattr(self, 'k_cutoff'):
             arguments['k_cutoff'] = self.k_cutoff
 
-        system_conf = SystemConfiguration(**arguments)
+        self.system_conf = SystemConfiguration(**arguments)
 
-        return system_conf
+        return self.system_conf
 
     def add_particles(self, particle_class):
         '''
@@ -203,28 +208,21 @@ class ProblemCreator(object):
         with open(config_path, 'w') as configfile:
             self.config.write(configfile)
 
-    def export_csv(self, positions):
+    def export_csv(self, positions, path):
         '''
         Generates an output csv file for the current configuration.
 
         Returns
         -------
         '''
-        pass
+        n = len(self.labels)
+        labels = np.array(self.labels).reshape(n, 1)
 
-    def export_trajectory_to_vtk(self, trajectory):
-        '''
-        Exports the trajectory file to a vtk file for simulation
-
-        Parameters
-        ----------
-        trajectory
-
-        Returns
-        -------
-
-        '''
-        pass
+        with open(path, 'wb') as file:
+            file.write(str.encode("label, x, y, z, Charge, LJ-Epsilon, LJ-Sigma\n"))
+            with_labels = np.concatenate((labels, positions, self.charges.reshape(n, 1),
+                                          self.epsilons.reshape(n, 1), self.sigmas.reshape(n, 1)), axis=1)
+            np.savetxt(file, with_labels, delimiter=",", fmt='%s')
 
     @staticmethod
     def convert_charmm_parrams(from_file, to_file):

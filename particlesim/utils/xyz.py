@@ -17,7 +17,7 @@ def export_trajectory(labels, trajectory, path):
     """
 
     n = len(labels)
-    labels = np.array(labels).reshape((30,1))
+    labels = np.array(labels).reshape((n,1))
 
     with open(path, 'wb') as file:
         for xyz in trajectory:
