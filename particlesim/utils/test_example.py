@@ -55,7 +55,7 @@
 #     # Create example configuration fields
 #     config = configparser.ConfigParser()
 #
-#     config['general'] = {'box-size': 5.0}
+#     config['general'] = {'box-size': 20.0}
 #     config['manual'] = {'csv_path': csv_path}
 #
 #     config['ewald_summation'] = {'use_ewald': 'yes', 'sigma': 1.0}
@@ -79,7 +79,7 @@
 #     # Create example configuration fields
 #     config = configparser.ConfigParser()
 #
-#     config['general'] = {'box-size': 5.0, 'sigma_ewald': 1.0, 'k_cutoff': 1.0, 'r_cutoff': 3.0}
+#     config['general'] = {'box-size': 20.0, 'sigma_ewald': 1.0, 'k_cutoff': 1.0, 'r_cutoff': 3.0}
 #
 #     # Create two types of atoms and their distribution
 #     config['particle_class_1'] = {'type': 'N', 'label': 'Natrium',

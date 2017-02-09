@@ -34,7 +34,7 @@ class SystemConfiguration(object):
              lj_cutoff = 2.5 * sigma
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0, labels = [],
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=12.0, epsilon_r=1.0, labels = [],
                     sigma_c = 1.0, r_cutoff = 3.0, k_cutoff = 3.0):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
@@ -64,8 +64,16 @@ class SystemConfiguration(object):
         self.sigmas = sigmas
         self.epsilons = epsilons
         self.labels = labels
-
+        self.r_cutoff = r_cutoff
+        self.sigma_c = sigma_c
+        self.k_cutoff = k_cutoff
         self.create_lj_mean_parameters()
+
+        if self.box_size <= 2 * self.lj_cutoff_matrix.max():
+            raise ValueError('Box_size to small. Box_size has to be twice the cutoff radius '
+                             'of the Lennard Jones potential.\n'
+                             'box_size = %f\n r_cutoff_max = 2.5 * sigma_max = %f' % (self.box_size, self.lj_cutoff_matrix.max()))
+
         self._total_potential = TotalPotential(self, sigma_c, k_cutoff, r_cutoff)
 
     @property
@@ -165,12 +173,16 @@ class SystemConfiguration(object):
     def create_lj_mean_parameters(self):
         self.create_lennard_jones_epsilons()
         self.create_lennard_jones_sigmas()
+        self.create_lennard_jones_cutoff()
 
     def create_lennard_jones_epsilons(self):
         self.lj_epsilon_matrix = np.sqrt(np.array([self.epsilons]).transpose()*np.array([self.epsilons]))
 
     def create_lennard_jones_sigmas(self):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
+
+    def create_lennard_jones_cutoff(self):
+        self.lj_cutoff_matrix = 2.5 * self.lj_sigma_matrix
 
 
 class Sampler(object):
@@ -236,42 +248,39 @@ class Sampler(object):
             pot_traj.append(pot)
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
-    # TODO
-    # def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
-    #     r"""
-    #     Perform a Metropolis-based simulated annealing procedure.
-    #
-    #     Parameters
-    #     ----------
-    #     hamiltonian : object
-    #         Encapsulates the system's degrees of freedom
-    #         and interactions.
-    #     size : int
-    #         Number of Metropolis update steps.
-    #     step : float, optional, default=0.1
-    #         Maximal size of an update move in each coordinate.
-    #     beta : float, optional, default=1.0
-    #         Initial inverse temperature factor (1/kT).
-    #
-    #     Returns
-    #     -------
-    #     numpy.ndarray of float
-    #         Configuration trajectory.
-    #     numpy.ndarray of float
-    #         Total interaction and external potential trajectory.
-    #
-    #     """
-    #     beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
-    #     xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
-    #     pot_traj = [hamiltonian.potential()]
-    #     for i in range(size):
-    #         xyz, pot = self._update(
-    #             hamiltonian,
-    #             xyz_traj[-1], pot_traj[-1],
-    #             step=step, beta=beta_values[i])
-    #         xyz_traj.append(xyz)
-    #         pot_traj.append(pot)
-    #     hamiltonian.xyz[:] = xyz_traj[-1]
-    #     return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+    def metropolis_sa(self, iteration_number, step=0.1, beta=1.0):
+        r"""
+        Perform a Metropolis-based simulated annealing procedure.
+
+        Parameters
+        ----------
+        self : object,
+            Encapsulates the system's positions and params, box_size and
+            a function to compute potential energies.
+        iteration_number : int
+            Number of Metropolis update steps.
+        step : float, optional, default=0.1
+            Maximal size of an update move in each coordinate.
+        beta : float, optional, default=1.0
+            Initial inverse temperature factor (1/kT).
+
+        Returns
+        -------
+        numpy.ndarray of float
+            Configuration trajectory.
+        numpy.ndarray of float
+            Total interaction and external potential trajectory.
+
+        """
+        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        xyz_traj = [self.system_configuration.xyz]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
+
+        for i in range(iteration_number):
+            xyz, pot = self._update(xyz_traj[-1], pot_traj[-1],
+                step=step, beta=beta_values[i])
+            xyz_traj.append(xyz)
+            pot_traj.append(pot)
+        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
 

@@ -59,3 +59,5 @@ def create_sampler(number_of_particles, box_size):
     sampler = Sampler(system_configuration)
 
     return sampler, system_configuration
+def periodic_distance(pos1,pos2,box_size):
+    return np.linalg.norm(0.5 * box_size - (pos1 - pos2 + 0.5 * box_size) % box_size)
