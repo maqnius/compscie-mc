@@ -17,7 +17,6 @@
 # imports
 import numpy as np
 import itertools as it
-from particlesim.k_cython import fast_distances
 
 class Neighbouring(object):
     def __init__(self, particle_positions, radius):
@@ -192,14 +191,3 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
 
     def _recalc_cell_index(self, cell_x, cell_y, cell_z):
         return cell_x*1 + cell_y * self.nr_cells_one_d + cell_z * self.nr_cells_one_d**2
-
-#n = 20000
-#distances = np.zeros((n,n), dtype="float")
-#box_len = 5.0
-#xyz = np.arange(3*n, dtype="float").reshape(n,3) % box_len
-
-#print("start")
-#fast_distances(xyz, box_len, distances)
-#print("done")
-#print(xyz)
-#print(distances)
