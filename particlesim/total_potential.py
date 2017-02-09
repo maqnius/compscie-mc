@@ -33,7 +33,7 @@ class TotalPotential(object):
         self.k_cutoff = k_cutoff
         self.r_cutoff = r_cutoff
 
-        # Sigma shouldn't be set manually usually but for the sake of testing we leave it
+        # Sigma shouldn't be set manually, but for the sake of testing we leave it
         # as an optional parameter
         if sigma_c is None:
             if p_error <= 0:
@@ -99,9 +99,7 @@ class TotalPotential(object):
 
     def _estimate_parameters(self):
         '''
-        Estimates one missing cutoff parameter
-        Returns
-        -------
+        Estimates one missing cutoff parameter and calculates sigma for gaussian distribution
         '''
         if self.k_cutoff is None:
             self.k_cutoff = 2 * self.p_error / self.r_cutoff
@@ -112,14 +110,14 @@ class TotalPotential(object):
 
     def _estimate_all_parameters(self):
         """
-
-        Returns
-        -------
-
+        Estimates cutoff parameters for ewald summation and calculates sigma for gaussian distribution.
         """
+
+        # Number of iterations
         it_longrange = self.longrange.get_iterations()
         it_shortrange = self.shortrange.get_iterations()
 
+        # Time measurements
         start = time.time()
         self.longrange.longrange_energy(self.system_configuration.xyz)
         time_long = time.time() - start
@@ -130,6 +128,7 @@ class TotalPotential(object):
         time_short = time.time() - start
         time_short *= 1 / it_shortrange
 
+        # Optimal real space cutoff
         self.r_cutoff = np.sqrt(self.p_error/np.pi) * (time_long/time_short) ** (1/6) * \
                             self.system_configuration.box_size / len(self.system_configuration.xyz) ** (1/6)
 
