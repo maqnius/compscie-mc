@@ -236,42 +236,39 @@ class Sampler(object):
             pot_traj.append(pot)
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
-    # TODO
-    # def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
-    #     r"""
-    #     Perform a Metropolis-based simulated annealing procedure.
-    #
-    #     Parameters
-    #     ----------
-    #     hamiltonian : object
-    #         Encapsulates the system's degrees of freedom
-    #         and interactions.
-    #     size : int
-    #         Number of Metropolis update steps.
-    #     step : float, optional, default=0.1
-    #         Maximal size of an update move in each coordinate.
-    #     beta : float, optional, default=1.0
-    #         Initial inverse temperature factor (1/kT).
-    #
-    #     Returns
-    #     -------
-    #     numpy.ndarray of float
-    #         Configuration trajectory.
-    #     numpy.ndarray of float
-    #         Total interaction and external potential trajectory.
-    #
-    #     """
-    #     beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
-    #     xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
-    #     pot_traj = [hamiltonian.potential()]
-    #     for i in range(size):
-    #         xyz, pot = self._update(
-    #             hamiltonian,
-    #             xyz_traj[-1], pot_traj[-1],
-    #             step=step, beta=beta_values[i])
-    #         xyz_traj.append(xyz)
-    #         pot_traj.append(pot)
-    #     hamiltonian.xyz[:] = xyz_traj[-1]
-    #     return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+    def metropolis_sa(self, iteration_number, step=0.1, beta=1.0):
+        r"""
+        Perform a Metropolis-based simulated annealing procedure.
+
+        Parameters
+        ----------
+        self : object,
+            Encapsulates the system's positions and params, box_size and
+            a function to compute potential energies.
+        iteration_number : int
+            Number of Metropolis update steps.
+        step : float, optional, default=0.1
+            Maximal size of an update move in each coordinate.
+        beta : float, optional, default=1.0
+            Initial inverse temperature factor (1/kT).
+
+        Returns
+        -------
+        numpy.ndarray of float
+            Configuration trajectory.
+        numpy.ndarray of float
+            Total interaction and external potential trajectory.
+
+        """
+        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        xyz_traj = [self.system_configuration.xyz]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
+
+        for i in range(iteration_number):
+            xyz, pot = self._update(xyz_traj[-1], pot_traj[-1],
+                step=step, beta=beta_values[i])
+            xyz_traj.append(xyz)
+            pot_traj.append(pot)
+        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
 
