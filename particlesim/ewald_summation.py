@@ -90,3 +90,14 @@ class EwaldSummation(object):
         longrange_and_self_potential = longrange_potential - self_interaction_potential
 
         return longrange_and_self_potential
+
+    def get_iterations(self):
+        '''
+
+        Returns
+        -------
+        it : int
+            Number of steps for calculating the potential
+        '''
+
+        return len(self.k_vectors) * len(self.positions)
