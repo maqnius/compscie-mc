@@ -20,7 +20,7 @@ import itertools as it
 from particlesim.k_cython import fast_distances
 
 class Neighbouring(object):
-    def __init__(self, particle_positions, radius=float("inf")):
+    def __init__(self, particle_positions, radius):
         self.particle_positions = particle_positions
         self.n = len(particle_positions)
         self.r = float(radius)
@@ -48,7 +48,7 @@ class Neighbouring(object):
 
 
 class NeighbouringPrimitiveLists(Neighbouring):
-    def __init__(self, particle_positions, radius=float("inf"), box_size=5):
+    def __init__(self, particle_positions, radius, box_size=5):
         super(NeighbouringPrimitiveLists, self).__init__(particle_positions, radius)
         self.box_size = box_size
         self.create_neighbourlist()
@@ -71,7 +71,7 @@ class NeighbouringPrimitiveLists(Neighbouring):
         # return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
 
 class NeighbouringCellLinkedLists(Neighbouring):
-    def __init__(self, particle_positions, radius=float("inf"), box_size=1.0):
+    def __init__(self, particle_positions, radius, box_size=1.0):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
         self._cell_len = -1
@@ -131,7 +131,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
 
 class NeighbouringCellLinkedListsArray(Neighbouring):
-    def __init__(self, particle_positions, box_size, radius=float("inf")):
+    def __init__(self, particle_positions, box_size, radius):
         super(NeighbouringCellLinkedListsArray, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
         self.nr_cells_one_d = int(max(1, self.box_size / self.r))

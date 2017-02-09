@@ -34,7 +34,7 @@ class SystemConfiguration(object):
              lj_cutoff = 2.5 * sigma
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0, labels = [],
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=12.0, epsilon_r=1.0, labels = [],
                     sigma_c = 1.0, r_cutoff = 3.0, k_cutoff = 3.0):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
@@ -64,8 +64,16 @@ class SystemConfiguration(object):
         self.sigmas = sigmas
         self.epsilons = epsilons
         self.labels = labels
-
+        self.r_cutoff = r_cutoff
+        self.sigma_c = sigma_c
+        self.k_cutoff = k_cutoff
         self.create_lj_mean_parameters()
+
+        if self.box_size <= 2 * self.lj_cutoff_matrix.max():
+            raise ValueError('Box_size to small. Box_size has to be twice the cutoff radius '
+                             'of the Lennard Jones potential.\n'
+                             'box_size = %f\n r_cutoff_max = 2.5 * sigma_max = %f' % (self.box_size, self.lj_cutoff_matrix.max()))
+
         self._total_potential = TotalPotential(self, sigma_c, k_cutoff, r_cutoff)
 
     @property
@@ -165,12 +173,16 @@ class SystemConfiguration(object):
     def create_lj_mean_parameters(self):
         self.create_lennard_jones_epsilons()
         self.create_lennard_jones_sigmas()
+        self.create_lennard_jones_cutoff()
 
     def create_lennard_jones_epsilons(self):
         self.lj_epsilon_matrix = np.sqrt(np.array([self.epsilons]).transpose()*np.array([self.epsilons]))
 
     def create_lennard_jones_sigmas(self):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
+
+    def create_lennard_jones_cutoff(self):
+        self.lj_cutoff_matrix = 2.5 * self.lj_sigma_matrix
 
 
 class Sampler(object):
