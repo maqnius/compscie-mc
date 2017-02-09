@@ -28,7 +28,8 @@ def test_create_Neighbouring_instance():
 
 def test_neighbour_structur_is_created():
     array = np.random.rand(5,3)
-    neighbouring = NeighbouringCellLinkedLists(array)
+    r_cutoff = 3.0
+    neighbouring = NeighbouringCellLinkedLists(particle_positions=array,radius=r_cutoff)
     assert neighbouring._neighbourlist != None
     # usually we would not call private (with _name) attributes from outside
 
@@ -40,8 +41,8 @@ def test_create_Neighbouring_Cell_Linked_Lists_instance():
 def test_neighbouring_cell_linked_lists_array_works():
     number_of_particles = 100
     system_config = create_system_configuration(number_of_particles,box_size=10)
-    neighbour_list_array = NeighbouringCellLinkedListsArray(system_config.xyz, system_config.box_size)
-    neighbour_list = NeighbouringCellLinkedLists(system_config.xyz, system_config.box_size)
+    neighbour_list_array = NeighbouringCellLinkedListsArray(system_config.xyz, system_config.r_cutoff, system_config.box_size)
+    neighbour_list = NeighbouringCellLinkedLists(system_config.xyz,system_config.r_cutoff, system_config.box_size)
 
     time_new = 0
     time_old = 0

@@ -59,14 +59,14 @@ def test_lj_potential():
     epsilon_NaCl = np.sqrt(epsilon_Cl*epsilon_Na)
     epsilons = np.array([epsilon_Na, epsilon_Cl])
 
-    sigma_Na = 2*1.21496
-    sigma_Cl = 2*2.02234
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
     sigma_NaCl = 0.5*(sigma_Na + sigma_Cl)
     sigmas = np.array([sigma_Na, sigma_Cl])
 
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
-    boxsize = 10.
+    boxsize = 12.
 
     thoeretical_lj_energy = 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
 
@@ -84,7 +84,7 @@ def test_longrange_potential():
     """
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
-    boxsize = 3.
+    boxsize = 6.0
     sigma = 1.
     k_cutoff = 1.
 
@@ -113,14 +113,14 @@ def test_total_potential():
     epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
     epsilons = np.array([epsilon_Na, epsilon_Cl])
 
-    sigma_Na = 2 * 1.21496
-    sigma_Cl = 2 * 2.02234
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
     sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
     sigmas = np.array([sigma_Na, sigma_Cl])
 
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
-    boxsize = 10.
+    boxsize = 12.
 
     system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
     total_pot = TotalPotential(system_conf, sigma_c = 1., k_cutoff = 10, r_cutoff = 4)
@@ -129,4 +129,4 @@ def test_total_potential():
 
     potential = total_pot.potential(xyz)
 
-    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.00001)
+    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.3)
