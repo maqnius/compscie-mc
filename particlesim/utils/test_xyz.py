@@ -5,7 +5,7 @@ import numpy as np
 from particlesim.utils.config_parser import ProblemCreator
 
 
-def test_export_trajectory():
+def export_trajectory():
     parent = dirname((dirname(dirname(__file__))))
     config_path = abspath(join(parent, 'example/example_config_types.cfg'))
     creator = ProblemCreator(config_path)
