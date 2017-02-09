@@ -46,6 +46,7 @@ class Shortrange(object):
         self.sigmas = system_conf.lj_sigma_matrix
         self.sigma_c = sigma_c
         self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
+        self.coulomb_cutoff = system_conf.coulomb_cutoff
 
         # Create instance of neighbouring list
         self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
@@ -73,15 +74,21 @@ class Shortrange(object):
         q = (sigma / r) ** 6
         return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
-    def shortrange(self, positions, coulomb=True, lj=True):
+    def shortrange(self, positions, coulomb=True, lj=True, neighbouring=False):
         r"""
         Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
         and the short coulomb interaction part of the ewald summation
 
         Parameters
         ----------
-        xyz : numpy.ndarray(shape=(n, d))
+        positions : numpy.ndarray(shape=(n, d))
             d-dimensional coordinates of n particles.
+        coulomb : bool
+            If true calculate coulomb potential
+        lj : bool
+            If true calculate lennard jones potential
+        neighbouring : bool
+            If false calculate all distances
 
         Returns
         -------
@@ -92,37 +99,63 @@ class Shortrange(object):
 
         [n, m] = positions.shape
 
+
         lj_interaction = 0
         coulomb_interaction = 0
 
         #self.nlist.update_cells(positions)
-        #self.nlist.particle_positions = positions
-        #self.nlist.create_neighbourlist()
 
-        fast_distances(positions, box_len=self.box_length, distances=self.distances)
-
-        for particle1 in range(0, n):
-
-            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
-            if len(neighbors) == 0:
-                continue
-            neighbors = np.array(neighbors)
-
-            neigh_dists = np.array(neigh_dists)
-            sigma = self.sigmas[[particle1], [neighbors]]
-            epsilon = self.epsilons[[particle1], [neighbors]]
-            charges = self.charges
-
-            if coulomb:
-                coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
-
-            if lj:
-                lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
+        if neighbouring:
+            self.nlist.particle_positions = positions
+            self.nlist.create_neighbourlist()
 
 
+            for particle1 in range(0, n):
+
+                neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+                if len(neighbors) == 0:
+                    continue
+                neighbors = np.array(neighbors)
+
+                neigh_dists = np.array(neigh_dists)
+                sigma = self.sigmas[[particle1], [neighbors]]
+                epsilon = self.epsilons[[particle1], [neighbors]]
+                charges = self.charges
+
+                if coulomb:
+                    coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
+
+                if lj:
+                    lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
 
-        return 0.5 *(lj_interaction + coulomb_interaction)
+
+
+            return 0.5 *(lj_interaction + coulomb_interaction)
+
+        else:
+            fast_distances(positions, box_len=self.box_length, distances=self.distances)
+            for particle1 in range(0,n):
+                lj_interaction_tmp, coulomb_interaction_tmp = 0,0
+                for particle2 in range(particle1+1, n):
+                    if lj:
+                        sigma = self.sigmas[particle1, particle2]
+                        epsilon = self.epsilons[particle1, particle2]
+                        cutoff = self.system_conf.lj_cutoff_matrix[particle1, particle2]
+                        distance = self.distances[particle1,particle2]
+
+                        if distance < cutoff:
+                            lj_interaction_tmp += self.lj_potential(distance,sigma,epsilon)
+                    if coulomb:
+                        cutoff = self.coulomb_cutoff
+                        distance = self.distances[particle1,particle2]
+
+                        if distance < cutoff:
+                            coulomb_interaction_tmp += self.charges[particle1] * self.charges[particle2] / distance * erfc(
+                                distance / (np.sqrt(2) * self.sigma_c))
+                lj_interaction +=  lj_interaction_tmp
+                coulomb_interaction += coulomb_interaction_tmp
+            return lj_interaction + coulomb_interaction
 
     def get_iterations(self):
         it = 0
