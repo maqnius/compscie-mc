@@ -38,6 +38,7 @@ class Shortrange(object):
             Lenght of the realspace cutoff for calculating neighbours
 
         """
+        self.system_conf = system_conf
         self.epsilon_r = system_conf.epsilon_r
         self.box_length = system_conf.box_size
         self.charges = system_conf.charges
@@ -70,7 +71,7 @@ class Shortrange(object):
 
         """
         q = (sigma / r) ** 6
-        return 4.0 * (epsilon * (q * (q - 1.0)))
+        return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
     def shortrange(self, positions, coulomb=True, lj=True):
         r"""
@@ -108,22 +109,37 @@ class Shortrange(object):
             neighbors = np.array(neighbors)
 
             neigh_dists = np.array(neigh_dists)
-            sigma = np.array(self.sigmas)[[particle1], [neighbors]]
-            charges = np.array(self.charges)
+            sigma = self.sigmas[[particle1], [neighbors]]
+            epsilon = self.epsilons[[particle1], [neighbors]]
+            charges = self.charges
+
             if coulomb:
                 coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
 
-            for j in range(len(neighbors)):
-                particle2 = neighbors[j]
-                r = neigh_dists[j]
-                sigma = self.sigmas[particle1, particle2]
-                epsilon = self.epsilons[particle1, particle2]
+            if lj:
+                lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
 
 
-                # Lennard Jones Potential
-                if lj:
-                    lj_interaction += self.lj_potential(r, sigma=sigma, epsilon=epsilon)
 
         return 0.5 *(lj_interaction + coulomb_interaction)
 
+    def get_iterations(self):
+        it = 0
+        for particle1 in range(0, len(self.charges)):
+            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+            it += len(neighbors)
+        return it
+
+    def recreate_neighbourlist(self, r_cutoff):
+        '''
+        Necessary for time measurement to estimate cutoff parameters.
+
+        Parameters
+        ----------
+        r_cutoff : float
+            Cutoff radius
+
+        '''
+        self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, r_cutoff,
+                                                 self.box_length)
