@@ -68,8 +68,11 @@ def test_cumulative_percentage_global_optimum():
 
 def test_simulated_annealing():
     n_particle = 4
-    sampler = sampler, system_configuration = create_sampler(n_particle, box_size=10)
+    box_size = 10
+    sampler = sampler, system_configuration = create_sampler(n_particle, box_size=box_size)
     traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=10)
     traj_mc, pot_mc = sampler.metropolis(iteration_number=100,beta=10)
     assert (len(traj_mc)==len(traj_sa))
-    assert periodic_distance(traj_sa[-1],traj_sa[-10]) <= 0.01
+    foo = periodic_distance(traj_sa[-1],traj_sa[-2], box_size)
+    assert periodic_distance(traj_sa[-1],traj_sa[-2], box_size=box_size) <= 0.01, "in the last step of simulated annealing" \
+                                                                                   "there is still a step larger than 0.01"
