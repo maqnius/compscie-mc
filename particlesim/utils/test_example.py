@@ -20,6 +20,11 @@ def example_manual_configuration():
     # be set as the user whished
     creator.export_config()
 
+    # Export csv file
+    parent = dirname((dirname(dirname(__file__))))
+    csv_path = abspath(join(parent, 'example/example_out_positions.csv'))
+    creator.export_csv(system_config.xyz, csv_path)
+
     assert(isinstance(system_config, SystemConfiguration))
 
 def create_lib():

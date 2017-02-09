@@ -123,18 +123,18 @@ class ProblemCreator(object):
             # Unfiddle the input csv file
             try:
                 readout = self.initial_configuration
-                labels = self.initial_configuration['label'].astype(str, copy=False)
-                positions = readout[['x', 'y', 'z']].view((float, len(readout[['x', 'y', 'z']].dtype.names)))
-                charges = readout[['charge']].view((float, len(readout[['charge']].dtype.names)))
-                epsilons = readout[['epsilon']].view((float, len(readout[['epsilon']].dtype.names)))
-                sigmas = readout[['sigma']].view((float, len(readout[['sigma']].dtype.names)))
+                self.labels = self.initial_configuration['label'].astype(str, copy=False)
+                self.positions = readout[['x', 'y', 'z']].view((float, len(readout[['x', 'y', 'z']].dtype.names)))
+                self.charges = readout[['charge']].view((float, len(readout[['charge']].dtype.names)))
+                self.epsilons = readout[['epsilon']].view((float, len(readout[['epsilon']].dtype.names)))
+                self.sigmas = readout[['sigma']].view((float, len(readout[['sigma']].dtype.names)))
 
             except IndexError:
                 print("The csv-file could not be read: The format of your csv-file does not have the required form. \
                       Even when LJ is deactivated, you have express some values for epsilons or sigmas")
                 exit(1)
-            arguments = dict(xyz=positions, sigmas=sigmas, epsilons=epsilons, charges=charges,
-                             box_size=self.box_size, epsilon_r=self.epsilon_r , labels=labels)
+            arguments = dict(xyz=self.positions, sigmas=self.sigmas, epsilons=self.epsilons, charges=self.charges,
+                             box_size=self.box_size, epsilon_r=self.epsilon_r , labels=self.labels)
         else:
             # Use local lists
             arguments = dict(xyz=np.array(self.positions), sigmas=np.array(self.sigmas),
@@ -208,14 +208,21 @@ class ProblemCreator(object):
         with open(config_path, 'w') as configfile:
             self.config.write(configfile)
 
-    def export_csv(self, positions):
+    def export_csv(self, positions, path):
         '''
         Generates an output csv file for the current configuration.
 
         Returns
         -------
         '''
-        pass
+        n = len(self.labels)
+        labels = np.array(self.labels).reshape(n, 1)
+
+        with open(path, 'wb') as file:
+            file.write(str.encode("label, x, y, z, Charge, LJ-Epsilon, LJ-Sigma\n"))
+            with_labels = np.concatenate((labels, positions, self.charges.reshape(n, 1),
+                                          self.epsilons.reshape(n, 1), self.sigmas.reshape(n, 1)), axis=1)
+            np.savetxt(file, with_labels, delimiter=",", fmt='%s')
 
     @staticmethod
     def convert_charmm_parrams(from_file, to_file):
