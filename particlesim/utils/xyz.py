@@ -26,5 +26,3 @@ def export_trajectory(labels, trajectory, path):
 
             with_labels = np.concatenate((labels, xyz), axis=1)
             np.savetxt(file, with_labels, delimiter=" ", fmt = '%s')
-
-            file.write(str.encode("\n"))
