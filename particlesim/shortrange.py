@@ -17,7 +17,6 @@
 import numpy as np
 from particlesim.k_cython import fast_distances
 from scipy.special import erfc
-
 from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.utils.conversion import prefactor
 
