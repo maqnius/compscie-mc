@@ -15,7 +15,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from scipy.constants import physical_constants
+from particlesim.lib.converstion import prefactor
 from .k_cython import calc_k_vectors
 
 class EwaldSummation(object):
@@ -89,7 +89,7 @@ class EwaldSummation(object):
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
 
-        return longrange_and_self_potential
+        return longrange_and_self_potential * prefactor
 
     def get_iterations(self):
         '''

@@ -18,7 +18,7 @@ import numpy as np
 from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.k_cython import fast_distances
 from scipy.special import erfc
-import scipy.constants as constants
+from particlesim.lib.converstion import prefactor
 
 
 class Shortrange(object):
@@ -47,6 +47,7 @@ class Shortrange(object):
         self.sigma_c = sigma_c
         self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
         self.coulomb_cutoff = system_conf.coulomb_cutoff
+
 
         # Create instance of neighbouring list
         self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
@@ -128,10 +129,7 @@ class Shortrange(object):
                 if lj:
                     lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
-
-
-
-            return 0.5 *(lj_interaction + coulomb_interaction)
+            return 0.5 * (lj_interaction + coulomb_interaction * prefactor)
 
         else:
             fast_distances(positions, box_len=self.box_length, distances=self.distances)
