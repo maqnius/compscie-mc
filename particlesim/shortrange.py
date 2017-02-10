@@ -22,7 +22,7 @@ import scipy.constants as constants
 
 
 class Shortrange(object):
-    def __init__(self, system_conf, sigma_c, r_cutoff):
+    def __init__(self, system_conf, sigma_c, r_cutoff, neighbouring):
         """
 
         Parameters
@@ -46,11 +46,13 @@ class Shortrange(object):
         self.sigmas = system_conf.lj_sigma_matrix
         self.sigma_c = sigma_c
         self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
-        self.coulomb_cutoff = system_conf.coulomb_cutoff
+        self.r_cutoff = r_cutoff
+        self.neighbouring = neighbouring
 
         # Create instance of neighbouring list
-        self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
-                                                 self.box_length)
+        if(neighbouring):
+            self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
+                                                    self.box_length)
 
     def lj_potential(self, r, sigma=1.0, epsilon=1.0):
         r"""
@@ -74,7 +76,7 @@ class Shortrange(object):
         q = (sigma / r) ** 6
         return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
-    def shortrange(self, positions, coulomb=True, lj=True, neighbouring=False):
+    def shortrange(self, positions, coulomb=True, lj=True):
         r"""
         Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
         and the short coulomb interaction part of the ewald summation
@@ -105,7 +107,7 @@ class Shortrange(object):
 
         #self.nlist.update_cells(positions)
 
-        if neighbouring:
+        if self.neighbouring:
             self.nlist.particle_positions = positions
             self.nlist.create_neighbourlist()
 
@@ -147,7 +149,7 @@ class Shortrange(object):
                         if distance < cutoff:
                             lj_interaction_tmp += self.lj_potential(distance,sigma,epsilon)
                     if coulomb:
-                        cutoff = self.coulomb_cutoff
+                        cutoff = self.r_cutoff
                         distance = self.distances[particle1,particle2]
 
                         if distance < cutoff:
@@ -158,13 +160,16 @@ class Shortrange(object):
             return lj_interaction + coulomb_interaction
 
     def get_iterations(self):
-        it = 0
-        for particle1 in range(0, len(self.charges)):
-            neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
-            it += len(neighbors)
-        return it
+        if self.neighbouring:
+            it = 0
+            for particle1 in range(0, len(self.charges)):
+                neighbors, neigh_dists = self.nlist.get_particles_within_radius(particle1)
+                it += len(neighbors)
+            return it
+        else:
+            return len(self.charges)*(len(self.charges)-1)/2
 
-    def recreate_neighbourlist(self, r_cutoff):
+    def recreate_neighbourlist(self):
         '''
         Necessary for time measurement to estimate cutoff parameters.
 
@@ -174,5 +179,6 @@ class Shortrange(object):
             Cutoff radius
 
         '''
-        self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, r_cutoff,
+        if self.neighbouring:
+            self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, self.r_cutoff,
                                                  self.box_length)

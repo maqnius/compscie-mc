@@ -23,7 +23,7 @@ from .total_potential import TotalPotential
 def test_longrange_potential_is_float():
     n = 100
     system_conf = create_system_configuration(n, box_size=10)
-    total = TotalPotential(system_conf, k_cutoff=3)
+    total = TotalPotential(system_conf)
 
     new_positions = create_positions(n)
 
@@ -36,7 +36,7 @@ def test_longrange_potential_is_float():
 def test_shortrange_potential_is_float():
     n = 100
     system_conf = create_system_configuration(n,box_size=10)
-    total = TotalPotential(system_conf, k_cutoff=3)
+    total = TotalPotential(system_conf)
 
     new_positions = create_positions(n)
 
@@ -55,7 +55,8 @@ def test_parameter_guess():
     k_cutoff_prev = 0
 
     for p_i in range(1, 10):
-        total = TotalPotential(system_conf, p_error=p_i)
+        system_conf.p_error = p_i
+        total = TotalPotential(system_conf)
 
         # Cutoff needs to get bigger when raising the accuracy
         assert(r_cutoff_prev < total.r_cutoff)
