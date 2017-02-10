@@ -15,7 +15,6 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-
 from particlesim.utils.conversion import prefactor
 from .k_cython import calc_k_vectors
 
@@ -65,27 +64,19 @@ class EwaldSummation(object):
         """
         self.positions  = positions
 
-        N = len(self.positions)
+        # Calculate longrange potential vecotrized
 
-        # Calculate longrange potential
-        longrange_potential = 0.
+        k_sq = np.einsum('ij,ij -> i', self.k_vectors, self.k_vectors)
 
-        for k_i in self.k_vectors:
-            structure_factor = 0.
-            k_sq = np.linalg.norm(k_i) ** 2
+        structure_factor = np.einsum('ik, k', np.exp(1j * np.einsum('ji, ki', self.k_vectors, self.positions)), self.charges )
+        structure_factor_squared = structure_factor.real**2 + structure_factor.imag**2
 
-            for a in range(N):
-                structure_factor += self.charges[a] * np.e ** (1j * np.dot(k_i, self.positions[a]))
-            structure_factor_squared = np.absolute(structure_factor) ** 2
-            longrange_potential += structure_factor_squared * np.e ** (-self.sigma_sq * k_sq / 2) / k_sq
-
-        longrange_potential *= prefactor / (2 * self.volume )
+        longrange_potential = np.dot(structure_factor_squared.T, np.exp(-self.sigma_sq * k_sq / 2) / k_sq) * \
+                              prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential
-        self_interaction_potential = 0.
-
-        self_interaction_potential = np.sum(self.charges*self.charges)
-        self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
+        self_interaction_potential = np.dot(self.charges.T, self.charges) * \
+                                     1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
