@@ -15,11 +15,15 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from .shortrange import Shortrange
-from .ewald_summation import EwaldSummation
-from .total_potential import TotalPotential
-from .api import SystemConfiguration
 from scipy.special import erfc
+
+from particlesim.utils.conversion import prefactor
+from .api import SystemConfiguration
+from .ewald_summation import EwaldSummation
+from .shortrange import Shortrange
+from .total_potential import TotalPotential
+
+
 #import pysor
 
 
@@ -45,8 +49,8 @@ def test_shortrange_ewald():
     shortrange_energy_periodic = shortrange.shortrange(xyz, lj=False)
 
 
-    np.testing.assert_almost_equal(actual=shortrange_energy, desired=theoretical_shortrange_energy, decimal=5)
-    np.testing.assert_almost_equal(actual=shortrange_energy_periodic, desired=theoretical_shortrange_energy, decimal=5)
+    np.testing.assert_almost_equal(actual=shortrange_energy, desired=theoretical_shortrange_energy*1/(4*np.pi) * prefactor, decimal=5)
+    np.testing.assert_almost_equal(actual=shortrange_energy_periodic, desired=theoretical_shortrange_energy*1/(4*np.pi) * prefactor, decimal=5)
 
 
 
@@ -100,7 +104,7 @@ def test_longrange_potential():
 
     simulated_longrange_energy = ewald_summation.longrange_energy(xyz)
 
-    np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy, decimal=5)
+    np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy * 1/(4*np.pi) * prefactor, decimal=5)
 
 
 
@@ -126,7 +130,7 @@ def test_total_potential():
     system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons, k_cutoff = 10, r_cutoff = 4)
     total_pot = TotalPotential(system_conf)
     total_pot.sigma_c = 1.
-    theoretical_potential = - 1 + 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+    theoretical_potential = - 1/(np.pi * 4 ) * prefactor + 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
 
     potential = total_pot.potential(xyz)
 

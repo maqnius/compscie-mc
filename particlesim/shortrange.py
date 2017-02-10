@@ -15,10 +15,10 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.k_cython import fast_distances
 from scipy.special import erfc
-import scipy.constants as constants
+from particlesim.neighbouring import NeighbouringCellLinkedLists
+from particlesim.utils.conversion import prefactor
 
 
 class Shortrange(object):
@@ -48,6 +48,7 @@ class Shortrange(object):
         self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
         self.r_cutoff = r_cutoff
         self.neighbouring = neighbouring
+
 
         # Create instance of neighbouring list
         if(neighbouring):
@@ -130,10 +131,7 @@ class Shortrange(object):
                 if lj:
                     lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
-
-
-
-            return 0.5 *(lj_interaction + coulomb_interaction)
+            return 0.5 * (lj_interaction + coulomb_interaction * 1/(4*np.pi) * prefactor)
 
         else:
             fast_distances(positions, box_len=self.box_length, distances=self.distances)
@@ -157,7 +155,7 @@ class Shortrange(object):
                                 distance / (np.sqrt(2) * self.sigma_c))
                 lj_interaction +=  lj_interaction_tmp
                 coulomb_interaction += coulomb_interaction_tmp
-            return lj_interaction + coulomb_interaction
+            return lj_interaction + coulomb_interaction * 1/(4*np.pi) * prefactor
 
     def get_iterations(self):
         if self.neighbouring:

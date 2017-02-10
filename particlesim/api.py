@@ -1,4 +1,3 @@
-import numpy as np
 from .total_potential import *
 
 

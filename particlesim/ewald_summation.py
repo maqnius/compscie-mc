@@ -15,8 +15,10 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from scipy.constants import physical_constants
+
+from particlesim.utils.conversion import prefactor
 from .k_cython import calc_k_vectors
+
 
 class EwaldSummation(object):
 
@@ -77,14 +79,14 @@ class EwaldSummation(object):
             structure_factor_squared = np.absolute(structure_factor) ** 2
             longrange_potential += structure_factor_squared * np.e ** (-self.sigma_sq * k_sq / 2) / k_sq
 
-        longrange_potential *= 4 * np.pi / (2 * self.volume )
+        longrange_potential *= prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential
         self_interaction_potential = 0.
 
         for charge_i in self.charges:
             self_interaction_potential += charge_i**2
-        self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma)
+        self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
