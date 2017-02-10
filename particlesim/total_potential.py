@@ -25,22 +25,19 @@ class TotalPotential(object):
     of the particle positions should be done at initialization
     """
 
-    def __init__(self, system_configuration, sigma_c = None, k_cutoff = None, r_cutoff = None, p_error = 10):
-        self.sigma_c = sigma_c
-        self.p_error = p_error
+    def __init__(self, system_configuration):
+        self.p_error = system_configuration.p_error
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
-        self.k_cutoff = k_cutoff
-        self.r_cutoff = r_cutoff
+        self.k_cutoff = system_configuration.k_cutoff
+        self.r_cutoff = system_configuration.r_cutoff
+        self.sigma_c = None
 
         # Sigma shouldn't be set manually, but for the sake of testing we leave it
         # as an optional parameter
-        if sigma_c is None:
-            if p_error <= 0:
-                raise ValueError('p_error must be bigger than zero')
-
+        if any(x is None for x in [self.k_cutoff, self.r_cutoff]):
             # Set parameters according to the wanted accuracy p_error
-            if all(x is None for x in [k_cutoff, r_cutoff]):
+            if all(x is None for x in [self.k_cutoff, self.r_cutoff]):
                 # No parameters set at all - > estimate by time duration a
                 # calculation in real and reziprocal space takes
 
@@ -48,10 +45,7 @@ class TotalPotential(object):
                 r_cutoff_tmp = 1.0
                 k_cutoff_tmp = 3.0
 
-                # Create instance for long range coulomb energy
-                self.longrange = EwaldSummation(system_configuration, sigma_c_tmp, k_cutoff_tmp)
-                # Create instance for calculation of shortrange energy
-                self.shortrange = Shortrange(system_configuration, sigma_c_tmp, r_cutoff_tmp)
+                self._create_potentials(system_configuration, sigma_c_tmp, k_cutoff_tmp, r_cutoff_tmp)
 
                 self._estimate_all_parameters()
 
@@ -60,28 +54,27 @@ class TotalPotential(object):
                 self.longrange.k_cutoff = self.k_cutoff
 
                 self.shortrange.sigma_c = self.sigma_c
-                self.shortrange.recreate_neighbourlist(self.r_cutoff)
+                self.shortrange.r_cutoff = self.r_cutoff
+                self.shortrange.recreate_neighbourlist()
 
             else:
                 # At least one parameter set - > we can calculate the optimal value for the
                 # missing parameter
 
                 self._estimate_parameters()
-
-                # Create instance for long range coulomb energy
-                self.longrange = EwaldSummation(system_configuration, self.sigma_c, self.k_cutoff)
-                # Create instance for calculation of shortrange energy
-                self.shortrange = Shortrange(system_configuration, self.sigma_c, self.r_cutoff)
+                self._create_potentials(system_configuration, self.sigma_c, self.k_cutoff, self.r_cutoff)
         else:
-            if k_cutoff is None or r_cutoff is None:
+            if self.k_cutoff is None or self.r_cutoff is None:
                 raise ValueError('k_cutoff and r_cutoff need to be set')
-
-            # Create instance for long range coulomb energy
-            self.longrange = EwaldSummation(system_configuration, self.sigma_c, self.k_cutoff)
-            # Create instance for calculation of shortrange energy
-            self.shortrange = Shortrange(system_configuration, self.sigma_c, self.r_cutoff)
+            self._estimate_parameters()
+            self._create_potentials(system_configuration, self.sigma_c, self.k_cutoff, self.r_cutoff)
 
 
+    def _create_potentials(self, system_configuration, sigma_c, k_cutoff, r_cutoff):
+        # Create instance for long range coulomb energy
+        self.longrange = EwaldSummation(system_configuration, sigma_c, k_cutoff)
+        # Create instance for calculation of shortrange energy
+        self.shortrange = Shortrange(system_configuration, sigma_c, r_cutoff, self.system_configuration.neighbouring)
 
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)
