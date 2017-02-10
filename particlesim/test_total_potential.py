@@ -58,9 +58,11 @@ def test_parameter_guess():
         system_conf.p_error = p_i
         total = TotalPotential(system_conf)
 
-        # Cutoff needs to get bigger when raising the accuracy
-        assert(r_cutoff_prev < total.r_cutoff)
-        assert(k_cutoff_prev < total.k_cutoff)
+        # Cutoff should get not or not much smaller when raising the accuracy
+        if not r_cutoff_prev == 0:
+            assert(total.r_cutoff/r_cutoff_prev > 0.95)
+        if not k_cutoff_prev == 0:
+            assert(total.k_cutoff/(k_cutoff_prev) > 0.95)
 
         r_cutoff_prev = total.r_cutoff
         k_cutoff_prev = total.k_cutoff
