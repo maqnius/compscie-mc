@@ -71,20 +71,15 @@ class EwaldSummation(object):
         longrange_potential = 0.
 
         for k_i in self.k_vectors:
-            structure_factor = 0.
-            k_sq = np.linalg.norm(k_i) ** 2
-
-            for a in range(N):
-                structure_factor += self.charges[a] * np.e ** (1j * np.dot(k_i, self.positions[a]))
-            structure_factor_squared = np.absolute(structure_factor) ** 2
-            longrange_potential += structure_factor_squared * np.e ** (-self.sigma_sq * k_sq / 2) / k_sq
+            k_sq = np.inner(k_i,k_i).astype(float)
+            structure_factor = np.dot(self.charges, np.exp(1j * np.einsum('i, ki -> k', k_i, self.positions)))
+            structure_factor_squared = structure_factor.real**2 + structure_factor.imag**2
+            longrange_potential += structure_factor_squared * np.exp(-self.sigma_sq * k_sq / 2) / k_sq
 
         longrange_potential *= prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential
-        self_interaction_potential = 0.
-
-        self_interaction_potential = np.sum(self.charges*self.charges)
+        self_interaction_potential = np.dot(self.charges.T, self.charges)
         self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
 
         # Calculate total potential
