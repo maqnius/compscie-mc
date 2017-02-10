@@ -15,8 +15,10 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from particlesim.lib.converstion import prefactor
+
+from particlesim.utils.conversion import prefactor
 from .k_cython import calc_k_vectors
+
 
 class EwaldSummation(object):
 

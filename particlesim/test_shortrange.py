@@ -15,12 +15,15 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from particlesim.lib.converstion import prefactor
-from .shortrange import Shortrange
-from .ewald_summation import EwaldSummation
-from .total_potential import TotalPotential
-from .api import SystemConfiguration
 from scipy.special import erfc
+
+from particlesim.utils.conversion import prefactor
+from .api import SystemConfiguration
+from .ewald_summation import EwaldSummation
+from .shortrange import Shortrange
+from .total_potential import TotalPotential
+
+
 #import pysor
 
 

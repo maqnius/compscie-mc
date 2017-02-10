@@ -15,10 +15,11 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.k_cython import fast_distances
 from scipy.special import erfc
-from particlesim.lib.converstion import prefactor
+
+from particlesim.neighbouring import NeighbouringCellLinkedLists
+from particlesim.utils.conversion import prefactor
 
 
 class Shortrange(object):
