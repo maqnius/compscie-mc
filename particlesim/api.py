@@ -34,7 +34,7 @@ class SystemConfiguration(object):
     """
 
     def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=12.0, epsilon_r=1.0, labels = [],
-                    sigma_c = 1.0, r_cutoff = 3.0, k_cutoff = 3.0, coulomb_cutoff = 3):
+                    p_error=10, r_cutoff = None, k_cutoff = None, neighbouring = False):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
             raise ValueError("xyz must be in range of zero to %d" %box_size)
@@ -64,19 +64,40 @@ class SystemConfiguration(object):
         self.epsilons = epsilons
         self.labels = labels
         self.r_cutoff = r_cutoff
-        self.sigma_c = sigma_c
         self.k_cutoff = k_cutoff
-        self.coulomb_cutoff = coulomb_cutoff
         self.create_lj_mean_parameters()
         self.create_lennard_jones_cutoff()
+        self._neighbouring = neighbouring
+        self.p_error = p_error
 
         if self.box_size <= 2 * self.lj_cutoff_matrix.max():
             raise ValueError('Box_size to small. Box_size has to be twice the cutoff radius '
                              'of the Lennard Jones potential.\n'
                              'box_size = %f\n r_cutoff_max = 2.5 * sigma_max = %f' % (self.box_size, self.lj_cutoff_matrix.max()))
 
-        self._total_potential = TotalPotential(self, sigma_c, k_cutoff, r_cutoff)
+        self._total_potential = TotalPotential(self)
 
+    @property
+    def p_error(self):
+        return self._p_error
+
+    @p_error.setter
+    def p_error(self, value):
+        if value <= 0:
+            raise ValueError('p_error must be bigger than zero')
+        self._p_error = value
+
+    @property
+    def neighbouring(self):
+        return self._neighbouring
+
+    @neighbouring.setter
+    def neighbouring(self, value):
+        if not isinstance(value,bool):
+            raise TypeError
+        self._total_potential.shortrange.neighbouring = value
+        self._neighbouring = value
+        pass
     @property
     def xyz(self):
         return self._xyz
