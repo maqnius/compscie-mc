@@ -84,8 +84,7 @@ class EwaldSummation(object):
         # Calculate self-interaction potential
         self_interaction_potential = 0.
 
-        for charge_i in self.charges:
-            self_interaction_potential += charge_i**2
+        self_interaction_potential = np.sum(self.charges*self.charges)
         self_interaction_potential *= 1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
 
         # Calculate total potential
