@@ -131,7 +131,7 @@ class Shortrange(object):
                 if lj:
                     lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
 
-            return 0.5 * (lj_interaction + coulomb_interaction * prefactor)
+            return 0.5 * (lj_interaction + coulomb_interaction * 1/(4*np.pi) * prefactor)
 
         else:
             fast_distances(positions, box_len=self.box_length, distances=self.distances)
@@ -155,7 +155,7 @@ class Shortrange(object):
                                 distance / (np.sqrt(2) * self.sigma_c))
                 lj_interaction +=  lj_interaction_tmp
                 coulomb_interaction += coulomb_interaction_tmp
-            return lj_interaction + coulomb_interaction
+            return lj_interaction + coulomb_interaction * 1/(4*np.pi) * prefactor
 
     def get_iterations(self):
         if self.neighbouring:
