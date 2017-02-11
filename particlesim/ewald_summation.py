@@ -22,6 +22,7 @@ from .k_cython import calc_k_vectors
 class EwaldSummation(object):
 
     def __init__(self, system_conf, sigma, k_cutoff):
+        self.system_conf = system_conf
         self.positions = system_conf.xyz # Original Positions
         self.charges = system_conf.charges
         self.volume = system_conf.volume
@@ -29,9 +30,17 @@ class EwaldSummation(object):
         self.sigma_sq = sigma * sigma
 
         # Assig cutoff k and calculate vectors in k-space for longrange interaction energy
-        self.k_cutoff = k_cutoff # multiple of 2*pi/L
-        self.k_vectors = np.multiply(calc_k_vectors(k_cutoff), 2*np.pi/system_conf.box_size)
+        self._k_cutoff = k_cutoff # multiple of 2*pi/L
+        self.k_vectors = np.multiply(calc_k_vectors(self._k_cutoff), 2*np.pi/system_conf.box_size)
 
+    @property
+    def k_cutoff(self):
+        return self._k_cutoff
+
+    @k_cutoff.setter
+    def k_cutoff(self, value):
+        self._k_cutoff = value
+        self.k_vectors = np.multiply(calc_k_vectors(self._k_cutoff), 2*np.pi/self.system_conf.box_size)
 
     def longrange_energy(self, positions):
         """
