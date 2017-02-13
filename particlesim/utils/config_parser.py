@@ -12,7 +12,7 @@ from particlesim.api import SystemConfiguration
 
 class ProblemCreator(object):
 
-    default_config_path = pkg_resources.resource_filename('particlesim', 'lib/default_config.cfg')
+    default_config_path = pkg_resources.resource_filename('particlesim', 'lib/default_config.py')
 
 
     def __init__(self, user_config):
@@ -107,7 +107,7 @@ class ProblemCreator(object):
             Dictionary with atom information
         '''
 
-        lib_dir = pkg_resources.resource_filename('particlesim', 'lib/')+'*.cfg'
+        lib_dir = pkg_resources.resource_filename('particlesim', 'lib/')+'particle_types.py'
         log_files = glob.glob(lib_dir)
 
         config = configparser.ConfigParser()

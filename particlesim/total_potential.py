@@ -23,15 +23,16 @@ class TotalPotential(object):
     r"""
     This class is initialized when a system_configuration is created. It offers methods to
     calculate long-range and short-range potentials of a given configuration.
+
+    Parameters
+    ----------
+    system_configuration : :obj:
+        Instance of an SystemConfiguration Object that holds essential parameters
+        previously set by the user.
+
     """
 
     def __init__(self, system_configuration):
-        """
-        In the init process, parameters are estimated if
-        Parameters
-        ----------
-        system_configuration : Instance of SystemConfiguration
-        """
         self.p_error = system_configuration.p_error
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration
@@ -78,6 +79,24 @@ class TotalPotential(object):
 
 
     def _create_potentials(self, system_configuration, sigma_c, k_cutoff, r_cutoff):
+        r"""
+        Create the instances for short-range and long-range potentials.
+
+        Parameters
+        ---------
+        system_configuration : :obj:
+            Instance of an SystemConfiguration Object that holds essential parameters
+            previously set by the user.
+        sigma_c : float
+            Standard deviation of gaussian charge distribution.
+        k_cutoff : float
+
+        r_cutoff
+
+        Returns
+        -------
+
+        """
         # Create instance for long range coulomb energy
         self.longrange = EwaldSummation(system_configuration, sigma_c, k_cutoff)
         # Create instance for calculation of shortrange energy

@@ -207,7 +207,7 @@ class SystemConfiguration(object):
 
 
 class Sampler(object):
-    r"""A sampler class for hamiltonian objects.
+    r"""A sampler class for system configuration.
 
     Parameters
     ----------
@@ -228,6 +228,7 @@ class Sampler(object):
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial
         return xyz, pot
+
 
     def metropolis(self, iteration_number, step=0.1, beta=1.0):
         r"""
@@ -253,8 +254,7 @@ class Sampler(object):
             Total interaction and external potential trajectory.
 
         """
-
-    #   check input data
+        # check input data
         if not isinstance(iteration_number,int) or iteration_number <= 0:
             raise ValueError("To sample you need at least one iteration step...\n"
                              "iteration_numer has to be a positive integer")
@@ -263,11 +263,11 @@ class Sampler(object):
         if not isinstance(beta,(float,int)) or beta <= 0:
             raise ValueError("beta has to be a postive number")
 
-    #   create copy of instance and work with copy, so initial configuration is unchanged
+        # create copy of instance and work with copy, so initial configuration is unchanged
         xyz_traj = [self.system_configuration.xyz]
         pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
 
-    #   perform metropolis
+        # perform metropolis
         for i in range(iteration_number):
             xyz, pot = self._update(
                 xyz_traj[-1]
@@ -276,6 +276,7 @@ class Sampler(object):
             xyz_traj.append(xyz)
             pot_traj.append(pot)
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+
 
     def metropolis_sa(self, iteration_number, step=0.1, beta=1.0):
         r"""
@@ -311,7 +312,7 @@ class Sampler(object):
                     beta_values = beta
                 elif len(beta) == 2:
                     # beta contains min and max value for beta
-                    beta_values = 1.0 / np.linspace(1.0 / beta[0], 1.0 / beta, iteration_number)[::-1]
+                    beta_values = 1.0 / np.linspace(1.0 / beta[1], 1.0 / beta[0], iteration_number)[::-1]
                 else:
                     raise ValueError(
                         "beta must be float|int, touple with len 2 or touple with len equal to iteration number")
@@ -327,6 +328,7 @@ class Sampler(object):
                 step=step, beta=beta_values[i])
             xyz_traj.append(xyz)
             pot_traj.append(pot)
+
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
 

@@ -120,9 +120,8 @@ class Shortrange(object):
                 sigma = self.sigmas[[particle1], [neighbors]]
                 epsilon = self.epsilons[[particle1], [neighbors]]
                 charges = self.charges
-
                 if coulomb:
-                    coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * sigma)))
+                    coulomb_interaction += charges[particle1] * np.sum(charges[neighbors]/neigh_dists * erfc(neigh_dists/(np.sqrt(2) * self.sigma_c)))
 
                 if lj:
                     lj_interaction += self.lj_potential(neigh_dists, sigma=sigma, epsilon=epsilon)
@@ -149,6 +148,7 @@ class Shortrange(object):
                         if distance < cutoff:
                             coulomb_interaction_tmp += self.charges[particle1] * self.charges[particle2] / distance * erfc(
                                 distance / (np.sqrt(2) * self.sigma_c))
+
                 lj_interaction +=  lj_interaction_tmp
                 coulomb_interaction += coulomb_interaction_tmp
             return lj_interaction + coulomb_interaction * 1/(4*np.pi) * prefactor
