@@ -224,7 +224,15 @@ class SystemConfiguration(object):
 
 
 class Sampler(object):
-    r"""A sampler class for hamiltonian objects."""
+    r"""A sampler class for hamiltonian objects.
+
+    Parameters
+    ----------
+    system_configuration : :obj:
+        Instance of an SystemConfiguration Object that holds essential parameters
+        previously set by the user.
+
+    """
     def __init__(self, system_configuration):
         if len(system_configuration.xyz) == 0:
             raise ValueError("no particle in system configuration")
