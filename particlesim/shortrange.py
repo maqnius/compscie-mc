@@ -75,6 +75,7 @@ class Shortrange(object):
 
         """
         q = (sigma / r) ** 6
+        print(sigma, epsilon)
         return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
     def shortrange(self, positions, coulomb=True, lj=True):

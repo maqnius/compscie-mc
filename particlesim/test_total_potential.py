@@ -96,3 +96,96 @@ def test_shortrange_coulomb_with_4_charges():
     np.testing.assert_almost_equal(actual=shortrange_pot_sim, desired=shortrange_pot, decimal=5)
 
 
+
+def create_test_system():
+    """
+    Create a system configuration with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    Calculate the shortrange energies for the test system with a naive method.
+
+    Returns
+    -------
+    system_conf : object
+        System configuration for testing
+
+    test_potential : floats
+        coulomb and lennard jones energy
+    """
+    n = 4
+    boxsize = 120
+    particle_box = 3
+    xyz = np.random.uniform(0, particle_box, (n, 3))
+    ones = np.ones(2)
+    charges = np.append(ones, -1 * ones)
+    # Lennard-Jones parameters
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
+    epsilons = np.append(epsilon_Na * ones, epsilon_Cl * ones)
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
+    sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
+    sigmas = np.append(sigma_Na * ones, sigma_Cl * ones)
+
+    system_conf = SystemConfiguration(xyz, box_size=boxsize, charges=charges, sigmas=sigmas, epsilons=epsilons,
+                                      r_cutoff=8.)
+    total_potential = TotalPotential(system_conf)
+    # Calculate Test_potential
+    coulomb = 0.
+    lj = 0.
+    for i in range(n):
+        for j in range(i):
+            dist = np.linalg.norm(xyz[i] - xyz[j])
+            coulomb += charges[i] * charges[j] / dist * erfc(dist / (np.sqrt(2) * total_potential.sigma_c))
+
+            # whats wrong?!
+            lj += 4 * epsilon_NaCl * ((sigma_NaCl / dist) ** 12 - (sigma_NaCl / dist) ** 6)
+
+    coulomb *= (1 / (4 * np.pi)) * prefactor
+    test_potential = coulomb, lj
+
+    return system_conf, test_potential
+
+
+def test_shortrange_with_different_neighbouring():
+    """
+    Test if the different neighbouring methods for the shortrange potential deliver the same result.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    potential_neigh_true = total_potential.shortrange_energy(system_conf.xyz)
+
+    system_conf.neighbouring = False
+    total_potential = TotalPotential(system_conf)
+    potential_neigh_false = total_potential.shortrange_energy(system_conf.xyz)
+
+    np.testing.assert_almost_equal(actual=potential_neigh_true, desired=potential_neigh_false, decimal=5)
+
+
+def test_coulomb_random():
+    """
+    Test the shortrange coulomb energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    sim_coulomb = total_potential.shortrange_energy(system_conf.xyz, lennard_jones=False)
+    test_coulomb = test_potential[0]
+
+    np.testing.assert_almost_equal(actual=sim_coulomb, desired=test_coulomb, decimal=5)
+
+
+def test_lennard_jones_rondom():
+    """
+    Test the lennard jones energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz, coulomb=False)
+    test_lennard_jones = test_potential[1]
+
+    np.testing.assert_almost_equal(actual=sim_lennard_jones, desired=test_lennard_jones, decimal=5)

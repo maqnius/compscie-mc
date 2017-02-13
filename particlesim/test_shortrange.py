@@ -24,7 +24,6 @@ from .shortrange import Shortrange
 from .total_potential import TotalPotential
 
 
-#import pysor
 
 
 def test_shortrange_ewald():
@@ -136,33 +135,3 @@ def test_total_potential():
 
     np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.3)
 
-def test_coulomb_total():
-    """
-
-    """
-    pass
-
-def going_to_be_test_pysor():
-    boxsize = 10
-    box = (boxsize, boxsize, boxsize)
-    n = 10
-    xyz = np.random.randint(0, boxsize, (n, 3))
-    charges = np.random.randint(-5, 5, (n))
-    k_cutoff = 5.
-    sigma = 1.
-    rho = np.zeros(box)
-
-    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize)
-    shortrange = Shortrange(system_conf, sigma_c=1., r_cutoff=50)
-    longrange = EwaldSummation(system_conf, sigma=sigma, k_cutoff=k_cutoff)
-    simulated_potential = shortrange.shortrange(xyz) + longrange.longrange_energy(xyz)
-    # Do Sor:
-    theoretical_potential = 0
-
-    for i in range(n):
-        phi = pysor.sor(rho, 1)
-        x, y, z = xyz[i]
-        rho[x][y][z] = charges[i]
-        theoretical_potential += phi[x][y][z] * charges[i]
-
-    print(theoretical_potential, simulated_potential)
