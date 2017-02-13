@@ -48,7 +48,7 @@ class TotalPotential(object):
                 # calculation in real and reziprocal space takes
 
                 sigma_c_tmp = 1.0
-                r_cutoff_tmp = 1.0
+                r_cutoff_tmp = system_configuration.box_size/2
                 k_cutoff_tmp = 3.0
 
                 self._create_potentials(system_configuration, sigma_c_tmp, k_cutoff_tmp, r_cutoff_tmp)
@@ -68,6 +68,7 @@ class TotalPotential(object):
                 # missing parameter
 
                 self._estimate_parameters()
+
                 self._create_potentials(system_configuration, self.sigma_c, self.k_cutoff, self.r_cutoff)
         else:
             if self.k_cutoff is None or self.r_cutoff is None:
@@ -80,7 +81,7 @@ class TotalPotential(object):
         # Create instance for long range coulomb energy
         self.longrange = EwaldSummation(system_configuration, sigma_c, k_cutoff)
         # Create instance for calculation of shortrange energy
-        self.shortrange = Shortrange(system_configuration, sigma_c, r_cutoff, self.system_configuration.neighbouring)
+        self.shortrange = Shortrange(system_configuration, sigma_c, r_cutoff)
 
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)
@@ -103,9 +104,16 @@ class TotalPotential(object):
         if self.k_cutoff is None:
             self.k_cutoff = 2 * self.p_error / self.r_cutoff
         if self.r_cutoff is None:
+            estimated_r_cutoff = 2 * self.p_error / self.k_cutoff
+            if estimated_r_cutoff >= self.system_configuration.box_size/2:
+                self.r_cutoff = self.system_configuration.box_size/2 * 0.99
+                self.k_cutoff = None
+                self._estimate_parameters()
+
             self.r_cutoff = 2 * self.p_error / self.k_cutoff
 
         self.sigma_c = np.sqrt(2 * self.p_error) / self.k_cutoff
+
 
     def _estimate_all_parameters(self):
         """
@@ -130,5 +138,8 @@ class TotalPotential(object):
         # Optimal real space cutoff
         self.r_cutoff = np.sqrt(self.p_error/np.pi) * (time_long/time_short) ** (1/6) * \
                             self.system_configuration.box_size / len(self.system_configuration.xyz) ** (1/6)
+
+        if self.r_cutoff >= self.system_configuration.box_size / 2:
+            self.r_cutoff = self.system_configuration.box_size / 2 * 0.99
 
         self._estimate_parameters()
