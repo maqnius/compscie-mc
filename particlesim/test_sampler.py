@@ -79,3 +79,23 @@ def test_simulated_annealing():
     # foo = periodic_distance(traj_sa[-1],traj_sa[-2], box_size)
     # assert periodic_distance(traj_sa[-1],traj_sa[-2], box_size=box_size) <= 0.01, "in the last step of simulated annealing" \
     #                                                                               "there is still a step larger than 0.01"
+
+def test_simulated_annealing():
+    n_particle = 100
+    box_size = 10
+    sampler, system_configuration = create_sampler(n_particle, box_size=box_size)
+    traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=[0.1,1])
+    #labels = ['atom'] * len(traj_mc[0])
+    #export_trajectory(labels, traj_mc, '/home/mark/test_mc.xyz')
+    assert len(traj_sa) == 101
+    # foo = periodic_distance(traj_sa[-1],traj
+
+def test_simulated_annealing():
+    n_particle = 100
+    box_size = 10
+    betas = [0.1]*100
+    sampler, system_configuration = create_sampler(n_particle, box_size=box_size)
+    traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=betas)
+    #labels = ['atom'] * len(traj_mc[0])
+    #export_trajectory(labels, traj_mc, '/home/mark/test_mc.xyz')
+    assert len(traj_sa) == 101
