@@ -104,6 +104,12 @@ def test_shortrange_coulomb_with_4_charges():
 def test_shortrange_ewald():
     """
     Test Coulomb energy by comparing it to a simple test-system.
+    Test-system:
+    Charge +2 at (0, 0, 0)
+    Charge -2 at (0, 0, 1) / Charge -2 at (0, 0, 9)
+    Boxsize = 10
+    Standard deviation of Gaussian charge distribution = 1.0
+
     """
     ewald_sigma = 1.0
     q = 2.0
@@ -131,6 +137,11 @@ def test_shortrange_ewald():
 def test_lj_potential():
     """
     Test Lennard-Jones energy by comparing it to a simple test-system.
+    Test-system:
+    Na at (0, 0, 0)
+    Cl at (0, 0, 1) / Cl at (0, 0, 9)
+    Boxsize = 10
+    Standard deviation of Gaussian charge distribution = 1.0
     """
     ewald_sigma = 1.
     epsilon_Na = 0.0469
@@ -160,6 +171,11 @@ def test_lj_potential():
 def test_longrange_potential():
     """
     Test longrange Energy by comparing it to a simple test-system.
+    Test-system:
+    Na at (0, 0, 0)
+    Cl at (0, 0, 1) / Cl at (0, 0, 9)
+    Boxsize = 10
+    Standard deviation of Gaussian charge distribution = 1.0
     """
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
@@ -184,7 +200,13 @@ def test_longrange_potential():
 
 def test_total_potential():
     """
-    Testfunction for total potential
+    Testfunction for total potential.
+    Test-system:
+    Na at (0, 0, 0)
+    Cl at (0, 0, 1) / Cl at (0, 0, 9)
+    Boxsize = 10
+    Standard deviation of Gaussian charge distribution = 1.0
+
     """
     ewald_sigma = 1.
     epsilon_Na = 0.0469
@@ -255,7 +277,7 @@ def create_test_system():
         coulomb and lennard jones energy
     """
     n = 4
-    boxsize = 120
+    boxsize = 121
     particle_box = 3
     xyz = np.random.uniform(0, particle_box, (n, 3))
     ones = np.ones(2)
@@ -307,13 +329,12 @@ def shortrange_with_different_neighbouring():
     system_conf, test_potential = create_test_system()
     total_potential = TotalPotential(system_conf)
 
+    potential_neigh_false = total_potential.shortrange_energy(system_conf.xyz)
+    system_conf.neighbouring = True
+    total_potential = TotalPotential(system_conf)
     potential_neigh_true = total_potential.shortrange_energy(system_conf.xyz)
 
-    system_conf.neighbouring = False
-    total_potential = TotalPotential(system_conf)
-    potential_neigh_false = total_potential.shortrange_energy(system_conf.xyz)
-
-    np.testing.assert_almost_equal(actual=potential_neigh_true, desired=potential_neigh_false, decimal=5)
+    np.testing.assert_allclose(actual=potential_neigh_true, desired=potential_neigh_false, rtol=0.01)
 
 
 def coulomb_random():

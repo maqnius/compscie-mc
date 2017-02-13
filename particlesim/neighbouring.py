@@ -179,7 +179,6 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
 
                 periodic_distance = np.linalg.norm(0.5 * self.box_size- (p - neigh + 0.5 * self.box_size) % self.box_size)
                 if periodic_distance>=self.r or particle_id==neigh_idx: continue
-
                 result_idx.append(neigh_idx)
                 result_dist.append(periodic_distance)
 
