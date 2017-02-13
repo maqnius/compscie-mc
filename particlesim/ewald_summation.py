@@ -20,7 +20,7 @@ from .k_cython import calc_k_vectors
 
 
 class EwaldSummation(object):
-    """
+    r"""
     Parameters
     ----------
     system_conf : :obj:
@@ -53,7 +53,7 @@ class EwaldSummation(object):
         self.k_vectors = np.multiply(calc_k_vectors(self._k_cutoff), 2*np.pi/self.system_conf.box_size)
 
     def longrange_energy(self, positions):
-        """
+        r"""
         Calculates the longrange potential and the self interaction potential
         of a given particle distribution using Ewald Summation.
 
@@ -61,20 +61,13 @@ class EwaldSummation(object):
 
         Parameters
         ----------
-        system_conf : np.array
-            Array with particle positions and charges
-        shape : int or float array
-            Dimensions of the supercell
-        sigma : float
-            Standard deviation of gaussian distribution
-        K : int
-            Cutoff parameter in reciprocal space
-
+        positions : array-like of floats
+            Current position of all particles inside the box.
 
         Returns
         -------
         float
-            longrange and selfinteraction potential
+            long-range and self-interaction potential
 
         """
         self.positions  = positions
@@ -99,7 +92,10 @@ class EwaldSummation(object):
         return longrange_and_self_potential
 
     def get_iterations(self):
-        '''
+        r'''
+        Function is used to calculate the time per iteration for the long-range Ewald summation.
+        This time is used to calculate the optimal cutoff parameters.
+
         Returns
         -------
         it : int
