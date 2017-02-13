@@ -33,9 +33,6 @@ class Shortrange(object):
             Spread of the Gaussian function used for the Ewald Summation part.
         r_cutoff : int or Float
             Length of the real-space cutoff for calculating neighbours.
-        neighbouring : bool
-            True: Use the neighbouring list.
-            False: Calculate distances to all neighbours in cython.
         """
         self.system_conf = system_conf
         self.epsilon_r = system_conf.epsilon_r
