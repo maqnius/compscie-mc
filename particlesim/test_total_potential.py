@@ -62,9 +62,9 @@ def test_parameter_guess():
 
         # Cutoff should get not or not much smaller when raising the accuracy
         if not r_cutoff_prev == 0:
-            assert(total.r_cutoff/r_cutoff_prev > 0.95)
+            assert(total.r_cutoff/r_cutoff_prev > 0.9)
         if not k_cutoff_prev == 0:
-            assert(total.k_cutoff/(k_cutoff_prev) > 0.95)
+            assert(total.k_cutoff/(k_cutoff_prev) > 0.9)
 
         r_cutoff_prev = total.r_cutoff
         k_cutoff_prev = total.k_cutoff
