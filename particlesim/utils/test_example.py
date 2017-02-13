@@ -29,7 +29,7 @@ def example_manual_configuration():
 
 def create_lib():
     charmm_path = pkg_resources.resource_filename('particlesim', 'lib/particle_types.txt')
-    to_file = pkg_resources.resource_filename('particlesim', 'lib/particle_types.cfg')
+    to_file = pkg_resources.resource_filename('particlesim', 'lib/particle_types.py')
     lib = ProblemCreator.convert_charmm_parrams(charmm_path, to_file)
 
 def example_type_configuration():
