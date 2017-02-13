@@ -1,6 +1,5 @@
 from .total_potential import *
 
-
 class SystemConfiguration(object):
     r"""
     Parameters
