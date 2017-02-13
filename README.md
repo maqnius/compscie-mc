@@ -24,7 +24,7 @@ r_cutoff = 3.0
 box-size = 20.0
 
 [manual]
-csv_path = /home/mark/Dokumente/Studium/Master/WS1617/CompSci/compscie-mc/example/example_init_positions.csv
+csv_path = /path/to/csvfile/example_init_positions.csv
 
 [ewald_summation]
 use_ewald = yes
