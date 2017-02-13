@@ -29,14 +29,12 @@ def calc_k_vectors(int K):
 
     Parameters
     ----------
-
     K : int
         Cutoff value for the absolute value of the k-vectors
 
 
     Returns
     -------
-
     k_vectors : ndarray
         Array of k vectors that have an absolute value below cutoff K
     """
@@ -61,6 +59,10 @@ def calc_k_vectors_test(int K):
     """
     Function for testing and speedup
 
+    Parameters
+    ----------
+    K : int
+        cutoff radius in reciprocal space
     """
     cdef int b_limit, c_limit, a, b, c
 
@@ -93,14 +95,14 @@ def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
     ----------
     xyz :       double[:,:]
                 position array
-
     box_len :    double
                  the length of the box for the periodic boundry
-
     distances :  double[:,:]
                  an array passed to the function to avoid the necessity of returning a new array
 
-    return: void
+    Return
+    ------
+        void
     """
 
     cdef:

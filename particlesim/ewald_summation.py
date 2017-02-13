@@ -20,7 +20,17 @@ from .k_cython import calc_k_vectors
 
 
 class EwaldSummation(object):
+    """
+    Parameters
+    ----------
+    system_conf : :obj:
+        System configuration containing all parameters for the simulation.
+    sigma : float
+        Standard deviation of Gaussian charge distribution.
+    k_cutoff : float
+        Cutoff-radius in reciprocal space.
 
+    """
     def __init__(self, system_conf, sigma, k_cutoff):
         self.system_conf = system_conf
         self.positions = system_conf.xyz # Original Positions
@@ -51,25 +61,21 @@ class EwaldSummation(object):
 
         Parameters
         ----------
-
         system_conf : np.array
             Array with particle positions and charges
-
         shape : int or float array
             Dimensions of the supercell
-
         sigma : float
             Standard deviation of gaussian distribution
-
         K : int
             Cutoff parameter in reciprocal space
 
 
         Returns
         -------
-
         float
             longrange and selfinteraction potential
+
         """
         self.positions  = positions
 
@@ -94,11 +100,11 @@ class EwaldSummation(object):
 
     def get_iterations(self):
         '''
-
         Returns
         -------
         it : int
             Number of steps for calculating the potential
+
         '''
 
         return len(self.k_vectors) * len(self.positions)
