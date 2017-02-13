@@ -18,6 +18,7 @@ from .api import *
 from .helpers_for_tests import *
 import numpy as np
 import pytest
+from particlesim.utils.xyz import export_trajectory
 
 def test_all_sampled_particles_are_inside_box():
     n_particle = 4
@@ -67,12 +68,14 @@ def test_cumulative_percentage_global_optimum():
             #TODO >= 0.8 cannot be true when potential is 0 because distances are not equally distributed
 
 def test_simulated_annealing():
-    n_particle = 4
+    n_particle = 100
     box_size = 10
-    sampler = sampler, system_configuration = create_sampler(n_particle, box_size=box_size)
-    traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=10)
-    traj_mc, pot_mc = sampler.metropolis(iteration_number=100,beta=10)
+    sampler, system_configuration = create_sampler(n_particle, box_size=box_size)
+    traj_sa, pot_sa = sampler.metropolis_sa(iteration_number=100,beta=1)
+    traj_mc, pot_mc = sampler.metropolis(iteration_number=100,beta=1)
+    #labels = ['atom'] * len(traj_mc[0])
+    #export_trajectory(labels, traj_mc, '/home/mark/test_mc.xyz')
     assert (len(traj_mc)==len(traj_sa))
-    foo = periodic_distance(traj_sa[-1],traj_sa[-2], box_size)
+    # foo = periodic_distance(traj_sa[-1],traj_sa[-2], box_size)
     # assert periodic_distance(traj_sa[-1],traj_sa[-2], box_size=box_size) <= 0.01, "in the last step of simulated annealing" \
     #                                                                               "there is still a step larger than 0.01"
