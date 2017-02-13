@@ -133,13 +133,23 @@ def create_test_system():
     # Calculate Test_potential
     coulomb = 0.
     lj = 0.
+    sigma_lj = 0.
+    epsilon_lj = 0.
     for i in range(n):
         for j in range(i):
+            if charges[i] == 1 and charges[j] == 1:
+                epsilon_lj = epsilon_Na
+                sigma_lj = sigma_Na
+            if charges[i] == -1 and charges[j] == -1:
+                epsilon_lj = epsilon_Cl
+                sigma_lj = sigma_Cl
+            if charges[i]*charges[j] == -1:
+                epsilon_lj = epsilon_NaCl
+                sigma_lj = sigma_NaCl
             dist = np.linalg.norm(xyz[i] - xyz[j])
-            coulomb += charges[i] * charges[j] / dist * erfc(dist / (np.sqrt(2) * total_potential.sigma_c))
 
-            # whats wrong?!
-            lj += 4 * epsilon_NaCl * ((sigma_NaCl / dist) ** 12 - (sigma_NaCl / dist) ** 6)
+            coulomb += charges[i] * charges[j] / dist * erfc(dist / (np.sqrt(2) * total_potential.sigma_c))
+            lj += 4 * epsilon_lj * ((sigma_lj / dist) ** 12 - (sigma_lj / dist) ** 6)
 
     coulomb *= (1 / (4 * np.pi)) * prefactor
     test_potential = coulomb, lj
