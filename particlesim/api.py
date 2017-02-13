@@ -177,26 +177,6 @@ class SystemConfiguration(object):
             raise ValueError("epsilons must be positive float")
         self._epsilons = epsilons
 
-
-    # def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
-    #     r"""
-    #     Add particles with same values for charge, sigma and epsilon to the system configuration
-    #     :param xyz: np.ndarray(n,3)
-    #     :param charge: float, Default = 0
-    #     :param sigma: float, Default = 0
-    #     :param epsilon: float, Default = 0
-    #     :return:
-    #
-    #     """
-    #
-    #     # append new particles configuration to existing configuration
-    #     number_of_particles = len(xyz)
-    #     self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-    #     self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
-    #     self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
-    #     self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
-    #     self.create_lj_mean_parameters()
-
     def potential(self,xyz_trial, lennard_jones = True, coulomb = True):
         if not (type(lennard_jones) == bool and type(coulomb == bool)):
             raise TypeError('lennard_jones and coulomb must be booleans')
@@ -318,7 +298,24 @@ class Sampler(object):
             Total interaction and external potential trajectory.
 
         """
-        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        if isinstance(beta, (float, int)):
+            # beta determines maximum
+            beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        else:
+            try:
+                if len(beta) == iteration_number:
+                    # Accept beta values
+                    beta_values = beta
+                elif len(beta) == 2:
+                    # beta contains min and max value for beta
+                    beta_values = 1.0 / np.linspace(1.0 / beta[0], 1.0 / beta, iteration_number)[::-1]
+                else:
+                    raise ValueError(
+                        "beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+            except TypeError:
+                print("beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+                exit(1)
+
         xyz_traj = [self.system_configuration.xyz]
         pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
 
