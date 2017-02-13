@@ -20,14 +20,18 @@ import numpy as np
 def create_system_configuration(number_of_particles, box_size, max_charge=1.0):
     r"""
     adds particles with random position, charge = 1, sigma = 1 and epsilon = 1 to the system_configuration
-    :param system_configuration: object, instance of SystemConfiguration
-    :param number_of_particles: int, positive int
-    :return:
 
     Parameters
     ----------
-    box_size
-    max_charge
+    box_size : float
+        Side-length of a cubic box.
+    max_charge : float or int
+        Max. positive or negative charge of test configuration.
+
+    Returns
+    -------
+    :obj:
+        System configuration for testing.
     """
 
     # Charges:
@@ -48,16 +52,28 @@ def create_system_configuration(number_of_particles, box_size, max_charge=1.0):
 def create_positions(number_of_particles, box_size = 1.0):
     return np.random.rand(number_of_particles,3) * box_size
 
+
 def create_sampler(number_of_particles, box_size):
     r"""
     creates a basic system_configuration with random positions, charge = 1, sigma = 1 and epsilon = 1
     and a sampler object
-    :param number_of_particles: int, positive integer
-    :return: sampler, system_configuration
+
+    Parameters
+    ----------
+    number_of_particles : int
+        Number of particles inside one box
+    box_size : float or int
+        Side-length of a cubic box.
+
+    Returns
+    -------
+
     """
     system_configuration = create_system_configuration(number_of_particles, box_size=box_size)
     sampler = Sampler(system_configuration)
 
     return sampler, system_configuration
+
+
 def periodic_distance(pos1,pos2,box_size):
     return np.linalg.norm(0.5 * box_size - (pos1 - pos2 + 0.5 * box_size) % box_size)
