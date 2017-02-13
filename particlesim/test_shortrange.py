@@ -36,15 +36,15 @@ def test_shortrange_ewald():
     charges = np.array([q, -1 * q])
 
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
-    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize)
-    shortrange = Shortrange(system_conf,sigma_c = ewald_sigma, r_cutoff=2., neighbouring=False)
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, neighbouring=False)
+    shortrange = Shortrange(system_conf,sigma_c = ewald_sigma, r_cutoff=2.)
     theoretical_shortrange_energy = -4 * erfc(1/(np.sqrt(2)*ewald_sigma))
     shortrange_energy = shortrange.shortrange(xyz, lj=False)
 
     # Test the pbc
     xyz = np.array([[0., 0., 0.], [0., 0., 9.]])
-    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize)
-    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2., neighbouring= False)
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, neighbouring= False)
+    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
     shortrange_energy_periodic = shortrange.shortrange(xyz, lj=False)
 
 
@@ -74,8 +74,8 @@ def test_lj_potential():
 
     thoeretical_lj_energy = 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
 
-    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons)
-    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2., neighbouring= False)
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons, neighbouring=False)
+    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
     shortrange_energy = shortrange.shortrange(xyz, coulomb=False)
 
     np.testing.assert_almost_equal(actual=shortrange_energy, desired=thoeretical_lj_energy, decimal=5)
