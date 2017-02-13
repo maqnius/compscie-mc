@@ -97,6 +97,34 @@ def test_shortrange_coulomb_with_4_charges():
 
 
 
+def test_coulomb_random():
+    """
+    Do 10 repetitions of test-function for coulomb potential.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        coulomb_random()
+
+
+def test_shortrange_with_different_neighbouring():
+    """
+    Do 10 repetitions of test-function for the comparison of the two neighbouring methods.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        shortrange_with_different_neighbouring()
+
+
+def test_lennard_jones_rondom():
+    """
+    Do 10 repetitions of test-function for the lennard jones potential.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        lennard_jones_rondom()
+
+
+
 def create_test_system():
     """
     Create a system configuration with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
@@ -157,7 +185,7 @@ def create_test_system():
     return system_conf, test_potential
 
 
-def test_shortrange_with_different_neighbouring():
+def shortrange_with_different_neighbouring():
     """
     Test if the different neighbouring methods for the shortrange potential deliver the same result.
     """
@@ -173,7 +201,7 @@ def test_shortrange_with_different_neighbouring():
     np.testing.assert_almost_equal(actual=potential_neigh_true, desired=potential_neigh_false, decimal=5)
 
 
-def test_coulomb_random():
+def coulomb_random():
     """
     Test the shortrange coulomb energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
     box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
@@ -187,7 +215,7 @@ def test_coulomb_random():
     np.testing.assert_almost_equal(actual=sim_coulomb, desired=test_coulomb, decimal=5)
 
 
-def test_lennard_jones_rondom():
+def lennard_jones_rondom():
     """
     Test the lennard jones energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
     box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
@@ -198,4 +226,4 @@ def test_lennard_jones_rondom():
     sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz, coulomb=False)
     test_lennard_jones = test_potential[1]
 
-    np.testing.assert_almost_equal(actual=sim_lennard_jones, desired=test_lennard_jones, decimal=5)
+    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.001)
