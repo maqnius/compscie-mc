@@ -74,7 +74,7 @@ class TotalPotential(object):
         # Create instance for long range coulomb energy
         self.longrange = EwaldSummation(system_configuration, sigma_c, k_cutoff)
         # Create instance for calculation of shortrange energy
-        self.shortrange = Shortrange(system_configuration, sigma_c, r_cutoff, self.system_configuration.neighbouring)
+        self.shortrange = Shortrange(system_configuration, sigma_c, r_cutoff)
 
     def longrange_energy(self, positions):
         return self.longrange.longrange_energy(positions)

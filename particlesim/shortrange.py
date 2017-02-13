@@ -22,7 +22,7 @@ from particlesim.utils.conversion import prefactor
 
 
 class Shortrange(object):
-    def __init__(self, system_conf, sigma_c, r_cutoff, neighbouring):
+    def __init__(self, system_conf, sigma_c, r_cutoff):
         """
 
         Parameters
@@ -47,11 +47,11 @@ class Shortrange(object):
         self.sigma_c = sigma_c
         self.distances = np.zeros((system_conf.xyz.shape[0],system_conf.xyz.shape[0]))
         self.r_cutoff = r_cutoff
-        self.neighbouring = neighbouring
+        self.neighbouring = system_conf.neighbouring
 
 
         # Create instance of neighbouring list
-        if(neighbouring):
+        if(self.neighbouring):
             self.nlist = NeighbouringCellLinkedLists(system_conf.xyz, r_cutoff,
                                                     self.box_length)
 

@@ -29,7 +29,7 @@ def test_create_Neighbouring_instance():
 def test_neighbour_structur_is_created():
     array = np.random.rand(5,3)
     r_cutoff = 3.0
-    neighbouring = NeighbouringCellLinkedLists(particle_positions=array,radius=r_cutoff)
+    neighbouring = NeighbouringCellLinkedLists(particle_positions=array,radius=r_cutoff, box_size=1.0)
     assert neighbouring._neighbourlist != None
     # usually we would not call private (with _name) attributes from outside
 

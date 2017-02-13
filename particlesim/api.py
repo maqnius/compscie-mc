@@ -160,26 +160,6 @@ class SystemConfiguration(object):
             raise ValueError("epsilons must be positive float")
         self._epsilons = epsilons
 
-
-    # def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
-    #     r"""
-    #     Add particles with same values for charge, sigma and epsilon to the system configuration
-    #     :param xyz: np.ndarray(n,3)
-    #     :param charge: float, Default = 0
-    #     :param sigma: float, Default = 0
-    #     :param epsilon: float, Default = 0
-    #     :return:
-    #
-    #     """
-    #
-    #     # append new particles configuration to existing configuration
-    #     number_of_particles = len(xyz)
-    #     self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-    #     self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
-    #     self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
-    #     self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
-    #     self.create_lj_mean_parameters()
-
     def potential(self,xyz_trial, lennard_jones = True, coulomb = True):
         if not (type(lennard_jones) == bool and type(coulomb == bool)):
             raise TypeError('lennard_jones and coulomb must be booleans')
