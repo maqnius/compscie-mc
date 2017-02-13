@@ -14,13 +14,18 @@
 #   You should have received a copy of the GNU General Public License
 #
 
+
 import numpy as np
 from scipy.special import erfc
-from particlesim.utils.conversion import prefactor
 from .helpers_for_tests import create_system_configuration
 from .helpers_for_tests import create_positions
+from particlesim.utils.conversion import prefactor
 from .api import SystemConfiguration
+from .ewald_summation import EwaldSummation
+from .shortrange import Shortrange
 from .total_potential import TotalPotential
+
+
 
 def test_longrange_potential_is_float():
     n = 100
@@ -96,3 +101,244 @@ def test_shortrange_coulomb_with_4_charges():
     np.testing.assert_almost_equal(actual=shortrange_pot_sim, desired=shortrange_pot, decimal=5)
 
 
+def test_shortrange_ewald():
+    """
+    Test Coulomb energy by comparing it to a simple test-system.
+    """
+    ewald_sigma = 1.0
+    q = 2.0
+    boxsize = 10.
+    charges = np.array([q, -1 * q])
+
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, neighbouring=False)
+    shortrange = Shortrange(system_conf,sigma_c = ewald_sigma, r_cutoff=2.)
+    theoretical_shortrange_energy = -4 * erfc(1/(np.sqrt(2)*ewald_sigma))
+    shortrange_energy = shortrange.shortrange(xyz, lj=False)
+
+    # Test the pbc
+    xyz = np.array([[0., 0., 0.], [0., 0., 9.]])
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, neighbouring= False)
+    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
+    shortrange_energy_periodic = shortrange.shortrange(xyz, lj=False)
+
+
+    np.testing.assert_almost_equal(actual=shortrange_energy, desired=theoretical_shortrange_energy*1/(4*np.pi) * prefactor, decimal=5)
+    np.testing.assert_almost_equal(actual=shortrange_energy_periodic, desired=theoretical_shortrange_energy*1/(4*np.pi) * prefactor, decimal=5)
+
+
+
+def test_lj_potential():
+    """
+    Test Lennard-Jones energy by comparing it to a simple test-system.
+    """
+    ewald_sigma = 1.
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl*epsilon_Na)
+    epsilons = np.array([epsilon_Na, epsilon_Cl])
+
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
+    sigma_NaCl = 0.5*(sigma_Na + sigma_Cl)
+    sigmas = np.array([sigma_Na, sigma_Cl])
+
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 12.
+
+    thoeretical_lj_energy = 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons, neighbouring=False)
+    shortrange = Shortrange(system_conf, sigma_c=ewald_sigma, r_cutoff=2.)
+    shortrange_energy = shortrange.shortrange(xyz, coulomb=False)
+
+    np.testing.assert_almost_equal(actual=shortrange_energy, desired=thoeretical_lj_energy, decimal=5)
+
+
+
+def test_longrange_potential():
+    """
+    Test longrange Energy by comparing it to a simple test-system.
+    """
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 6.0
+    sigma = 1.
+    k_cutoff = 1.
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize)
+    ewald_summation = EwaldSummation(system_conf, sigma=sigma, k_cutoff=k_cutoff)
+
+    theoretical_longrange_energy = 1/(boxsize*2*np.pi) * np.exp(-sigma**2*(2*np.pi/boxsize)**2 / 2) *\
+                                   (np.abs(1-np.exp(1j*2*np.pi/boxsize))**2 + np.abs(1-np.exp(-1j*2*np.pi/boxsize))**2)
+    theoretical_self_energy = 2/(np.sqrt(2*np.pi)*sigma)
+
+    theoretical_total_energy = theoretical_longrange_energy - theoretical_self_energy
+
+    simulated_longrange_energy = ewald_summation.longrange_energy(xyz)
+
+    np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy * 1/(4*np.pi) * prefactor, decimal=5)
+
+
+
+def test_total_potential():
+    """
+    Testfunction for total potential
+    """
+    ewald_sigma = 1.
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
+    epsilons = np.array([epsilon_Na, epsilon_Cl])
+
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
+    sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
+    sigmas = np.array([sigma_Na, sigma_Cl])
+
+    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
+    charges = np.array([1., -1.])
+    boxsize = 12.
+
+    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons, k_cutoff = 10, r_cutoff = 4)
+    total_pot = TotalPotential(system_conf)
+    total_pot.sigma_c = 1.
+    theoretical_potential = - 1/(np.pi * 4 ) * prefactor + 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
+
+    potential = total_pot.potential(xyz)
+
+    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.3)
+
+
+
+def test_coulomb_random():
+    """
+    Do 10 repetitions of test-function for coulomb potential.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        coulomb_random()
+
+
+def test_shortrange_with_different_neighbouring():
+    """
+    Do 10 repetitions of test-function for the comparison of the two neighbouring methods.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        shortrange_with_different_neighbouring()
+
+
+def test_lennard_jones_rondom():
+    """
+    Do 10 repetitions of test-function for the lennard jones potential.
+    """
+    test_repetitions = 10
+    for i in range(test_repetitions):
+        lennard_jones_rondom()
+
+
+
+def create_test_system():
+    """
+    Create a system configuration with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    Calculate the shortrange energies for the test system with a naive method.
+
+    Returns
+    -------
+    system_conf : object
+        System configuration for testing
+
+    test_potential : floats
+        coulomb and lennard jones energy
+    """
+    n = 4
+    boxsize = 120
+    particle_box = 3
+    xyz = np.random.uniform(0, particle_box, (n, 3))
+    ones = np.ones(2)
+    charges = np.append(ones, -1 * ones)
+    # Lennard-Jones parameters
+    epsilon_Na = 0.0469
+    epsilon_Cl = 0.15
+    epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
+    epsilons = np.append(epsilon_Na * ones, epsilon_Cl * ones)
+    sigma_Na = 1.21496
+    sigma_Cl = 2.02234
+    sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
+    sigmas = np.append(sigma_Na * ones, sigma_Cl * ones)
+
+    system_conf = SystemConfiguration(xyz, box_size=boxsize, charges=charges, sigmas=sigmas, epsilons=epsilons,
+                                      r_cutoff=8.)
+    total_potential = TotalPotential(system_conf)
+    # Calculate Test_potential
+    coulomb = 0.
+    lj = 0.
+    sigma_lj = 0.
+    epsilon_lj = 0.
+    for i in range(n):
+        for j in range(i):
+            if charges[i] == 1 and charges[j] == 1:
+                epsilon_lj = epsilon_Na
+                sigma_lj = sigma_Na
+            if charges[i] == -1 and charges[j] == -1:
+                epsilon_lj = epsilon_Cl
+                sigma_lj = sigma_Cl
+            if charges[i]*charges[j] == -1:
+                epsilon_lj = epsilon_NaCl
+                sigma_lj = sigma_NaCl
+            dist = np.linalg.norm(xyz[i] - xyz[j])
+
+            coulomb += charges[i] * charges[j] / dist * erfc(dist / (np.sqrt(2) * total_potential.sigma_c))
+            lj += 4 * epsilon_lj * ((sigma_lj / dist) ** 12 - (sigma_lj / dist) ** 6)
+
+    coulomb *= (1 / (4 * np.pi)) * prefactor
+    test_potential = coulomb, lj
+
+    return system_conf, test_potential
+
+
+def shortrange_with_different_neighbouring():
+    """
+    Test if the different neighbouring methods for the shortrange potential deliver the same result.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    potential_neigh_true = total_potential.shortrange_energy(system_conf.xyz)
+
+    system_conf.neighbouring = False
+    total_potential = TotalPotential(system_conf)
+    potential_neigh_false = total_potential.shortrange_energy(system_conf.xyz)
+
+    np.testing.assert_almost_equal(actual=potential_neigh_true, desired=potential_neigh_false, decimal=5)
+
+
+def coulomb_random():
+    """
+    Test the shortrange coulomb energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    sim_coulomb = total_potential.shortrange_energy(system_conf.xyz, lennard_jones=False)
+    test_coulomb = test_potential[0]
+
+    np.testing.assert_almost_equal(actual=sim_coulomb, desired=test_coulomb, decimal=5)
+
+
+def lennard_jones_rondom():
+    """
+    Test the lennard jones energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
+    box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
+    """
+    system_conf, test_potential = create_test_system()
+    total_potential = TotalPotential(system_conf)
+
+    sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz, coulomb=False)
+    test_lennard_jones = test_potential[1]
+
+    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.001)
