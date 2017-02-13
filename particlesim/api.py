@@ -86,13 +86,16 @@ class SystemConfiguration(object):
         self._create_lennard_jones_cutoff()
         self._neighbouring = neighbouring
         self.p_error = p_error
+        self._total_potential = TotalPotential(self)
 
-        if self.box_size <= 2 * self.lj_cutoff_matrix.max():
+        if self.box_size <= 2 * max(self.lj_cutoff_matrix.max(),self._total_potential.r_cutoff):
             raise ValueError('Box_size to small. Box_size has to be twice the cutoff radius '
                              'of the Lennard Jones potential.\n'
-                             'box_size = %f\n r_cutoff_max = 2.5 * sigma_max = %f' % (self.box_size, self.lj_cutoff_matrix.max()))
+                             'box_size = %f\n lj_max = %f, coulomb_cutoff(r_cutoff) = %f \n'
+                             'set box_size to be larger than %f \n '
+                             % (self.box_size, self.lj_cutoff_matrix.max(), self._total_potential.r_cutoff, 2 * max(self.lj_cutoff_matrix.max(),self._total_potential.r_cutoff))
+                             )
 
-        self._total_potential = TotalPotential(self)
 
     @property
     def p_error(self):
