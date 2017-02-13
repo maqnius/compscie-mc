@@ -311,7 +311,7 @@ class Sampler(object):
                     beta_values = beta
                 elif len(beta) == 2:
                     # beta contains min and max value for beta
-                    beta_values = 1.0 / np.linspace(1.0 / beta[0], 1.0 / beta, iteration_number)[::-1]
+                    beta_values = 1.0 / np.linspace(1.0 / beta[1], 1.0 / beta[0], iteration_number)[::-1]
                 else:
                     raise ValueError(
                         "beta must be float|int, touple with len 2 or touple with len equal to iteration number")
