@@ -104,7 +104,7 @@ setup(
     author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu, Hanna Wulkow',
     author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
-    packages=['particlesim', 'particlesim.utils'],
+    packages=['particlesim', 'particlesim.utils', 'particlesim.lib'],
         setup_requires=[
         'numpy>=1.7.0',
         'setuptools>=0.6',

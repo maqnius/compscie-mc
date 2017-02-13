@@ -185,3 +185,10 @@ sigma = 1.975
 epsilon = 0.47
 sigma = 2.2
 
+[NA]
+epsilon = 0.0469
+sigma = 1.21496
+
+[CL]
+epsilon = 0.15
+sigma = 2.02234
