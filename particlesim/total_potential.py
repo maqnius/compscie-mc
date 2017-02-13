@@ -21,11 +21,17 @@ import time
 
 class TotalPotential(object):
     r"""
-    This class is initialized when a system_configuration is created. All calculations that are independent
-    of the particle positions should be done at initialization
+    This class is initialized when a system_configuration is created. It offers methods to
+    calculate long-range and short-range potentials of a given configuration.
     """
 
     def __init__(self, system_configuration):
+        """
+        In the init process, parameters are estimated if
+        Parameters
+        ----------
+        system_configuration : Instance of SystemConfiguration
+        """
         self.p_error = system_configuration.p_error
         self.sigmas_lj = system_configuration.sigmas
         self.system_configuration = system_configuration

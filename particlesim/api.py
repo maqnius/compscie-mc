@@ -1,36 +1,53 @@
 from .total_potential import *
 
-
 class SystemConfiguration(object):
     r"""
-
     Parameters
     ----------
     xyz : ndarray(n,3), float
-          position of n particles in x,y,z coordinates
+        Position of n particles in x,y,z coordinates.
     sigmas : ndarray(n) or float value
-            sigma coefficient of lennard jones potential for each particle
-            if not array but float value, assigned to all particles
-            Default = 1.0 --> assigned to all particles
+        Sigma coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 1.0 --> assigned to all particles
     epsilons : ndarray(n) or float value
-                epsilon coefficient of lennard jones potential for each particle
-                if not array but float value, assigned to all particles
-                Default = 1.0 --> assigned to all particles
-    charges : ndarray(n) or f<loat value
-              charges coefficient of lennard jones potential for each particle
-              if not array but float value, assigned to all particles
-                Default = 0.0 --> assigned to all particles
-    box_size : float,
-                box_size for cubic simulation box, positive number
-                Default = 1.0
+        Epsilon coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 1.0 --> assigned to all particles
+    charges : ndarray(n) or float value
+        Charges coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 0.0 --> assigned to all particles
+    box_size : float
+        Boxsize for cubic simulation box; positive number.
+        Default = 1.0
     epsilon_r : float,
-                relative permittivity constant of system
-                Default = 1.0 --> for vacuum by definition
+        Relative permittivity constant of system.
+        Default = 1.0 --> for vacuum by definition
+    labels : array-like of string
+        Additional information about the particles.
+    p_error : int
+        Max. error for the total ewald summation.
+        Error = e^-p_error
+        Default = 10
+    r_cutoff : float
+        Cutoff-radius for shortrange Ewald summation
+        Default = None --> Optimal cutoff is calculated automatically
+    k_cutoff : float
+        Cutoff-radius for longrange Ewald summation in reciprocal space.
+        Dafault = None --> Optimal cutoff is calculated automatically
+    neighbouring : bool
+        True: Use neighbouring list for calculation of shortrange energies.
+        False: Calculate neighbouring with fast_distances function in cython.
 
-               arithmetic mean for sigma and geometric mean for epsilon
-             arithmetic = (a+b)/2; geometric : sqrt(a*a)
-             Lorentz Berthelot Rule
-             lj_cutoff = 2.5 * sigma
+
+    Notes
+    -----
+        arithmetic mean for sigma and geometric mean for epsilon
+        arithmetic = (a+b)/2; geometric : sqrt(a*b)
+        Lorentz Berthelot Rule
+        lj_cutoff = 2.5 * sigma
+
     """
 
     def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=12.0, epsilon_r=1.0, labels = [],
@@ -187,7 +204,15 @@ class SystemConfiguration(object):
 
 
 class Sampler(object):
-    r"""A sampler class for hamiltonian objects."""
+    r"""A sampler class for hamiltonian objects.
+
+    Parameters
+    ----------
+    system_configuration : :obj:
+        Instance of an SystemConfiguration Object that holds essential parameters
+        previously set by the user.
+
+    """
     def __init__(self, system_configuration):
         if len(system_configuration.xyz) == 0:
             raise ValueError("no particle in system configuration")
@@ -273,7 +298,24 @@ class Sampler(object):
             Total interaction and external potential trajectory.
 
         """
-        beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        if isinstance(beta, (float, int)):
+            # beta determines maximum
+            beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        else:
+            try:
+                if len(beta) == iteration_number:
+                    # Accept beta values
+                    beta_values = beta
+                elif len(beta) == 2:
+                    # beta contains min and max value for beta
+                    beta_values = 1.0 / np.linspace(1.0 / beta[0], 1.0 / beta, iteration_number)[::-1]
+                else:
+                    raise ValueError(
+                        "beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+            except TypeError:
+                print("beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+                exit(1)
+
         xyz_traj = [self.system_configuration.xyz]
         pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
 
