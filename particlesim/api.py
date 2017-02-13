@@ -82,8 +82,8 @@ class SystemConfiguration(object):
         self.labels = labels
         self.r_cutoff = r_cutoff
         self.k_cutoff = k_cutoff
-        self.create_lj_mean_parameters()
-        self.create_lennard_jones_cutoff()
+        self._create_lj_mean_parameters()
+        self._create_lennard_jones_cutoff()
         self._neighbouring = neighbouring
         self.p_error = p_error
         self._total_potential = TotalPotential(self)
@@ -192,17 +192,17 @@ class SystemConfiguration(object):
 
         return self._total_potential.potential(xyz_trial, lennard_jones, coulomb)
 
-    def create_lj_mean_parameters(self):
-        self.create_lennard_jones_epsilons()
-        self.create_lennard_jones_sigmas()
+    def _create_lj_mean_parameters(self):
+        self._create_lennard_jones_epsilons()
+        self._create_lennard_jones_sigmas()
 
-    def create_lennard_jones_epsilons(self):
+    def _create_lennard_jones_epsilons(self):
         self.lj_epsilon_matrix = np.sqrt(np.array([self.epsilons]).transpose()*np.array([self.epsilons]))
 
-    def create_lennard_jones_sigmas(self):
+    def _create_lennard_jones_sigmas(self):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
 
-    def create_lennard_jones_cutoff(self):
+    def _create_lennard_jones_cutoff(self):
         self.lj_cutoff_matrix = 2.5 * self.lj_sigma_matrix
 
 

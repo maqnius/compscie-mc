@@ -47,7 +47,7 @@ class Neighbouring(object):
 
 
 class NeighbouringPrimitiveLists(Neighbouring):
-    def __init__(self, particle_positions, radius, box_size=5):
+    def __init__(self, particle_positions, radius, box_size):
         super(NeighbouringPrimitiveLists, self).__init__(particle_positions, radius)
         self.box_size = box_size
         self.create_neighbourlist()
@@ -70,7 +70,7 @@ class NeighbouringPrimitiveLists(Neighbouring):
         # return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
 
 class NeighbouringCellLinkedLists(Neighbouring):
-    def __init__(self, particle_positions, radius, box_size=1.0):
+    def __init__(self, particle_positions, radius, box_size):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
         self._cell_len = -1
