@@ -55,19 +55,22 @@ def create_positions(number_of_particles, box_size = 1.0):
 
 def create_sampler(number_of_particles, box_size):
     r"""
-    creates a basic system_configuration with random positions, charge = 1, sigma = 1 and epsilon = 1
+    Creates a basic system_configuration with random positions, charge = 1, sigma = 1 and epsilon = 1
     and a sampler object
 
     Parameters
     ----------
     number_of_particles : int
-        Number of particles inside one box
+        Number of particles inside one box.
     box_size : float or int
         Side-length of a cubic box.
 
     Returns
     -------
-
+    :obj:
+        Sampler object for testing.
+    :obj:
+        System configuration for testing.
     """
     system_configuration = create_system_configuration(number_of_particles, box_size=box_size)
     sampler = Sampler(system_configuration)
@@ -75,5 +78,23 @@ def create_sampler(number_of_particles, box_size):
     return sampler, system_configuration
 
 
-def periodic_distance(pos1,pos2,box_size):
+def periodic_distance(pos1, pos2, box_size):
+    r"""
+    Calculate the distance between two particles with periodic boundary conditions.
+
+    Parameters
+    ----------
+    pos1 : array-like of floats
+        Position of particle 1.
+    pos2 : array-like of floats
+        Position of particle 2.
+    box_size : int or float
+        Side-length of the particle box.
+
+    Returns
+    -------
+    float
+        Distance between two particles.
+
+    """
     return np.linalg.norm(0.5 * box_size - (pos1 - pos2 + 0.5 * box_size) % box_size)
