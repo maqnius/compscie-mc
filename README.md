@@ -24,8 +24,7 @@ r_cutoff = 3.0
 box-size = 20.0
 
 [manual]
-csv_path = /path/to/csvfile/example_init_positions.csv
-
+csv_path = /path/to/csvfile/example_init_positions.
 [ewald_summation]
 use_ewald = yes
 sigma = 1.0
@@ -35,7 +34,7 @@ use_lennard_jones = yes
 
 ```
 
-+ The initial particle configuration is defined by a csv file at the location given the config and should look similar to this example
++ The initial particle configuration is defined by a csv file at the location given in the config and should look similar to this example
 
 ```
 label,x,y,z,Charge,LJ-Epsilon,LJ-Sigma
@@ -57,7 +56,7 @@ system_config = creator.generate_problem()
 ```
 
 ### Using a config input file
-+ The basic parameters are set in a config file analogue to the previous case but without a `[manual]` section.
++ The basic parameters are set in a config file similar to the previous case but without a `[manual]` section.
 But instead, it contains sections for each particle type beginning with `particle_class_*`. Each class will be collected in the following.
 
 ```
@@ -82,8 +81,8 @@ distribution = uniform
 number = 20
 
 ```
-The Lennard-Jones parameters for the atom types are defined in lib/particle_types.py. This file can be edited to fit to your
-purpose. In the following a particle setup is created according to your statements for the attributes `distribution` and `number`.
+The Lennard-Jones parameters for the atom types are defined in lib/particle_types.py. This file can be edited to fit your
+purpose. In the following, a particle setup is created according to your statements for the attributes `distribution` and `number`.
 (At this point, only the creation of `uniform` particle distributions is supported.)
 
 + The initialization process is equal to the previous method
@@ -105,7 +104,7 @@ sampler = particlesim.api.Sampler(system_configuration=system_conf)
 
 And run one simple metropolis simulation with
 ```
-xyz_trajectory ,potential = sampler.metropolis(iteration_number=1000,beta=100)
+xyz_trajectory, potential = sampler.metropolis(iteration_number=1000,beta=100)
 
 ```
 
@@ -114,8 +113,8 @@ Or metropolis with simulated annealing
 xyz_trajectory, potential = sampler.metropolis(iteration_number=1000, step=0.1, beta=100)
 ```
 
-`beta` can be on single value - in this case it gets interpreted as the maximum vale,
-a touple that defines the minimum and maximum value or a list with a length of `iteration_number` to define
+`beta` can be a single value - in this case it gets interpreted as the maximum value -,
+a tuple that defines the minimum and maximum value or a list with a length of `iteration_number` to define
 a beta value for each simulation step.
 
 ## Evaluation
