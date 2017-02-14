@@ -56,7 +56,7 @@ system_config = creator.generate_problem()
 ```
 
 ### Using a config input file
-+ The basic parameters are set in a config file similiar to the previous case but without a `[manual]` section.
++ The basic parameters are set in a config file similar to the previous case but without a `[manual]` section.
 But instead, it contains sections for each particle type beginning with `particle_class_*`. Each class will be collected in the following.
 
 ```
