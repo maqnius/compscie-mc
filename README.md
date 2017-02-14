@@ -34,7 +34,9 @@ use_lennard_jones = yes
 
 ```
 
+
 + The initial particle configuration is defined by a csv file at the location given in the config and should look similar to this example
+
 
 ```
 label,x,y,z,Charge,LJ-Epsilon,LJ-Sigma
@@ -56,6 +58,7 @@ system_config = creator.generate_problem()
 ```
 
 ### Using a config input file
+
 + The basic parameters are set in a config file similar to the previous case but without a `[manual]` section.
 But instead, it contains sections for each particle type beginning with `particle_class_*`. Each class will be collected in the following.
 
@@ -81,6 +84,7 @@ distribution = uniform
 number = 20
 
 ```
+
 The Lennard-Jones parameters for the atom types are defined in lib/particle_types.py. This file can be edited to fit your
 purpose. In the following, a particle setup is created according to your statements for the attributes `distribution` and `number`.
 (At this point, only the creation of `uniform` particle distributions is supported.)
