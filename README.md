@@ -3,7 +3,7 @@
 
 
 # Particlesim
-Simple tool for particle markov simulations and simulated annealig using Ewald Summation.
+Simple tool for particle markov simulations and simulated annealing using Ewald Summation.
 
 ## Setup
 
@@ -14,7 +14,7 @@ run `python setup.py install` with in terminal.
 There are basically two ways to initialize a simulation:
 
 ### Using a csv input file
-1. The basic parameters are set in a config file that looks like this
++ The basic parameters are set in a config file that looks like this
 
 ```
 [general]
@@ -35,7 +35,7 @@ use_lennard_jones = yes
 
 ```
 
-2. The initial particle configuration is defined by a csv file at the location given the config and should look similar to this example
++ The initial particle configuration is defined by a csv file at the location given the config and should look similar to this example
 
 ```
 label,x,y,z,Charge,LJ-Epsilon,LJ-Sigma
@@ -46,9 +46,9 @@ Na,1,1,1,1,0.5,1
 
 ```
 
-3. Then the following commands are necessary to initialise the setup
++ Then the following commands are necessary to initialize the setup
 
-```pyhton
+```python
 # Get a ProblemCreator file from the config file
 creator = ProblemCreator(test_config_path)
 
@@ -57,13 +57,13 @@ system_config = creator.generate_problem()
 ```
 
 ### Using a config input file
-1. The basic parameters are set in a config file analogue to the previous case but without a `[manual]` section.
-But instead, it contains sections for each particle type beginngin with `particle_class_*`. Each class will be collected in the following.
++ The basic parameters are set in a config file analogue to the previous case but without a `[manual]` section.
+But instead, it contains sections for each particle type beginning with `particle_class_*`. Each class will be collected in the following.
 
 ```
 [general]
 k_cutoff = 1.0
-sigma_ewald = 1.0
+Sigma_ewald = 1.0
 r_cutoff = 3.0
 box-size = 20.0
 
@@ -82,13 +82,13 @@ distribution = uniform
 number = 20
 
 ```
-The Lennard-Jones parameters for the atom types are defind in lib/particle_types.py. This file can be edited to fit to your
+The Lennard-Jones parameters for the atom types are defined in lib/particle_types.py. This file can be edited to fit to your
 purpose. In the following a particle setup is created according to your statements for the attributes `distribution` and `number`.
 (At this point, only the creation of `uniform` particle distributions is supported.)
 
-2. The initialisation process is equal to the previous method
++ The initialization process is equal to the previous method
 
-```pyhton
+```python
 # Get a ProblemCreator file from the config file
 creator = ProblemCreator(test_config_path)
 
@@ -119,5 +119,5 @@ a touple that defines the minimum and maximum value or a list with a length of `
 a beta value for each simulation step.
 
 ## Evaluation
-At this point a trajectory export to xyz-Format and csv output is supported and can be accesd with the `particlesim.utils.xyz`
+At this point a trajectory export to xyz-Format and csv output is supported and can be accessed with the `particlesim.utils.xyz`
 and `particlesim.config_parser` module.
