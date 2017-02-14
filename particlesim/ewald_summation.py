@@ -79,7 +79,7 @@ class EwaldSummation(object):
         structure_factor = np.einsum('ik, k', np.exp(1j * np.einsum('ji, ki', self.k_vectors, self.positions)), self.charges )
         structure_factor_squared = structure_factor.real**2 + structure_factor.imag**2
 
-        longrange_potential = np.dot(structure_factor_squared.T, np.exp(-self.sigma_sq * k_sq / 2) / k_sq) * \
+        longrange_potential = np.dot(structure_factor_squared, np.exp(-self.sigma_sq * k_sq / 2) / k_sq) * \
                               prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential

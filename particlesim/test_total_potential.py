@@ -67,9 +67,9 @@ def test_parameter_guess():
 
         # Cutoff should get not or not much smaller when raising the accuracy
         if not r_cutoff_prev == 0:
-            assert(total.r_cutoff/r_cutoff_prev > 0.9)
+            assert(total.r_cutoff/r_cutoff_prev > 0.8)
         if not k_cutoff_prev == 0:
-            assert(total.k_cutoff/(k_cutoff_prev) > 0.9)
+            assert(total.k_cutoff/(k_cutoff_prev) > 0.8)
 
         r_cutoff_prev = total.r_cutoff
         k_cutoff_prev = total.k_cutoff
@@ -252,13 +252,13 @@ def test_shortrange_with_different_neighbouring():
         shortrange_with_different_neighbouring()
 
 
-def test_lennard_jones_rondom():
+def test_lennard_jones_random():
     """
     Do 10 repetitions of test-function for the lennard jones potential.
     """
     test_repetitions = 10
     for i in range(test_repetitions):
-        lennard_jones_rondom()
+        lennard_jones_random()
 
 
 
@@ -351,7 +351,7 @@ def coulomb_random():
     np.testing.assert_almost_equal(actual=sim_coulomb, desired=test_coulomb, decimal=5)
 
 
-def lennard_jones_rondom():
+def lennard_jones_random():
     """
     Test the lennard jones energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
     box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
@@ -362,4 +362,4 @@ def lennard_jones_rondom():
     sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz, coulomb=False)
     test_lennard_jones = test_potential[1]
 
-    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.001)
+    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.01)

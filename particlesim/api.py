@@ -75,7 +75,7 @@ class SystemConfiguration(object):
         self.box_size = box_size
         self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
-        self.xyz = xyz
+        self.xyz = xyz * 1.
         self.charges = charges
         self.sigmas = sigmas
         self.epsilons = epsilons
