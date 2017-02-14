@@ -22,18 +22,18 @@ from particlesim.utils.conversion import prefactor
 
 
 class Shortrange(object):
+    r"""
+    Parameters
+    ----------
+    system_conf : SystemConfiguration
+        Instance of an SystemConfiguration Object that holds essential parameters
+        previously set by the user.
+    sigma_c : Float
+        Spread of the Gaussian function used for the Ewald Summation part.
+    r_cutoff : int or Float
+        Length of the real-space cutoff for calculating neighbours.
+    """
     def __init__(self, system_conf, sigma_c, r_cutoff):
-        """
-        Parameters
-        ----------
-        system_conf : SystemConfiguration
-            Instance of an SystemConfiguration Object that holds essential parameters
-            previously set by the user.
-        sigma_c : Float
-            Spread of the Gaussian function used for the Ewald Summation part.
-        r_cutoff : int or Float
-            Length of the real-space cutoff for calculating neighbours.
-        """
         self.system_conf = system_conf
         self.epsilon_r = system_conf.epsilon_r
         self.box_length = system_conf.box_size
