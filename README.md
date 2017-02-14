@@ -10,7 +10,7 @@ Simple tool for particle markov simulations and simulated annealing using Ewald 
 To install the package, simply go to the package directory and 
 run `python setup.py install` with in terminal.
 
-## Initialisation
+## Initialization
 There are basically two ways to initialize a simulation:
 
 ### Using a csv input file
