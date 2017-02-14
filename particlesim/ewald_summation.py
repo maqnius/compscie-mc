@@ -83,8 +83,10 @@ class EwaldSummation(object):
                               prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential
+
         self_interaction_potential = np.dot(self.charges.T, self.charges) * \
                                      1 / (np.sqrt(2*np.pi) * self.sigma) * 1/( 4 * np.pi) * prefactor
+
 
         # Calculate total potential
         longrange_and_self_potential = longrange_potential - self_interaction_potential
