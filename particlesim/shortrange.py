@@ -15,11 +15,10 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
-from particlesim.k_cython import fast_distances
+from particlesim.k_cython import fast_distances, fast_lj_potential, fast_shortrange
 from scipy.special import erfc
 from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.utils.conversion import prefactor
-
 
 class Shortrange(object):
     def __init__(self, system_conf, sigma_c, r_cutoff, neighbouring):
@@ -77,7 +76,7 @@ class Shortrange(object):
         q = (sigma / r) ** 6
         return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
-    def shortrange(self, positions, coulomb=True, lj=True):
+    def shortrange(self, positions, coulomb=True, lj=False, cyfast=False):
         r"""
         Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
         and the short coulomb interaction part of the ewald summation
@@ -99,10 +98,12 @@ class Shortrange(object):
             Total interaction potential in Hartree-Energy
 
         """
-
+        """
+        if cyfast:
+            return fast_shortrange(positions, self.sigmas, self.epsilons, self.system_conf.lj_cutoff_matrix, self.box_length,
+                                   self.distances, self.charges, self.r_cutoff, self.sigma_c, prefactor, coulomb=coulomb, lj=lj)
+        """
         [n, m] = positions.shape
-
-
         lj_interaction = 0
         coulomb_interaction = 0
 
@@ -135,6 +136,7 @@ class Shortrange(object):
 
         else:
             fast_distances(positions, box_len=self.box_length, distances=self.distances)
+            print(self.distances)
             for particle1 in range(0,n):
                 lj_interaction_tmp, coulomb_interaction_tmp = 0,0
                 for particle2 in range(particle1+1, n):
@@ -143,7 +145,7 @@ class Shortrange(object):
                         epsilon = self.epsilons[particle1, particle2]
                         cutoff = self.system_conf.lj_cutoff_matrix[particle1, particle2]
                         distance = self.distances[particle1,particle2]
-
+                        print("here, ", particle1, particle2, self.lj_potential(distance,sigma,epsilon))
                         if distance < cutoff:
                             lj_interaction_tmp += self.lj_potential(distance,sigma,epsilon)
                     if coulomb:
@@ -178,5 +180,13 @@ class Shortrange(object):
 
         '''
         if self.neighbouring:
-            self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, self.r_cutoff,
-                                                 self.box_length)
+            self.nlist = NeighbouringCellLinkedLists(self.system_conf.xyz, self.r_cutoff, self.box_length)
+"""
+box_len = 5.0
+xyz = np.arange(5*3).reshape(5,3).astype(dtype=float) % box_len
+distances = np.zeros((5,5))
+fast_distances(xyz, box_len, distances)
+print(xyz)
+print(distances)
+
+"""

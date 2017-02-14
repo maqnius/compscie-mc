@@ -18,7 +18,7 @@
 import numpy as np
 import cython
 cimport numpy as np
-from libc.math cimport sqrt
+from libc.math cimport sqrt, erfc
 
 DTYPE = np.int
 ctypedef np.int_t DTYPE_t
@@ -84,7 +84,7 @@ def calc_k_vectors_test(int K):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
+cpdef fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
     """
     Calculates the distance of all positions to all other positions in the xyz array. It says doubles here but
     python floats are cython doubles
@@ -122,3 +122,95 @@ def fast_distances(double[:, :] xyz, double box_len, double[:,:] distances):
             distances[j,i] = distance
 
     return
+
+
+cpdef double fast_lj_potential(double r, double sigma=1.0, double epsilon=1.0):
+    r"""
+    Compute the Lennard-Jones potential.
+
+    Only callable in c environment, enforced by cdef. Leads to faster function.
+
+    Parameters
+    ----------
+    r : c-double
+        Euklidean particle-particle distance.
+    sigma : c-double, optional, default=1.0
+        Zero crossing distance.
+    epsilon : c-double, optional, default=1.0
+        Depth of the potential well.
+
+    Returns
+    -------
+    float or array-like of float
+        Lennard-Jones energy value(s).
+
+    Why?! Why in Allah's name do we write fifty-trillion lines of comments for a three line function?! Jesus...
+
+    """
+    # (sigma/r)^6
+    cdef:
+        double q = (sigma/r)
+    q = q*q
+    q = q*q*q
+    return 4.0 * (epsilon * (q * (q - 1.0)))
+
+
+cpdef double fast_shortrange(double[:,:] xyz, double[:,:] sigmas, double[:,:] epsilons, double[:,:] lj_cutoff_matrix,
+                    double box_length, double[:,:] distances, double[:]charges, double r_cutoff, double sigma_c,
+                    double prefactor, bint coulomb=True, bint lj=True):
+    r"""
+    Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
+    and the short coulomb interaction part of the ewald summation
+
+    Parameters
+    ----------
+    xyz : numpy.ndarray(shape=(n, d))
+        d-dimensional coordinates of n particles.
+    coulomb : bool
+        If true calculate coulomb potential
+    lj : bool
+        If true calculate lennard jones potential
+    neighbouring : bool
+        If false calculate all distances
+
+    Returns
+    -------
+    float
+        Total interaction potential in Hartree-Energy
+
+    """
+
+    fast_distances(xyz=xyz, box_len=box_length, distances=distances)
+
+    cdef:
+        int nrow = xyz.shape[0]
+        int ncol = xyz.shape[1]
+        int particle1, particle2
+
+        double lj_interaction      = 0
+        double coulomb_interaction = 0
+        double lj_interaction_tmp, coulomb_interaction_tmp
+
+        double sigma, epsilon, cutoff, distance
+
+    for particle1 in range(0,nrow):
+        lj_interaction_tmp, coulomb_interaction_tmp = 0, 0
+        for particle2 in range(particle1+1, nrow):
+            if lj:
+                sigma       = sigmas[particle1, particle2]
+                epsilon     = epsilons[particle1, particle2]
+                cutoff      = lj_cutoff_matrix[particle1, particle2]
+                distance    = distances[particle1,particle2]
+
+                if distance < cutoff:
+                    lj_interaction_tmp += fast_lj_potential(distance,sigma,epsilon)
+
+            if coulomb:
+                cutoff      = r_cutoff
+                distance    = distances[particle1,particle2]
+
+                if distance < cutoff:
+                    coulomb_interaction_tmp += charges[particle1] * charges[particle2] / distance * erfc(distance / (sqrt(2) * sigma_c))
+        lj_interaction      +=  lj_interaction_tmp
+        coulomb_interaction += coulomb_interaction_tmp
+    return lj_interaction + coulomb_interaction * 1.0/(4*np.pi) * prefactor
