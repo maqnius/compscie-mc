@@ -139,7 +139,7 @@ def test_lj_potential():
     Test Lennard-Jones energy by comparing it to a simple test-system.
     Test-system:
     Na at (0, 0, 0)
-    Cl at (0, 0, 1) / Cl at (0, 0, 9)
+    Cl at (0, 0, 1)
     Boxsize = 10
     Standard deviation of Gaussian charge distribution = 1.0
     """
@@ -173,13 +173,13 @@ def test_longrange_potential():
     Test longrange Energy by comparing it to a simple test-system.
     Test-system:
     Na at (0, 0, 0)
-    Cl at (0, 0, 1) / Cl at (0, 0, 9)
+    Cl at (0, 0, 1)
     Boxsize = 10
     Standard deviation of Gaussian charge distribution = 1.0
     """
     xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
     charges = np.array([1., -1.])
-    boxsize = 6.0
+    boxsize = 10.0
     sigma = 1.
     k_cutoff = 1.
 
@@ -195,43 +195,6 @@ def test_longrange_potential():
     simulated_longrange_energy = ewald_summation.longrange_energy(xyz)
 
     np.testing.assert_almost_equal(actual=simulated_longrange_energy, desired=theoretical_total_energy * 1/(4*np.pi) * prefactor, decimal=5)
-
-
-
-def test_total_potential():
-    """
-    Testfunction for total potential.
-    Test-system:
-    Na at (0, 0, 0)
-    Cl at (0, 0, 1) / Cl at (0, 0, 9)
-    Boxsize = 10
-    Standard deviation of Gaussian charge distribution = 1.0
-
-    """
-    ewald_sigma = 1.
-    epsilon_Na = 0.0469
-    epsilon_Cl = 0.15
-    epsilon_NaCl = np.sqrt(epsilon_Cl * epsilon_Na)
-    epsilons = np.array([epsilon_Na, epsilon_Cl])
-
-    sigma_Na = 1.21496
-    sigma_Cl = 2.02234
-    sigma_NaCl = 0.5 * (sigma_Na + sigma_Cl)
-    sigmas = np.array([sigma_Na, sigma_Cl])
-
-    xyz = np.array([[0., 0., 0.], [0., 0., 1.]])
-    charges = np.array([1., -1.])
-    boxsize = 12.
-
-    system_conf = SystemConfiguration(xyz=xyz, charges=charges, box_size=boxsize, sigmas=sigmas, epsilons=epsilons, k_cutoff = 10, r_cutoff = 4)
-    total_pot = TotalPotential(system_conf)
-    total_pot.sigma_c = 1.
-    theoretical_potential = - 1/(np.pi * 4 ) * prefactor + 4 * epsilon_NaCl * (sigma_NaCl**12 - sigma_NaCl**6)
-
-    potential = total_pot.potential(xyz)
-
-    np.testing.assert_allclose(actual=potential, desired=theoretical_potential, rtol=0.3)
-
 
 
 def test_coulomb_random():
@@ -252,13 +215,13 @@ def test_shortrange_with_different_neighbouring():
         shortrange_with_different_neighbouring()
 
 
-def test_lennard_jones_rondom():
+def test_lennard_jones_random():
     """
     Do 10 repetitions of test-function for the lennard jones potential.
     """
     test_repetitions = 10
     for i in range(test_repetitions):
-        lennard_jones_rondom()
+        lennard_jones_random()
 
 
 
@@ -276,11 +239,11 @@ def create_test_system():
     test_potential : floats
         coulomb and lennard jones energy
     """
-    n = 4
-    boxsize = 121
+    n = 20
+    boxsize = 20
     particle_box = 3
     xyz = np.random.uniform(0, particle_box, (n, 3))
-    ones = np.ones(2)
+    ones = np.ones(int(n/2))
     charges = np.append(ones, -1 * ones)
     # Lennard-Jones parameters
     epsilon_Na = 0.0469
@@ -351,7 +314,7 @@ def coulomb_random():
     np.testing.assert_almost_equal(actual=sim_coulomb, desired=test_coulomb, decimal=5)
 
 
-def lennard_jones_rondom():
+def lennard_jones_random():
     """
     Test the lennard jones energy with a number of particles distributed in a 3x3x3 box inside of a 120x120x120
     box. The boxsize is so big, that particles from neighbouring boxes are outside the cutoff radius.
