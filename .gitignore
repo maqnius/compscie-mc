@@ -13,4 +13,6 @@ __pycache__/
 /particlesim.egg-info/
 /particlesim/logs/*
 /example/example_config.cfg
-
+/example/*.cfg
+/particlesim/log/*.cfg
+*.csv

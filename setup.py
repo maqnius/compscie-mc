@@ -104,10 +104,12 @@ setup(
     author='Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu, Hanna Wulkow',
     author_email='niehues.mark@gmail.com, hessmann.stefaan@gmail.com, jaappedersen@hotmail.de, okrasi@posteo.de, h.wulkow@ewetel.net',
     license='GPLv3+',
-    packages=['particlesim'],
+    packages=['particlesim', 'particlesim.utils', 'particlesim.lib'],
         setup_requires=[
         'numpy>=1.7.0',
         'setuptools>=0.6',
         'scipy>=0.6'],
+    package_dir = {'particlesim': 'particlesim'},
     install_requires=['numpy>=1.7.0','cython>=0.22'],
-    tests_require=['pytest'])
+    tests_require=['pytest']
+    )

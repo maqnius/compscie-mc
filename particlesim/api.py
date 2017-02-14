@@ -1,40 +1,57 @@
-import numpy as np
 from .total_potential import *
-
 
 class SystemConfiguration(object):
     r"""
-
     Parameters
     ----------
     xyz : ndarray(n,3), float
-          position of n particles in x,y,z coordinates
+        Position of n particles in x,y,z coordinates.
     sigmas : ndarray(n) or float value
-            sigma coefficient of lennard jones potential for each particle
-            if not array but float value, assigned to all particles
-            Default = 1.0 --> assigned to all particles
+        Sigma coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 1.0 --> assigned to all particles
     epsilons : ndarray(n) or float value
-                epsilon coefficient of lennard jones potential for each particle
-                if not array but float value, assigned to all particles
-                Default = 1.0 --> assigned to all particles
-    charges : ndarray(n) or f<loat value
-              charges coefficient of lennard jones potential for each particle
-              if not array but float value, assigned to all particles
-                Default = 0.0 --> assigned to all particles
-    box_size : float,
-                box_size for cubic simulation box, positive number
-                Default = 1.0
+        Epsilon coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 1.0 --> assigned to all particles
+    charges : ndarray(n) or float value
+        Charges coefficient of lennard jones potential for each particle;
+        if not array but float value, assigned to all particles.
+        Default = 0.0 --> assigned to all particles
+    box_size : float
+        Boxsize for cubic simulation box; positive number.
+        Default = 1.0
     epsilon_r : float,
-                relative permittivity constant of system
-                Default = 1.0 --> for vacuum by definition
+        Relative permittivity constant of system.
+        Default = 1.0 --> for vacuum by definition
+    labels : array-like of string
+        Additional information about the particles.
+    p_error : int
+        Max. error for the total ewald summation.
+        Error = e^-p_error
+        Default = 10
+    r_cutoff : float
+        Cutoff-radius for shortrange Ewald summation
+        Default = None --> Optimal cutoff is calculated automatically
+    k_cutoff : float
+        Cutoff-radius for longrange Ewald summation in reciprocal space.
+        Dafault = None --> Optimal cutoff is calculated automatically
+    neighbouring : bool
+        True: Use neighbouring list for calculation of shortrange energies.
+        False: Calculate neighbouring with fast_distances function in cython.
 
-               arithmetic mean for sigma and geometric mean for epsilon
-             arithmetic = (a+b)/2; geometric : sqrt(a*a)
-             Lorentz Berthelot Rule
-             lj_cutoff = 2.5 * sigma
+
+    Notes
+    -----
+        arithmetic mean for sigma and geometric mean for epsilon
+        arithmetic = (a+b)/2; geometric : sqrt(a*b)
+        Lorentz Berthelot Rule
+        lj_cutoff = 2.5 * sigma
+
     """
 
-    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=5.0, epsilon_r=1.0):
+    def __init__(self, xyz, sigmas= 1.0, epsilons = 1.0, charges=0.0, box_size=12.0, epsilon_r=1.0, labels = [],
+                    p_error=10, r_cutoff = None, k_cutoff = None, neighbouring = False):
 
         if not np.all((xyz>=0)*(xyz<box_size)):
             raise ValueError("xyz must be in range of zero to %d" %box_size)
@@ -54,6 +71,7 @@ class SystemConfiguration(object):
         elif not len(xyz) == len(charges):
                 raise TypeError('charges must have the same length as particle numbers')
 
+
         self.box_size = box_size
         self._volume = box_size ** 3
         self.epsilon_r = epsilon_r
@@ -61,9 +79,45 @@ class SystemConfiguration(object):
         self.charges = charges
         self.sigmas = sigmas
         self.epsilons = epsilons
-        self.create_lj_mean_parameters()
+        self.labels = labels
+        self.r_cutoff = r_cutoff
+        self.k_cutoff = k_cutoff
+        self._create_lj_mean_parameters()
+        self._create_lennard_jones_cutoff()
+        self._neighbouring = neighbouring
+        self.p_error = p_error
         self._total_potential = TotalPotential(self)
 
+        if self.box_size <= 2 * max(self.lj_cutoff_matrix.max(),self._total_potential.r_cutoff):
+            raise ValueError('Box_size to small. Box_size has to be twice the cutoff radius '
+                             'of the Lennard Jones potential.\n'
+                             'box_size = %f\n lj_max = %f, coulomb_cutoff(r_cutoff) = %f \n'
+                             'set box_size to be larger than %f \n '
+                             % (self.box_size, self.lj_cutoff_matrix.max(), self._total_potential.r_cutoff, 2 * max(self.lj_cutoff_matrix.max(),self._total_potential.r_cutoff))
+                             )
+
+
+    @property
+    def p_error(self):
+        return self._p_error
+
+    @p_error.setter
+    def p_error(self, value):
+        if value <= 0:
+            raise ValueError('p_error must be bigger than zero')
+        self._p_error = value
+
+    @property
+    def neighbouring(self):
+        return self._neighbouring
+
+    @neighbouring.setter
+    def neighbouring(self, value):
+        if not isinstance(value,bool):
+            raise TypeError
+        self._total_potential.shortrange.neighbouring = value
+        self._neighbouring = value
+        pass
     @property
     def xyz(self):
         return self._xyz
@@ -126,26 +180,6 @@ class SystemConfiguration(object):
             raise ValueError("epsilons must be positive float")
         self._epsilons = epsilons
 
-
-    # def add_particles_same_type(self, xyz, charge = 0., sigma = 1.0, epsilon = 1.0):
-    #     r"""
-    #     Add particles with same values for charge, sigma and epsilon to the system configuration
-    #     :param xyz: np.ndarray(n,3)
-    #     :param charge: float, Default = 0
-    #     :param sigma: float, Default = 0
-    #     :param epsilon: float, Default = 0
-    #     :return:
-    #
-    #     """
-    #
-    #     # append new particles configuration to existing configuration
-    #     number_of_particles = len(xyz)
-    #     self.xyz = np.concatenate((self.xyz, xyz), axis=0)
-    #     self.charges = np.append(self.charges, np.asarray([charge]*number_of_particles))
-    #     self.sigmas = np.append(self.sigmas,np.asarray([sigma]*number_of_particles))
-    #     self.epsilons = np.append(self.epsilons,np.asarray([epsilon]*number_of_particles))
-    #     self.create_lj_mean_parameters()
-
     def potential(self,xyz_trial, lennard_jones = True, coulomb = True):
         if not (type(lennard_jones) == bool and type(coulomb == bool)):
             raise TypeError('lennard_jones and coulomb must be booleans')
@@ -158,19 +192,30 @@ class SystemConfiguration(object):
 
         return self._total_potential.potential(xyz_trial, lennard_jones, coulomb)
 
-    def create_lj_mean_parameters(self):
-        self.create_lennard_jones_epsilons()
-        self.create_lennard_jones_sigmas()
+    def _create_lj_mean_parameters(self):
+        self._create_lennard_jones_epsilons()
+        self._create_lennard_jones_sigmas()
 
-    def create_lennard_jones_epsilons(self):
+    def _create_lennard_jones_epsilons(self):
         self.lj_epsilon_matrix = np.sqrt(np.array([self.epsilons]).transpose()*np.array([self.epsilons]))
 
-    def create_lennard_jones_sigmas(self):
+    def _create_lennard_jones_sigmas(self):
         self.lj_sigma_matrix = (np.array([self.sigmas]).transpose() + np.array([self.sigmas]))/2
+
+    def _create_lennard_jones_cutoff(self):
+        self.lj_cutoff_matrix = 2.5 * self.lj_sigma_matrix
 
 
 class Sampler(object):
-    r"""A sampler class for hamiltonian objects."""
+    r"""A sampler class for system configuration.
+
+    Parameters
+    ----------
+    system_configuration : :obj:
+        Instance of an SystemConfiguration Object that holds essential parameters
+        previously set by the user.
+
+    """
     def __init__(self, system_configuration):
         if len(system_configuration.xyz) == 0:
             raise ValueError("no particle in system configuration")
@@ -183,6 +228,7 @@ class Sampler(object):
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial
         return xyz, pot
+
 
     def metropolis(self, iteration_number, step=0.1, beta=1.0):
         r"""
@@ -208,8 +254,7 @@ class Sampler(object):
             Total interaction and external potential trajectory.
 
         """
-
-    #   check input data
+        # check input data
         if not isinstance(iteration_number,int) or iteration_number <= 0:
             raise ValueError("To sample you need at least one iteration step...\n"
                              "iteration_numer has to be a positive integer")
@@ -218,11 +263,11 @@ class Sampler(object):
         if not isinstance(beta,(float,int)) or beta <= 0:
             raise ValueError("beta has to be a postive number")
 
-    #   create copy of instance and work with copy, so initial configuration is unchanged
+        # create copy of instance and work with copy, so initial configuration is unchanged
         xyz_traj = [self.system_configuration.xyz]
         pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
 
-    #   perform metropolis
+        # perform metropolis
         for i in range(iteration_number):
             xyz, pot = self._update(
                 xyz_traj[-1]
@@ -232,42 +277,58 @@ class Sampler(object):
             pot_traj.append(pot)
         return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
-    # TODO
-    # def metropolis_sa(self, hamiltonian, size, step=0.1, beta=1.0):
-    #     r"""
-    #     Perform a Metropolis-based simulated annealing procedure.
-    #
-    #     Parameters
-    #     ----------
-    #     hamiltonian : object
-    #         Encapsulates the system's degrees of freedom
-    #         and interactions.
-    #     size : int
-    #         Number of Metropolis update steps.
-    #     step : float, optional, default=0.1
-    #         Maximal size of an update move in each coordinate.
-    #     beta : float, optional, default=1.0
-    #         Initial inverse temperature factor (1/kT).
-    #
-    #     Returns
-    #     -------
-    #     numpy.ndarray of float
-    #         Configuration trajectory.
-    #     numpy.ndarray of float
-    #         Total interaction and external potential trajectory.
-    #
-    #     """
-    #     beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, size)[::-1]
-    #     xyz_traj = [np.asarray(hamiltonian.xyz, dtype=np.float64)]
-    #     pot_traj = [hamiltonian.potential()]
-    #     for i in range(size):
-    #         xyz, pot = self._update(
-    #             hamiltonian,
-    #             xyz_traj[-1], pot_traj[-1],
-    #             step=step, beta=beta_values[i])
-    #         xyz_traj.append(xyz)
-    #         pot_traj.append(pot)
-    #     hamiltonian.xyz[:] = xyz_traj[-1]
-    #     return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
+
+    def metropolis_sa(self, iteration_number, step=0.1, beta=1.0):
+        r"""
+        Perform a Metropolis-based simulated annealing procedure.
+
+        Parameters
+        ----------
+        self : object,
+            Encapsulates the system's positions and params, box_size and
+            a function to compute potential energies.
+        iteration_number : int
+            Number of Metropolis update steps.
+        step : float, optional, default=0.1
+            Maximal size of an update move in each coordinate.
+        beta : float, optional, default=1.0
+            Initial inverse temperature factor (1/kT).
+
+        Returns
+        -------
+        numpy.ndarray of float
+            Configuration trajectory.
+        numpy.ndarray of float
+            Total interaction and external potential trajectory.
+
+        """
+        if isinstance(beta, (float, int)):
+            # beta determines maximum
+            beta_values = 1.0 / np.linspace(1.0E-15, 1.0 / beta, iteration_number)[::-1]
+        else:
+            try:
+                if len(beta) == iteration_number:
+                    # Accept beta values
+                    beta_values = beta
+                elif len(beta) == 2:
+                    # beta contains min and max value for beta
+                    beta_values = 1.0 / np.linspace(1.0 / beta[1], 1.0 / beta[0], iteration_number)[::-1]
+                else:
+                    raise ValueError(
+                        "beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+            except TypeError:
+                print("beta must be float|int, touple with len 2 or touple with len equal to iteration number")
+                exit(1)
+
+        xyz_traj = [self.system_configuration.xyz]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
+
+        for i in range(iteration_number):
+            xyz, pot = self._update(xyz_traj[-1], pot_traj[-1],
+                step=step, beta=beta_values[i])
+            xyz_traj.append(xyz)
+            pot_traj.append(pot)
+
+        return np.asarray(xyz_traj, dtype=np.float64), np.asarray(pot_traj, dtype=np.float64)
 
 
