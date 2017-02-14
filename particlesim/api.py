@@ -180,7 +180,7 @@ class SystemConfiguration(object):
             raise ValueError("epsilons must be positive float")
         self._epsilons = epsilons
 
-    def potential(self,xyz_trial, lennard_jones = True, coulomb = True):
+    def potential(self,xyz_trial, lennard_jones, coulomb):
         if not (type(lennard_jones) == bool and type(coulomb == bool)):
             raise TypeError('lennard_jones and coulomb must be booleans')
 
@@ -216,15 +216,17 @@ class Sampler(object):
         previously set by the user.
 
     """
-    def __init__(self, system_configuration):
+    def __init__(self, system_configuration, lennard_jones=True, coulomb=True):
         if len(system_configuration.xyz) == 0:
             raise ValueError("no particle in system configuration")
         self.system_configuration = system_configuration
+        self.lennard_jones = lennard_jones
+        self.coulomb = coulomb
 
     def _update(self, xyz, pot, step, beta):
         xyz_trial = (xyz + 2.0 * self.system_configuration.box_size * step
                      * (np.random.rand(*xyz.shape)- 0.5))%self.system_configuration.box_size
-        pot_trial = self.system_configuration.potential(xyz_trial)
+        pot_trial = self.system_configuration.potential(xyz_trial, lennard_jones=self.lennard_jones, coulomb=self.coulomb)
         if pot_trial <= pot or np.random.rand() < np.exp(beta * (pot - pot_trial)):
             return xyz_trial, pot_trial
         return xyz, pot
@@ -265,7 +267,8 @@ class Sampler(object):
 
         # create copy of instance and work with copy, so initial configuration is unchanged
         xyz_traj = [self.system_configuration.xyz]
-        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz, lennard_jones=self.lennard_jones,
+                                                        coulomb=self.coulomb)]
 
         # perform metropolis
         for i in range(iteration_number):
@@ -321,7 +324,8 @@ class Sampler(object):
                 exit(1)
 
         xyz_traj = [self.system_configuration.xyz]
-        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz)]
+        pot_traj = [self.system_configuration.potential(self.system_configuration.xyz, lennard_jones=self.lennard_jones,
+                                                        coulomb=self.coulomb)]
 
         for i in range(iteration_number):
             xyz, pot = self._update(xyz_traj[-1], pot_traj[-1],
