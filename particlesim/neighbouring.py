@@ -19,6 +19,14 @@ import numpy as np
 import itertools as it
 
 class Neighbouring(object):
+    r"""
+    Parameters
+    ----------
+    particle_positions : array (float)
+        Positions of all particles inside the simulation-box
+    radius : float
+        Cutoff-radius for short-range coulomb interaction.
+    """
     def __init__(self, particle_positions, radius):
         self.particle_positions = particle_positions
         self.n = len(particle_positions)
@@ -40,13 +48,30 @@ class Neighbouring(object):
 
     # public methods
     def create_neighbourlist(self):  # only internal
+        r"""
+        Returns
+        -------
+        list
+            empty list
+        """
         return []
+
 
     def get_particles_within_radius(self, particle_id):
         pass
 
 
 class NeighbouringPrimitiveLists(Neighbouring):
+    r"""
+    Parameters
+    ----------
+    particle_positions : array (float)
+        Positions of all particles inside the simulation-box
+    radius : float
+        Cutoff-radius for short-range coulomb interaction.
+    box_size : int or float
+        Side-length of the simulation-box.
+    """
     def __init__(self, particle_positions, radius, box_size):
         super(NeighbouringPrimitiveLists, self).__init__(particle_positions, radius)
         self.box_size = box_size
@@ -56,6 +81,9 @@ class NeighbouringPrimitiveLists(Neighbouring):
 
     # public methods
     def create_neighbourlist(self):
+        r"""
+        Creates a neighbour-list with a naive method.
+        """
         n, r, pos, box_size   = self.n, self.r, self.particle_positions, self.box_size
         nlist       = [[] for i in range(n)]
         for i in range(n):
@@ -65,11 +93,35 @@ class NeighbouringPrimitiveLists(Neighbouring):
                 nlist[i].append(j)
         self._neighbourlist = nlist
 
+
     def get_particles_within_radius(self, particle_id):
+        r"""
+        Find all neighbouring particles within the cutoff-radius.
+
+        Parameters
+        ----------
+        particle_id : int
+            Particle-index
+
+        Returns
+        -------
+        list (int)
+            List of indices from neighbouring particles.
+        """
         return self._neighbourlist[particle_id]  # returns the indices of the points
-        # return [self.particle_positions[i] for i in self._neighbourlist[particle_id]] # alternative: return the points themselves
+
 
 class NeighbouringCellLinkedLists(Neighbouring):
+    r"""
+    Parameters
+    ----------
+    particle_positions : array (float)
+        Positions of all particles inside the simulation-box
+    radius : float
+        Cutoff-radius for short-range coulomb interaction.
+    box_size : int or float
+        Side-length of the simulation-box.
+    """
     def __init__(self, particle_positions, radius, box_size):
         super(NeighbouringCellLinkedLists, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
@@ -84,16 +136,34 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
     # public methods
     def create_neighbourlist(self): # in O(self.n)
+        """
+        Creates a cell-linked neighbour-list.
+        """
         pos = self.particle_positions
         cell_linked_list = [[[[] for i in range(self.nr_cells)]for j in range(self.nr_cells)]for k in range(self.nr_cells)]
-        # print("cll shape: ", len(cell_linked_list), len(cell_linked_list[0]), len(cell_linked_list[0][0])) #TODO no print in the end
         for i in range(self.n):
             x, y, z = (pos[i]/self._cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
-            #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
             cell_linked_list[x][y][z].append(i) # we need only indices
         self._neighbourlist = cell_linked_list
 
+
     def get_particles_within_radius(self, particle_id):
+        r"""
+        Find all neighbouring particles within the cutoff-radius and calculate their distances.
+
+        Parameters
+        ----------
+        particle_id : int
+            Particle-index
+
+        Returns
+        -------
+        ret_idx : list (int)
+            Indices of all neighbouring particles within the cutoff-radius.
+        ret_dist : list (float)
+            Distances from one particle to all neighbouring particles within the cutoff-radius.
+
+        """
         n, r, pos, cell_ll, cell_len = self.n, self.r, self.particle_positions, self._neighbourlist, self._cell_len
         box_size = self.box_size
         nr_cells = len(cell_ll)
@@ -101,10 +171,7 @@ class NeighbouringCellLinkedLists(Neighbouring):
 
         p = pos[particle_id]
         cell = (p / cell_len).astype("int")
-        #cell_dir = np.rint((p % r)/r).astype("int")
-        #cell_dir[cell_dir == 0] = -1  # setting direction to nearest cell in xyz direction
         cell_dir = np.array(list(it.product([-1,0,1],repeat=3)))
-        #cells = np.array([(cell + [x, y, z]) % nr_cells for x in [cell_dir[0], 0] for y in [cell_dir[1], 0] for z in [cell_dir[2], 0]])
         cells = np.array([(cell + cell_dir[i])%nr_cells for i in range(27)] )
 
         for cell_idx in cells:
@@ -118,18 +185,37 @@ class NeighbouringCellLinkedLists(Neighbouring):
                 ret_dist.append(periodic_distance)
         return ret_idx, ret_dist
 
-    def update_cells(self, new_positions):
 
+    def update_cells(self, new_positions):
+        r"""
+        Updates the cell-linked list.
+
+        Parameters
+        ----------
+        new_positions : array (float)
+            New particle positions.
+
+        """
         cell_linked_list = [[[[] for i in range(self.nr_cells)]for j in range(self.nr_cells)]for k in range(self.nr_cells)]
         for i in range(self.n):
             x, y, z = (new_positions[i]/self._cell_len).astype(int) # // ist ganzzahlige division (ohne rest)
-            #print ("i:", i, ", xyz: ", x,y,z, ", pos[i]:", pos[i]) #TODO no print in the end
             cell_linked_list[x][y][z].append(i) # we need only indices
 
         self._neighbourlist = cell_linked_list
 
 
 class NeighbouringCellLinkedListsArray(Neighbouring):
+    r"""
+    Parameters
+    ----------
+    particle_positions : array (float)
+        Positions of all particles inside the simulation-box
+    box_size : int or float
+        Side-length of the simulation-box.
+    radius : float
+        Cutoff-radius for short-range coulomb interaction.
+
+    """
     def __init__(self, particle_positions, box_size, radius):
         super(NeighbouringCellLinkedListsArray, self).__init__(particle_positions, radius)
         self.box_size = float(box_size)
@@ -140,7 +226,17 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
         self.cell_ll = np.ones(self.n, dtype=int) * -1
         self.update_neighbourlist(self.particle_positions)
 
+
     def update_neighbourlist(self, xyz):
+        r"""
+        Updates the neighbour-list.
+
+        Parameters
+        ----------
+        xyz : ndarray(n,3), float
+            Position of n particles in x,y,z coordinates.
+
+        """
         self.head[:] = -1
         self.cell_ll[:] = -1
 
@@ -150,7 +246,22 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
             self.head[cell_index] = i
             self.cell_ll[i] = old_head
 
+
     def _get_particles_in_cell(self,cell_index):
+        r"""
+        Finds all particles inside a cell.
+
+        Parameters
+        ----------
+        cell_index : list (int)
+            x, y, z indices of the cell
+
+        Returns
+        -------
+        list (int)
+            indices of all particles inside a cell
+
+        """
         head_tmp = self.head[cell_index]
         particles_in_cell_idxs = []
         while(head_tmp != -1):
@@ -159,9 +270,22 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
         return particles_in_cell_idxs
 
 
-
     def get_particles_within_radius(self, particle_id):
+        r"""
+        Find all neighbouring particles within the cutoff-radius and calculate their distances.
 
+        Parameters
+        ----------
+        particle_id : int
+            Particle-index
+
+        Returns
+        -------
+        result_idx : list (int)
+            Indices of all neighbouring particles within the cutoff-radius.
+        result_dist : list (float)
+            Distances from one particle to all neighbouring particles within the cutoff-radius.
+        """
         result_idx, result_dist = [], []
 
         p = self.particle_positions[particle_id]
@@ -184,9 +308,44 @@ class NeighbouringCellLinkedListsArray(Neighbouring):
 
         return result_idx, result_dist
 
+
     def _calc_cell_index(self, i, xyz):
+        r"""
+        Gets the cell indices of a particle.
+
+        Parameters
+        ----------
+        i : int
+            particle index
+        xyz : ndarray(n,3), float
+            Position of n particles in x,y,z coordinates.
+
+        Returns
+        -------
+        int
+            cell index of particle i
+        """
         x, y, z = (xyz[i] / self._cell_len).astype(int)
         return self._recalc_cell_index(x,y,z)
 
+
     def _recalc_cell_index(self, cell_x, cell_y, cell_z):
+        r"""
+        Calculates the cell index from 3D call indices.
+
+        Parameters
+        ----------
+        cell_x : int
+            cell index in x direction
+        cell_y : int
+            cell index in y direction
+        cell_z : int
+            cell index in z direction
+
+        Returns
+        -------
+        int
+            total cell index
+
+        """
         return cell_x*1 + cell_y * self.nr_cells_one_d + cell_z * self.nr_cells_one_d**2
