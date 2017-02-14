@@ -359,7 +359,7 @@ def lennard_jones_random():
     system_conf, test_potential = create_test_system()
     total_potential = TotalPotential(system_conf)
 
-    sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz, coulomb=False)
+    sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz,lennard_jones=True, coulomb=False)
     test_lennard_jones = test_potential[1]
 
     np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.01)
