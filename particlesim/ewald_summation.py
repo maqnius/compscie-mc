@@ -1,5 +1,6 @@
 #   particlesim
-#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu
+#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen,
+#                       Simon Treu, Hanna Wulkow, Thomas Hadler
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -12,7 +13,7 @@
 #   GNU General Public License for more details.
 #
 #   You should have received a copy of the GNU General Public License
-#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import numpy as np
 from particlesim.utils.conversion import prefactor
@@ -79,7 +80,7 @@ class EwaldSummation(object):
         structure_factor = np.einsum('ik, k', np.exp(1j * np.einsum('ji, ki', self.k_vectors, self.positions)), self.charges )
         structure_factor_squared = structure_factor.real**2 + structure_factor.imag**2
 
-        longrange_potential = np.dot(structure_factor_squared.T, np.exp(-self.sigma_sq * k_sq / 2) / k_sq) * \
+        longrange_potential = np.dot(structure_factor_squared, np.exp(-self.sigma_sq * k_sq / 2) / k_sq) * \
                               prefactor / (2 * self.volume )
 
         # Calculate self-interaction potential
