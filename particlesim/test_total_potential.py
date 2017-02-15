@@ -1,5 +1,6 @@
 #   particlesim
-#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen, Simon Treu
+#   Copyright (C) 2017 Mark Niehues, Stefaan Hessmann, Jaap Pedersen,
+#                       Simon Treu, Hanna Wulkow, Thomas Hadler
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -67,9 +68,9 @@ def test_parameter_guess():
 
         # Cutoff should get not or not much smaller when raising the accuracy
         if not r_cutoff_prev == 0:
-            assert(total.r_cutoff/r_cutoff_prev > 0.9)
+            assert(total.r_cutoff/r_cutoff_prev > 0.8)
         if not k_cutoff_prev == 0:
-            assert(total.k_cutoff/(k_cutoff_prev) > 0.9)
+            assert(total.k_cutoff/(k_cutoff_prev) > 0.8)
 
         r_cutoff_prev = total.r_cutoff
         k_cutoff_prev = total.k_cutoff
@@ -325,4 +326,4 @@ def lennard_jones_random():
     sim_lennard_jones = total_potential.shortrange_energy(system_conf.xyz,lennard_jones=True, coulomb=False)
     test_lennard_jones = test_potential[1]
 
-    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.001)
+    np.testing.assert_allclose(actual=sim_lennard_jones, desired=test_lennard_jones, rtol=0.01)
