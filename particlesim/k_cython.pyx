@@ -20,7 +20,8 @@ import numpy as np
 import cython
 cimport numpy as np
 from libc.math cimport sqrt
-
+from libc.math cimport erfc
+#from scipy.special import erfc
 DTYPE = np.int
 ctypedef np.int_t DTYPE_t
 
@@ -166,3 +167,64 @@ cpdef fast_distances_cpdef(double[:, :] xyz, double box_len, double[:,:] distanc
             distances[j,i] = distance
 
     return
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def fast_shortrange(double[:, :] xyz, double box_len, double[:, :] sigmas, double[:, :] epsilons, double[:] charges,
+                    double[:, :] lj_cutoff, double c_cutoff, double sigma_c, double prefactor):
+    """
+    Calculates the distance of all positions to all other positions in the xyz array. It says doubles here but
+    python floats are cython doubles
+
+    Parameters
+    ----------
+    xyz :       double[:,:]
+                position array
+    box_len :    double
+                 the length of the box for the periodic boundry
+    distances :  double[:,:]
+                 an array passed to the function to avoid the necessity of returning a new array
+
+    Return
+    ------
+        void
+    """
+
+    cdef:
+        Py_ssize_t nrow = xyz.shape[0]
+        Py_ssize_t ncol = xyz.shape[1]
+        int i, j, k
+        double vec, dist_tmp, distance, s_pot_tmp_lj, s_pot_tmp_c
+        double box_half = box_len / 2.0
+        double s_pot_lj = 0.
+        double s_pot_c = 0.
+
+    for i in range(nrow):
+        s_pot_tmp_lj = 0.
+        s_pot_tmp_c = 0.
+        for j in range(i+1, nrow):
+            distance = 0.
+            for k in range(ncol):
+                vec = xyz[i,k]-xyz[j,k]
+                dist_tmp  = box_half - ((vec+box_half) % box_len)
+                distance += dist_tmp*dist_tmp
+            distance = sqrt(distance)
+            if distance < lj_cutoff[i,j]:
+                s_pot_tmp_lj += fast_lj_potential(distance,sigmas[i,j],epsilons[i,j])
+            if distance < c_cutoff:
+                s_pot_tmp_c += charges[i] * charges[j] / distance * erfc(
+                distance / (sqrt(2) * sigma_c))
+
+        s_pot_c += s_pot_tmp_c
+        s_pot_lj += s_pot_tmp_lj
+
+    return s_pot_lj + s_pot_c * 1/(4*np.pi) * prefactor
+
+def fast_lj_potential(double distance, double sigma, double epsilon):
+
+    cdef:
+        double q,p
+
+    p = (sigma / distance)
+    q = p**6
+    return 4.0 * epsilon * (q * (q - 1.0))

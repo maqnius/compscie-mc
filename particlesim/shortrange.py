@@ -17,6 +17,7 @@
 
 import numpy as np
 from particlesim.k_cython import fast_distances
+from particlesim.k_cython import fast_shortrange
 from scipy.special import erfc
 from particlesim.neighbouring import NeighbouringCellLinkedLists
 from particlesim.utils.conversion import prefactor
@@ -74,7 +75,7 @@ class Shortrange(object):
         return np.sum(4.0 * (epsilon * (q * (q - 1.0))))
 
 
-    def shortrange(self, positions, coulomb=True, lj=True):
+    def shortrange(self, positions, coulomb=True, lj=True, fast=True):
         r"""
         Compute the interaction potential for a pair of particles as a sum of the Lennard Jones Potential
         and the short coulomb interaction part of the ewald summation
@@ -96,6 +97,10 @@ class Shortrange(object):
             Total interaction potential in Hartree-Energy.
 
         """
+
+        if(fast and lj and coulomb):
+            return fast_shortrange(xyz=positions, box_len=self.box_length, sigmas=self.sigmas, epsilons=self.epsilons, charges=self.charges,
+                    lj_cutoff=self.system_conf.lj_cutoff_matrix, c_cutoff=self.r_cutoff, sigma_c=self.sigma_c, prefactor = prefactor)
 
         [n, m] = positions.shape
 
